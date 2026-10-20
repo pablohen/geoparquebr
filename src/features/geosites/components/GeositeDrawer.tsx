@@ -5,26 +5,32 @@ import {
 	Center,
 	Drawer,
 	Group,
+	Image,
 	Loader,
+	Progress,
 	SegmentedControl,
+	SimpleGrid,
+	Spoiler,
 	Stack,
 	Table,
 	Tabs,
 	Text,
 	Title,
 } from "@mantine/core";
-import { Cube, Info } from "@phosphor-icons/react";
+import { ArrowSquareOut, Cube, Info } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, type ReactNode, Suspense } from "react";
+import { lazy, type ReactNode, Suspense, useState } from "react";
 import {
+	DEGRADATION_RISK_LABELS,
 	type DrawerTab,
 	DrawerTabSchema,
 	GEOPARK_LABELS,
 	GEOSITE_CATEGORY_LABELS,
 	type Geosite,
+	type GeositeScores,
 	type GeositeWithDistance,
 	type Model3D,
-	SCIENTIFIC_VALUE_LABELS,
+	RELEVANCE_LABELS,
 } from "../schemas";
 import { CATEGORY_COLORS, formatDistance } from "./categoryStyle";
 
@@ -55,13 +61,12 @@ export function GeositeDrawer({ geosite, view, onViewChange, onClose }: Props) {
 							{geosite.name}
 						</Title>
 						<Text size="sm" c="dimmed">
-							{GEOPARK_LABELS[geosite.geoparkId]}
+							{geoparkLabel(geosite)}
 						</Text>
 					</Stack>
 				)
 			}
 		>
-			{/* `key` resets tab/model state when switching between geosites. */}
 			{geosite && (
 				<GeositeDetail
 					geosite={geosite}
@@ -71,6 +76,12 @@ export function GeositeDrawer({ geosite, view, onViewChange, onClose }: Props) {
 			)}
 		</Drawer>
 	);
+}
+
+function geoparkLabel(g: Geosite): string {
+	if (g.geoparkId) return GEOPARK_LABELS[g.geoparkId];
+	if (g.geoparkProposal) return `Proposta de geoparque: ${g.geoparkProposal}`;
+	return "Fora dos geoparques mundiais da UNESCO";
 }
 
 function GeositeDetail({
@@ -123,27 +134,46 @@ function Overview({ geosite }: { geosite: GeositeWithDistance }) {
 	const [lng, lat] = geosite.location.coordinates;
 	return (
 		<Stack>
-			<Group gap={6}>
-				{geosite.categories.map((c) => (
-					<Badge key={c} variant="light" color={CATEGORY_COLORS[c]}>
-						{GEOSITE_CATEGORY_LABELS[c]}
-					</Badge>
-				))}
-			</Group>
-			<Text>{geosite.summary}</Text>
-			{geosite.description && (
-				<Text size="sm" c="dimmed">
-					{geosite.description}
-				</Text>
+			{geosite.coverImageUrl && (
+				<CoverImage
+					key={geosite.coverImageUrl}
+					src={geosite.coverImageUrl}
+					alt={geosite.name}
+				/>
 			)}
+			{geosite.categories.length > 0 && (
+				<Group gap={6}>
+					{geosite.categories.map((c) => (
+						<Badge key={c} variant="light" color={CATEGORY_COLORS[c]}>
+							{GEOSITE_CATEGORY_LABELS[c]}
+						</Badge>
+					))}
+				</Group>
+			)}
+			<Spoiler maxHeight={120} showLabel="Ler mais" hideLabel="Mostrar menos">
+				<Text style={{ whiteSpace: "pre-line" }}>
+					{geosite.description ?? geosite.summary}
+				</Text>
+			</Spoiler>
+
 			<Table variant="vertical" layout="fixed" withTableBorder>
 				<Table.Tbody>
 					<Row label="Município">
 						{geosite.municipality} – {geosite.state}
 					</Row>
-					<Row label="Relevância científica">
-						{SCIENTIFIC_VALUE_LABELS[geosite.scientificValue]}
-					</Row>
+					<Row label="Relevância">{RELEVANCE_LABELS[geosite.relevance]}</Row>
+					{geosite.degradationRisk && (
+						<Row label="Risco de degradação">
+							{DEGRADATION_RISK_LABELS[geosite.degradationRisk]}
+						</Row>
+					)}
+					{geosite.geology && (
+						<Row label="Contexto geológico">
+							{[geosite.geology.province, geosite.geology.setting]
+								.filter(Boolean)
+								.join(" · ")}
+						</Row>
+					)}
 					{geosite.geologicAge && (
 						<Row label="Idade geológica">{formatAge(geosite.geologicAge)}</Row>
 					)}
@@ -159,6 +189,81 @@ function Overview({ geosite }: { geosite: GeositeWithDistance }) {
 					</Row>
 				</Table.Tbody>
 			</Table>
+
+			{geosite.scores && <Scores scores={geosite.scores} />}
+			{geosite.source && <SourceCredit source={geosite.source} />}
+		</Stack>
+	);
+}
+
+/** ~2% of GEOSSIT photo links 404; hide those instead of showing a broken image. */
+function CoverImage({ src, alt }: { src: string; alt: string }) {
+	const [failed, setFailed] = useState(false);
+	if (failed) return null;
+	return (
+		<Image
+			src={src}
+			alt={alt}
+			h={220}
+			radius="md"
+			fit="cover"
+			loading="lazy"
+			// Image's own `flex: 0` lets a flex column's min-height:auto override `h`.
+			style={{ flex: "none" }}
+			onError={() => setFailed(true)}
+		/>
+	);
+}
+
+const SCORE_LABELS = {
+	scientific: "Valor científico",
+	tourism: "Potencial turístico",
+	didactic: "Potencial didático",
+	vulnerability: "Vulnerabilidade",
+} as const satisfies Record<keyof GeositeScores, string>;
+
+function Scores({ scores }: { scores: GeositeScores }) {
+	return (
+		<Stack gap={6}>
+			<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+				Avaliação quantitativa (0–400)
+			</Text>
+			<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" verticalSpacing="xs">
+				{(Object.keys(SCORE_LABELS) as (keyof GeositeScores)[]).map((key) => (
+					<div key={key}>
+						<Group justify="space-between" mb={2}>
+							<Text size="sm">{SCORE_LABELS[key]}</Text>
+							<Text size="sm" ff="monospace">
+								{scores[key]}
+							</Text>
+						</Group>
+						<Progress
+							value={(scores[key] / 400) * 100}
+							color={key === "vulnerability" ? "red" : undefined}
+							size="sm"
+							aria-label={`${SCORE_LABELS[key]}: ${scores[key]} de 400`}
+						/>
+					</div>
+				))}
+			</SimpleGrid>
+		</Stack>
+	);
+}
+
+function SourceCredit({ source }: { source: NonNullable<Geosite["source"]> }) {
+	return (
+		<Stack gap={4}>
+			<Text size="xs" c="dimmed">
+				Fonte: GEOSSIT — Serviço Geológico do Brasil (SGB/CPRM).{" "}
+				<Anchor href={source.url} target="_blank" rel="noreferrer" size="xs">
+					Ver ficha no GEOSSIT <ArrowSquareOut size={12} />
+				</Anchor>
+			</Text>
+			{source.authors && (
+				<Text size="xs" c="dimmed" lineClamp={2}>
+					Autores: {source.authors}
+				</Text>
+			)}
 		</Stack>
 	);
 }

@@ -18,6 +18,8 @@ function connect(): Promise<MongoClient> {
 	const client = new MongoClient(requireEnv("MONGODB_URI"), {
 		appName: "geoparquebr",
 		maxPoolSize: 20,
+		// Zod outputs omit absent optionals as `undefined`; don't store them as null.
+		ignoreUndefined: true,
 	});
 	return client.connect();
 }

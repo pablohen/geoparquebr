@@ -3,13 +3,22 @@ import type { GeositeCategory } from "../schemas";
 
 export const CATEGORY_COLORS = {
 	paleontological: "orange",
+	paleoenvironmental: "yellow",
 	geomorphological: "teal",
 	speleological: "violet",
-	stratigraphic: "yellow",
+	stratigraphic: "lime",
+	sedimentological: "yellow",
 	mineralogical: "pink",
 	petrological: "gray",
-	hydrogeological: "blue",
+	igneous: "red",
+	metamorphic: "grape",
 	tectonic: "red",
+	hydrogeological: "blue",
+	metallogenic: "indigo",
+	pedological: "lime",
+	impact: "dark",
+	marine: "cyan",
+	historical: "gray",
 } as const satisfies Record<GeositeCategory, MantineColor>;
 
 export function formatDistance(meters: number): string {

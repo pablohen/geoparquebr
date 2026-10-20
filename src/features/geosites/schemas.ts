@@ -28,15 +28,25 @@ export type GeoPoint = z.infer<typeof GeoPointSchema>;
 // Taxonomy
 // ---------------------------------------------------------------------------
 
+/** Covers every GEOSSIT "temática principal" (see `geossit.server.ts` for the mapping). */
 export const GEOSITE_CATEGORIES = [
 	"paleontological",
+	"paleoenvironmental",
 	"geomorphological",
 	"speleological",
 	"stratigraphic",
+	"sedimentological",
 	"mineralogical",
 	"petrological",
-	"hydrogeological",
+	"igneous",
+	"metamorphic",
 	"tectonic",
+	"hydrogeological",
+	"metallogenic",
+	"pedological",
+	"impact",
+	"marine",
+	"historical",
 ] as const;
 
 export const GeositeCategorySchema = z.enum(GEOSITE_CATEGORIES);
@@ -44,13 +54,22 @@ export type GeositeCategory = z.infer<typeof GeositeCategorySchema>;
 
 export const GEOSITE_CATEGORY_LABELS = {
 	paleontological: "Paleontológico",
+	paleoenvironmental: "Paleoambiental",
 	geomorphological: "Geomorfológico",
 	speleological: "Espeleológico (carste)",
 	stratigraphic: "Estratigráfico",
+	sedimentological: "Sedimentológico",
 	mineralogical: "Mineralógico",
 	petrological: "Petrológico",
-	hydrogeological: "Hidrogeológico",
+	igneous: "Ígneo (plutonismo/vulcanismo)",
+	metamorphic: "Metamórfico",
 	tectonic: "Tectônico",
+	hydrogeological: "Hidrogeológico",
+	metallogenic: "Metalogenético",
+	pedological: "Pedológico",
+	impact: "Astroblema",
+	marine: "Ambiente marinho",
+	historical: "História da geologia/mineração",
 } as const satisfies Record<GeositeCategory, string>;
 
 /** UNESCO Global Geoparks in Brazil (plus aspiring ones as they're added). */
@@ -75,20 +94,48 @@ export const GEOPARK_LABELS = {
 	uberaba: "Geoparque Uberaba – Terra de Gigantes (MG)",
 } as const satisfies Record<GeoparkId, string>;
 
-export const ScientificValueSchema = z.enum([
+/** GEOSSIT's "indicativo de relevância". */
+export const RelevanceSchema = z.enum([
 	"international",
 	"national",
-	"regional",
-	"local",
+	"geodiversity",
 ]);
-export type ScientificValue = z.infer<typeof ScientificValueSchema>;
+export type Relevance = z.infer<typeof RelevanceSchema>;
 
-export const SCIENTIFIC_VALUE_LABELS = {
-	international: "Internacional",
-	national: "Nacional",
-	regional: "Regional",
-	local: "Local",
-} as const satisfies Record<ScientificValue, string>;
+export const RELEVANCE_LABELS = {
+	international: "Geossítio de relevância internacional",
+	national: "Geossítio de relevância nacional",
+	geodiversity: "Sítio da geodiversidade",
+} as const satisfies Record<Relevance, string>;
+
+export const DegradationRiskSchema = z.enum(["low", "medium", "high"]);
+export type DegradationRisk = z.infer<typeof DegradationRiskSchema>;
+
+export const DEGRADATION_RISK_LABELS = {
+	low: "Baixo",
+	medium: "Médio",
+	high: "Alto",
+} as const satisfies Record<DegradationRisk, string>;
+
+const ScoreSchema = z.number().int().min(0).max(400);
+
+/** GEOSSIT quantitative assessment, each on a 0–400 scale. */
+export const GeositeScoresSchema = z.object({
+	scientific: ScoreSchema,
+	tourism: ScoreSchema,
+	didactic: ScoreSchema,
+	vulnerability: ScoreSchema,
+});
+export type GeositeScores = z.infer<typeof GeositeScoresSchema>;
+
+/** Where a record came from, so re-imports update instead of duplicating. */
+export const GeositeSourceSchema = z.object({
+	system: z.literal("geossit"),
+	id: z.number().int().positive(),
+	url: z.url(),
+	authors: z.string().max(5_000).optional(),
+	updatedAt: z.iso.datetime().optional(),
+});
 
 /** Geological time, kept loose on purpose: ages in Ma (mega-annum, millions of years ago). */
 export const GeologicAgeSchema = z
@@ -140,18 +187,27 @@ const SlugSchema = z
 /** Fields a client may submit when creating/updating a geosite. */
 export const GeositeInputSchema = z.object({
 	slug: SlugSchema,
-	name: z.string().trim().min(2).max(160),
+	name: z.string().trim().min(2).max(240),
 	summary: z.string().trim().max(500),
 	description: z.string().trim().max(20_000).optional(),
-	geoparkId: GeoparkIdSchema,
+	/** UNESCO Global Geopark the site lies in, if any. */
+	geoparkId: GeoparkIdSchema.optional(),
+	/** Free-text aspiring-geopark proposal from GEOSSIT, when not a UNESCO one. */
+	geoparkProposal: z.string().trim().max(160).optional(),
 	municipality: z.string().trim().min(2).max(120),
 	state: z.string().length(2).toUpperCase(),
-	categories: z
-		.array(GeositeCategorySchema)
-		.min(1)
-		.max(GEOSITE_CATEGORIES.length),
-	scientificValue: ScientificValueSchema,
+	categories: z.array(GeositeCategorySchema).max(GEOSITE_CATEGORIES.length),
+	relevance: RelevanceSchema,
+	scores: GeositeScoresSchema.optional(),
+	degradationRisk: DegradationRiskSchema.optional(),
+	geology: z
+		.object({
+			setting: z.string().max(200).optional(), // "enquadramento geológico"
+			province: z.string().max(200).optional(), // "província geológica"
+		})
+		.optional(),
 	geologicAge: GeologicAgeSchema.optional(),
+	source: GeositeSourceSchema.optional(),
 	location: GeoPointSchema,
 	/** Fossil/strata/cave models shown in the 3D viewer. */
 	models: z.array(Model3DSchema).max(20).default([]),
@@ -181,7 +237,7 @@ export type GeositeWithDistance = z.infer<typeof GeositeWithDistanceSchema>;
 export const NearbyGeositesQuerySchema = z.object({
 	lng: LongitudeSchema,
 	lat: LatitudeSchema,
-	radiusKm: z.number().positive().max(1_000).default(150),
+	radiusKm: z.number().positive().max(1_000).default(250),
 	categories: z.array(GeositeCategorySchema).optional(),
 	limit: z.number().int().min(1).max(200).default(50),
 });
@@ -197,7 +253,7 @@ export type DrawerTab = z.infer<typeof DrawerTabSchema>;
 export const ExplorerSearchSchema = z.object({
 	lng: z.coerce.number().pipe(LongitudeSchema).catch(DEFAULT_CENTER.lng),
 	lat: z.coerce.number().pipe(LatitudeSchema).catch(DEFAULT_CENTER.lat),
-	radiusKm: z.coerce.number().positive().max(1_000).catch(150),
+	radiusKm: z.coerce.number().positive().max(1_000).catch(250),
 	site: SlugSchema.optional().catch(undefined),
 	/** Drawer tab; omitted means "overview". */
 	tab: DrawerTabSchema.optional().catch(undefined),
