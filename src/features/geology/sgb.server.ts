@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { type BBox, haversineMeters } from "~/lib/geo";
-import type { FossilOccurrence } from "./schemas";
+import type { FossilOccurrence, StrataUnit } from "./schemas";
 
 export const SGB_OGC_API = "https://geoservicos.sgb.gov.br/ogcapi";
 
@@ -20,12 +20,14 @@ function featureCollection<P extends z.ZodType>(properties: P) {
 		features: z.array(
 			z.object({
 				id: z.union([z.string(), z.number()]).optional(),
+				// Points for occurrences; omitted entirely with skipGeometry.
 				geometry: z
 					.object({
 						type: z.literal("Point"),
 						coordinates: z.tuple([z.number(), z.number()]),
 					})
-					.nullable(),
+					.nullish()
+					.catch(null),
 				properties,
 			}),
 		),
@@ -140,4 +142,73 @@ export async function sgbFossilsNear(
 		];
 	});
 	return { items, total: items.length };
+}
+
+// ---------------------------------------------------------------------------
+// Lithostratigraphy (geologia/litoestratigrafia/{scale})
+// ---------------------------------------------------------------------------
+
+/** Finest first; detailed maps only cover parts of Brazil, 1:1M covers all of it. */
+const STRATA_SCALES = [25_000, 50_000, 100_000, 250_000, 1_000_000] as const;
+
+const age = z.number().nonnegative().nullish().catch(null);
+
+const StrataPropertiesSchema = z.object({
+	sigla: z.string().trim().min(1),
+	nome: z.string().trim().min(1),
+	hierarquia: text,
+	idade_min: age,
+	idade_max: age,
+	sistema_min: text,
+	sistema_max: text,
+	litotipos: text,
+	legenda: text,
+});
+
+const STRATA_FIELDS = Object.keys(StrataPropertiesSchema.shape);
+
+/**
+ * Units mapped within the box at the most detailed scale that has any,
+ * deduplicated by code and ordered youngest (top) → oldest (base).
+ */
+export async function sgbStrataIn(
+	bbox: BBox,
+): Promise<{ scale: number; units: StrataUnit[] }> {
+	for (const scale of STRATA_SCALES) {
+		const page = await queryCollection(
+			`geologia/litoestratigrafia/${scale}`,
+			z.unknown(),
+			{ bbox, limit: 100, skipGeometry: true, fields: STRATA_FIELDS },
+		);
+		const units = new Map<string, StrataUnit>();
+		for (const f of page.features) {
+			const parsed = StrataPropertiesSchema.safeParse(f.properties);
+			if (!parsed.success || units.has(parsed.data.sigla)) continue;
+			const p = parsed.data;
+			const periods = [
+				...new Set([p.sistema_max, p.sistema_min].filter(Boolean)),
+			];
+			units.set(p.sigla, {
+				code: p.sigla,
+				name: p.nome,
+				rank: p.hierarquia,
+				minMa: p.idade_min ?? undefined,
+				maxMa: p.idade_max ?? undefined,
+				period: periods.length > 0 ? periods.join("–") : undefined,
+				lithology: p.litotipos,
+				description: p.legenda,
+			});
+		}
+		if (units.size > 0)
+			return {
+				scale,
+				units: [...units.values()].sort(
+					(a, b) =>
+						(a.minMa ?? Number.POSITIVE_INFINITY) -
+							(b.minMa ?? Number.POSITIVE_INFINITY) ||
+						(a.maxMa ?? 0) - (b.maxMa ?? 0),
+				),
+			};
+	}
+	return { scale: 1_000_000, units: [] };
 }

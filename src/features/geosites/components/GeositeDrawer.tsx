@@ -21,6 +21,15 @@ import { ArrowSquareOut, Bone, Cube, Info } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, type ReactNode, Suspense, useState } from "react";
 import { FossilsPanel } from "~/features/geology/components/FossilsPanel";
+import { getGeositeStrata } from "~/features/geology/geology.functions";
+import type { StrataUnit } from "~/features/geology/schemas";
+import {
+	formatAgeRange,
+	icsColorForAge,
+	midAge,
+	shade,
+} from "~/features/geology/time-scale";
+import { useServerQuery } from "~/lib/use-server-query";
 import {
 	DEGRADATION_RISK_LABELS,
 	type DrawerTab,
@@ -34,6 +43,7 @@ import {
 	RELEVANCE_LABELS,
 } from "../schemas";
 import { CATEGORY_COLORS } from "./categoryStyle";
+import type { StrataLayer } from "./ModelViewer";
 import { SketchfabEmbed } from "./SketchfabEmbed";
 
 // three.js + R3F (~600 kB) only load when a self-hosted model or the strata fallback is shown.
@@ -143,6 +153,7 @@ function GeositeDetail({
 			</Tabs.Panel>
 			<Tabs.Panel value="model">
 				<ModelsPanel
+					slug={geosite.slug}
 					models={geosite.models}
 					index={view.model ?? 0}
 					onIndexChange={(i) =>
@@ -315,36 +326,60 @@ const PROVENANCE_NOTES = {
 	illustrative: "Exemplo ilustrativo — não provém deste geossítio.",
 } as const satisfies Record<ModelProvenance, string>;
 
+const STRATA_OPTION = "strata";
+
 function ModelsPanel({
+	slug,
 	models,
 	index: requested,
 	onIndexChange,
 }: {
+	slug: string;
 	models: Model3D[];
 	index: number;
 	onIndexChange: (index: number) => void;
 }) {
-	// A stale/hand-edited ?model= past the end falls back to the first model.
-	const index = requested < models.length ? requested : 0;
+	// The mapped strata column is always offered, after any scanned models.
+	// A stale/hand-edited ?model= past the end falls back to the first entry.
+	const index = requested <= models.length ? requested : 0;
 	const model = models[index];
 
 	return (
 		<Stack>
-			{models.length > 1 && (
+			{models.length > 0 && (
 				<Select
 					label="Modelo"
-					value={String(index)}
-					onChange={(v) => v !== null && onIndexChange(Number(v))}
-					data={models.map((m, i) => ({ value: String(i), label: m.title }))}
+					value={model ? String(index) : STRATA_OPTION}
+					onChange={(v) =>
+						v !== null &&
+						onIndexChange(v === STRATA_OPTION ? models.length : Number(v))
+					}
+					data={[
+						...models.map((m, i) => ({ value: String(i), label: m.title })),
+						{
+							value: STRATA_OPTION,
+							label: "Coluna estratigráfica (mapa do SGB)",
+						},
+					]}
 					allowDeselect={false}
 				/>
 			)}
-			<Box
-				h={440}
-				bg="dark.8"
-				style={{ borderRadius: "var(--mantine-radius-md)", overflow: "hidden" }}
-			>
-				{model?.provider === "sketchfab" ? (
+			{model ? <ModelView model={model} /> : <StrataView slug={slug} />}
+		</Stack>
+	);
+}
+
+const viewerBox = {
+	h: 440,
+	bg: "dark.8",
+	style: { borderRadius: "var(--mantine-radius-md)", overflow: "hidden" },
+} as const;
+
+function ModelView({ model }: { model: Model3D }) {
+	return (
+		<>
+			<Box {...viewerBox}>
+				{model.provider === "sketchfab" ? (
 					<SketchfabEmbed key={model.uid} uid={model.uid} title={model.title} />
 				) : (
 					<ClientOnly fallback={<ViewerFallback />}>
@@ -354,39 +389,113 @@ function ModelsPanel({
 					</ClientOnly>
 				)}
 			</Box>
-			{model ? (
-				<Stack gap={2}>
+			<Stack gap={2}>
+				<Text size="sm" fw={600}>
+					{model.title}
+				</Text>
+				<Text size="xs" c="dimmed">
+					{PROVENANCE_NOTES[model.provenance]}
+				</Text>
+				<Text size="xs" c="dimmed">
+					{model.attribution} · {model.license}
+					{model.realWorldSizeM && ` · ${model.realWorldSizeM} m`}
+					{model.sourceUrl && (
+						<>
+							{" · "}
+							<Anchor
+								href={model.sourceUrl}
+								target="_blank"
+								rel="noreferrer"
+								size="xs"
+							>
+								Fonte <ArrowSquareOut size={12} />
+							</Anchor>
+						</>
+					)}
+				</Text>
+			</Stack>
+		</>
+	);
+}
+
+/** Mapped units → column bands; same-period neighbours get alternating shades. */
+function toLayers(units: StrataUnit[]): StrataLayer[] {
+	let previous = "";
+	return units.map((u, i) => {
+		const base = icsColorForAge(midAge(u.minMa, u.maxMa));
+		const color = base === previous ? shade(base, 0.18 * (i % 2 || 1)) : base;
+		previous = base;
+		return {
+			id: u.code,
+			name: u.name,
+			detail: [formatAgeRange(u.minMa, u.maxMa), u.period]
+				.filter(Boolean)
+				.join(" · "),
+			color,
+			thickness: 0.5,
+		};
+	});
+}
+
+function StrataView({ slug }: { slug: string }) {
+	const strata = useServerQuery(`strata:${slug}`, () =>
+		getGeositeStrata({ data: { slug } }),
+	);
+	const data = strata.data;
+	const mapped =
+		data?.status === "ok" && data.units.length > 0 ? data : undefined;
+
+	return (
+		<>
+			<Box {...viewerBox}>
+				{strata.status === "pending" ? (
+					<ViewerFallback />
+				) : (
+					<ClientOnly fallback={<ViewerFallback />}>
+						<Suspense fallback={<ViewerFallback />}>
+							<ModelViewer
+								strata={mapped ? toLayers(mapped.units) : undefined}
+							/>
+						</Suspense>
+					</ClientOnly>
+				)}
+			</Box>
+			{strata.status === "pending" ? null : mapped ? (
+				<Stack gap={4}>
 					<Text size="sm" fw={600}>
-						{model.title}
+						Unidades litoestratigráficas num raio de ~{mapped.radiusKm} km
 					</Text>
 					<Text size="xs" c="dimmed">
-						{PROVENANCE_NOTES[model.provenance]}
+						Mapa geológico do SGB/CPRM, escala 1:
+						{mapped.scale.toLocaleString("pt-BR")}. Da mais recente (topo) à
+						mais antiga (base); cores da carta cronoestratigráfica
+						internacional. Espessuras ilustrativas — o mapa não informa
+						espessuras.
 					</Text>
-					<Text size="xs" c="dimmed">
-						{model.attribution} · {model.license}
-						{model.realWorldSizeM && ` · ${model.realWorldSizeM} m`}
-						{model.sourceUrl && (
-							<>
-								{" · "}
-								<Anchor
-									href={model.sourceUrl}
-									target="_blank"
-									rel="noreferrer"
-									size="xs"
-								>
-									Fonte <ArrowSquareOut size={12} />
-								</Anchor>
-							</>
-						)}
-					</Text>
+					{mapped.units.map((u) => (
+						<Text key={u.code} size="xs">
+							<Text span fw={600} ff="monospace">
+								{u.code}
+							</Text>{" "}
+							{u.name}
+							{u.lithology && (
+								<Text span c="dimmed">
+									{" "}
+									— {u.lithology}
+								</Text>
+							)}
+						</Text>
+					))}
 				</Stack>
 			) : (
 				<Text size="xs" c="dimmed">
-					Ainda não há modelo digitalizado para este geossítio — exibindo uma
-					coluna estratigráfica ilustrativa.
+					{data?.status === "unavailable" || strata.status === "error"
+						? "Mapa geológico do SGB indisponível no momento — "
+						: "Nenhuma unidade mapeada encontrada — "}
+					exibindo uma coluna estratigráfica ilustrativa (Bacia do Araripe).
 				</Text>
 			)}
-		</Stack>
+		</>
 	);
 }
 

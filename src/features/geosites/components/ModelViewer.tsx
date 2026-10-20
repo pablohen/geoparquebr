@@ -9,17 +9,35 @@ import { Canvas } from "@react-three/fiber";
 import { Component, type ReactNode, Suspense } from "react";
 import type { GltfModel3D } from "../schemas";
 
-type Props = { model?: GltfModel3D };
+/** One band of the stratigraphic column, listed top → bottom. */
+export type StrataLayer = {
+	/** Stable key, e.g. the map unit code. */
+	id: string;
+	name: string;
+	/** Secondary legend text, e.g. "101–145 Ma". */
+	detail?: string;
+	color: string;
+	thickness: number;
+};
+
+type Props = {
+	model?: GltfModel3D;
+	/** Column to draw when there's no model; defaults to an illustrative one. */
+	strata?: StrataLayer[];
+};
 
 /**
- * Interactive viewer for fossil/strata/cave scans. Falls back to a procedural
- * stratigraphic column when a geosite has no digitised model yet.
+ * Interactive viewer for fossil/strata/cave scans. Without a model it draws a
+ * stratigraphic column: real mapped units when given, else an illustrative one.
  * Default export so it can be `React.lazy`-loaded client-side only.
  *
  * Overlays (legend, errors) are plain DOM outside the Canvas: drei's <Html>
  * mounts a React root per element, which React 19 warns about on unmount.
  */
-export default function ModelViewer({ model }: Props) {
+export default function ModelViewer({
+	model,
+	strata = ILLUSTRATIVE_STRATA,
+}: Props) {
 	return (
 		<Box pos="relative" h="100%">
 			<ModelErrorBoundary
@@ -38,7 +56,11 @@ export default function ModelViewer({ model }: Props) {
 
 					<Suspense fallback={null}>
 						<Bounds fit clip observe margin={1.4}>
-							{model ? <GltfModel model={model} /> : <ProceduralStrata />}
+							{model ? (
+								<GltfModel model={model} />
+							) : (
+								<ProceduralStrata layers={strata} />
+							)}
 						</Bounds>
 					</Suspense>
 
@@ -52,7 +74,7 @@ export default function ModelViewer({ model }: Props) {
 				</Canvas>
 			</ModelErrorBoundary>
 
-			{!model && <StrataLegend />}
+			{!model && <StrataLegend layers={strata} />}
 		</Box>
 	);
 }
@@ -69,36 +91,58 @@ function GltfModel({ model }: { model: GltfModel3D }) {
 }
 
 /** Illustrative layers (top → bottom), loosely modelled on the Araripe basin. */
-const STRATA = [
-	{ name: "Fm. Exu — arenito", color: "#c9814f", thickness: 0.6 },
+const ILLUSTRATIVE_STRATA: StrataLayer[] = [
 	{
+		id: "exu",
+		name: "Fm. Exu — arenito",
+		color: "#c9814f",
+		thickness: 0.6,
+	},
+	{
+		id: "romualdo",
 		name: "Fm. Romualdo — folhelho c/ concreções",
 		color: "#7d7466",
 		thickness: 0.45,
 	},
-	{ name: "Fm. Ipubi — gipsita", color: "#e8e1d3", thickness: 0.25 },
-	{ name: "Fm. Crato — calcário laminado", color: "#d8c39a", thickness: 0.5 },
 	{
+		id: "ipubi",
+		name: "Fm. Ipubi — gipsita",
+		color: "#e8e1d3",
+		thickness: 0.25,
+	},
+	{
+		id: "crato",
+		name: "Fm. Crato — calcário laminado",
+		color: "#d8c39a",
+		thickness: 0.5,
+	},
+	{
+		id: "barbalha",
 		name: "Fm. Barbalha — arenito/argilito",
 		color: "#a65a3a",
 		thickness: 0.55,
 	},
-	{ name: "Embasamento cristalino", color: "#4a4a52", thickness: 0.6 },
-] as const;
+	{
+		id: "embasamento",
+		name: "Embasamento cristalino",
+		color: "#4a4a52",
+		thickness: 0.6,
+	},
+];
 
-function ProceduralStrata() {
-	const total = STRATA.reduce((sum, l) => sum + l.thickness, 0);
+function ProceduralStrata({ layers }: { layers: StrataLayer[] }) {
+	const total = layers.reduce((sum, l) => sum + l.thickness, 0);
 	let top = total / 2;
 
 	return (
 		<group>
-			{STRATA.map((layer, i) => {
+			{layers.map((layer, i) => {
 				const y = top - layer.thickness / 2;
 				top -= layer.thickness;
 				// Slight offsets give the block an eroded-outcrop look.
 				const inset = (i % 2) * 0.08;
 				return (
-					<mesh key={layer.name} position={[0, y, 0]} castShadow receiveShadow>
+					<mesh key={layer.id} position={[0, y, 0]} castShadow receiveShadow>
 						<boxGeometry
 							args={[3 - inset, layer.thickness * 0.98, 2 - inset]}
 						/>
@@ -110,7 +154,7 @@ function ProceduralStrata() {
 	);
 }
 
-function StrataLegend() {
+function StrataLegend({ layers }: { layers: StrataLayer[] }) {
 	return (
 		<Stack
 			gap={4}
@@ -124,11 +168,17 @@ function StrataLegend() {
 				pointerEvents: "none",
 			}}
 		>
-			{STRATA.map((layer) => (
-				<Group key={layer.name} gap={8} wrap="nowrap">
+			{layers.map((layer) => (
+				<Group key={layer.id} gap={8} wrap="nowrap">
 					<ColorSwatch color={layer.color} size={12} withShadow={false} />
 					<Text size="xs" c="gray.3">
 						{layer.name}
+						{layer.detail && (
+							<Text span size="xs" c="gray.5">
+								{" "}
+								· {layer.detail}
+							</Text>
+						)}
 					</Text>
 				</Group>
 			))}

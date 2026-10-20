@@ -60,3 +60,35 @@ export const GeositeFossilsSchema = z.object({
 	gbif: sourceResult(FossilOccurrenceSchema),
 });
 export type GeositeFossils = z.infer<typeof GeositeFossilsSchema>;
+
+// ---------------------------------------------------------------------------
+// Lithostratigraphy
+// ---------------------------------------------------------------------------
+
+export const StrataUnitSchema = z.object({
+	code: z.string(), // "sigla", e.g. "K1s"
+	name: z.string(),
+	rank: z.string().optional(), // "hierarquia": Grupo, Formação, Unidade…
+	minMa: z.number().nonnegative().optional(),
+	maxMa: z.number().nonnegative().optional(),
+	/** Geological period(s) as recorded, e.g. "Cretáceo". */
+	period: z.string().optional(),
+	lithology: z.string().optional(), // "litotipos"
+	description: z.string().optional(), // "legenda"
+});
+export type StrataUnit = z.infer<typeof StrataUnitSchema>;
+
+export const STRATA_SEARCH_RADIUS_KM = 3;
+
+/** Units ordered youngest (top) → oldest (base). */
+export const GeositeStrataSchema = z.discriminatedUnion("status", [
+	z.object({
+		status: z.literal("ok"),
+		/** Map scale denominator the units come from, e.g. 1_000_000. */
+		scale: z.number().int().positive(),
+		radiusKm: z.number().positive(),
+		units: z.array(StrataUnitSchema),
+	}),
+	z.object({ status: z.literal("unavailable") }),
+]);
+export type GeositeStrata = z.infer<typeof GeositeStrataSchema>;

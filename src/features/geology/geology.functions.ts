@@ -13,10 +13,13 @@ import {
 	FOSSIL_SEARCH_RADIUS_KM,
 	type FossilOccurrence,
 	type GeositeFossils,
+	type GeositeStrata,
+	STRATA_SEARCH_RADIUS_KM,
 } from "./schemas";
-import { type NearbyFossil, sgbFossilsNear } from "./sgb.server";
+import { type NearbyFossil, sgbFossilsNear, sgbStrataIn } from "./sgb.server";
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1_000;
+const DAY_MS = 24 * 60 * 60 * 1_000;
+const WEEK_MS = 7 * DAY_MS;
 const SlugInput = z.object({ slug: z.string().min(1) });
 
 async function locate(slug: string) {
@@ -75,4 +78,23 @@ export const getGeositeFossils = createServerFn({ method: "GET" })
 			),
 		]);
 		return { radiusKm, sgb, gbif };
+	});
+
+/** Geological maps change rarely; cache for a month. */
+export const getGeositeStrata = createServerFn({ method: "GET" })
+	.validator(SlugInput)
+	.handler(async ({ data }): Promise<GeositeStrata> => {
+		const { point } = await locate(data.slug);
+		const radiusKm = STRATA_SEARCH_RADIUS_KM;
+		try {
+			const { scale, units } = await cached(
+				`strata:v1:${data.slug}`,
+				30 * DAY_MS,
+				() => sgbStrataIn(bboxAround(point, radiusKm)),
+			);
+			return { status: "ok", scale, radiusKm, units };
+		} catch (err) {
+			console.warn("strata lookup failed:", err);
+			return { status: "unavailable" };
+		}
 	});
