@@ -1,59 +1,76 @@
 # 3D models
 
-Each geosite can carry up to 20 entries in `models`. These are fossil, strata, cave, outcrop or mineral scans shown in the drawer's **Modelo 3D** tab by [`ModelViewer.tsx`](../src/features/geosites/components/ModelViewer.tsx).
+Each geosite can carry up to 20 `models`, shown in the drawer's **Modelo 3D** tab. They come from a curated catalog: [`model-catalog.server.ts`](../src/features/geosites/model-catalog.server.ts).
 
-## Metadata (`Model3DSchema`)
+## Two ways to render
 
-| Field | Type | Notes |
+`Model3DSchema` is a discriminated union on `provider`:
+
+| `provider` | Rendered by | Used for |
 | --- | --- | --- |
-| `kind` | enum | `fossil`, `strata`, `cave`, `outcrop`, `mineral` |
-| `title` | string | shown in the model picker when there is more than one model |
-| `format` | `glb` \| `gltf` | prefer `glb` (single file) |
-| `url` | **https** URL | the model file; plain `http` is rejected |
-| `lodUrl` | https URL? | lighter Draco/meshopt variant (reserved, not used by the viewer yet) |
-| `previewImageUrl` | URL? | thumbnail (reserved) |
-| `realWorldSizeM` | number? | longest axis in metres; shown in the credits line |
-| `upAxis` | `y` \| `z` | default `y`. Photogrammetry exports are often Z-up; `z` rotates the model −90° about X |
-| `license` | string | SPDX or Creative Commons id, e.g. `CC-BY-4.0` |
-| `attribution` | string | author or institution credit (required) |
-| `polycount` | int? | informational |
+| `sketchfab` | [`SketchfabEmbed`](../src/features/geosites/components/SketchfabEmbed.tsx): Sketchfab's own iframe viewer (`dnt=1`) | view-only models we may display but not redistribute, and CC BY models not downloaded yet |
+| `gltf` | [`ModelViewer`](../src/features/geosites/components/ModelViewer.tsx): React Three Fiber | self-hosted GLBs in `public/models/`, or any HTTPS URL with CORS |
 
-Example:
+The three.js chunk (~270 kB gzip) loads only when a `gltf` model, or the strata fallback, is on screen; Sketchfab embeds don't need it. With no models at all, the viewer draws an **illustrative stratigraphic column**.
 
-```json
-{
-  "kind": "fossil",
-  "title": "Pterossauro – concreção da Fm. Romualdo",
-  "format": "glb",
-  "url": "https://cdn.example.org/models/pterosaur.glb",
-  "realWorldSizeM": 0.42,
-  "upAxis": "z",
-  "license": "CC-BY-4.0",
-  "attribution": "Museu de Paleontologia Plácido Cidade Nuvens / URCA"
-}
+### Shared fields
+
+| Field | Notes |
+| --- | --- |
+| `kind` | `fossil`, `strata`, `cave`, `outcrop`, `mineral` |
+| `title` | shown above the credits and in the model picker |
+| `provenance` | `locality` (from this geosite), `region` (same basin, exact site unknown), `illustrative` (example only). Shown to users verbatim |
+| `license` | `CC-BY-4.0`, or `Sketchfab Standard` for view-only |
+| `attribution` | required credit |
+| `sourceUrl` | page where the model is published |
+| `realWorldSizeM`, `polycount` | optional |
+
+`gltf` models add `format` (`glb` \| `gltf`), `url` (`https://…` or `/models/<file>.glb`) and `upAxis` (`y` default; `z` rotates −90° about X for Z-up photogrammetry). `sketchfab` models add `uid` (32 hex chars).
+
+## Catalog
+
+Each entry names a Sketchfab model, its license, its provenance, and what it attaches to: specific GEOSSIT ids, or every geosite in some categories. Current entries, all from **GeoHereditas · Museu de Geociências IGc-USP**:
+
+| Model | License | Attached to | Provenance |
+| --- | --- | --- | --- |
+| Peixe fóssil da Bacia do Araripe | CC BY 4.0 | GEOSSIT 1915, Membro Romualdo (fish-bearing nodules) | region |
+| Amonita | view-only | GEOSSIT 1920, Pedreira Poty (K–Pg boundary; its abstract cites the ammonite extinction) | illustrative |
+| Estalagmite de aragonita com coralóides | CC BY 4.0 | every `speleological` geosite | illustrative |
+
+**Only attach a model where the provenance holds up, and label it honestly.** GeoHereditas also has Purussaurus, mastodon and mesosaur fossils, but GEOSSIT has no matching sites, so they're left out.
+
+`modelsFor()` resolves each entry at seed time. A CC BY entry whose GLB exists in `public/models/` becomes `provider: "gltf"`; anything else becomes `provider: "sketchfab"`.
+
+## Self-hosting CC BY models
+
+```bash
+# .env
+SKETCHFAB_TOKEN="…"   # https://sketchfab.com/settings/password → API token
+
+pnpm models:fetch     # downloads + optimizes CC BY models → public/models/<uid>.glb
+pnpm db:seed          # re-attach models; they now point at /models/<uid>.glb
 ```
 
-## Viewer behaviour
+[`scripts/fetch-models.ts`](../scripts/fetch-models.ts):
 
-- three.js, R3F and drei sit in a lazy chunk (~270 kB gzip) that loads only when the 3D tab opens. The viewer is wrapped in `<ClientOnly>`, so it never renders on the server.
-- `<Bounds fit clip observe>` frames any model automatically, so scale and origin don't need to be normalised beforehand.
-- `OrbitControls` (with damping) handles rotate, zoom and pan.
-- When a geosite has no models, the viewer renders an **illustrative stratigraphic column** loosely based on the Araripe basin, with a colour legend.
-- A model that fails to load (404, CORS, bad file) is caught by an error boundary, which shows *"Falha ao carregar o modelo 3D."* instead of crashing the drawer.
-- Overlays (legend, error message) are plain DOM outside the `<Canvas>`. Don't use drei `<Html>`: it mounts extra React roots, and React 19 logs errors when they unmount.
+1. Re-checks each model's license (`slug === "by"`) and `isDownloadable` before downloading, since authors can change them.
+2. Requests a signed GLB URL from `GET /v3/models/{uid}/download`, which needs the token.
+3. Optimizes with [`scripts/lib/optimize-glb.ts`](../scripts/lib/optimize-glb.ts): dedup, weld, simplify to ≤ 300k triangles (meshoptimizer), WebP textures ≤ 2048 px (sharp), then meshopt compression. On a Khronos sample this took 3.8 MB → 0.53 MB.
+4. Writes `public/models/<uid>.glb`, skipping files that already exist unless you pass `--force`.
 
-## Preparing assets
+drei's `useGLTF` decodes meshopt with a bundled decoder, so no CDN is involved, unlike Draco.
 
-1. **Export** to glTF binary (`.glb`) from Blender, Meshroom, RealityCapture, Polycam, etc.
-2. **Compress** with [`gltf-transform`](https://gltf-transform.dev/):
-   ```bash
-   npx @gltf-transform/cli optimize in.glb out.glb --compress draco --texture-compress webp
-   ```
-   Target **< 10 MB** and **< 500k triangles** for the main file. Draco-compressed files need drei's Draco decoder, which `useGLTF` sets up by default but which is fetched from a CDN. Self-host it if you need to work offline.
-3. **Host** on HTTPS with CORS allowing the app's origin (`Access-Control-Allow-Origin`). Object storage plus a CDN works well (S3/R2/GCS).
-4. **Orientation:** if the model shows up lying on its side, set `upAxis: "z"`.
-5. **Credit and licence** are mandatory. Many museum scans are CC-BY-NC; check the terms before publishing.
+The GeoHereditas scans are 1.7M–5.5M triangles before optimization. Expect the downloads to be large.
+
+## Adding a model
+
+1. Find it on Sketchfab and note the uid from its URL, the license, and where the specimen was actually collected.
+2. Add a `MODEL_CATALOG` entry with an honest `provenance` and a comment explaining the attachment.
+3. For CC BY models, run `pnpm models:fetch`.
+4. Run `pnpm db:seed`.
+
+Other sources: models from MorphoSource or museums can use `provider: "gltf"` with an HTTPS URL, if the host allows CORS and the license permits it.
 
 ## Sensitive sites
 
-Model files can reveal location details, such as embedded GPS EXIF in textures or recognisable surroundings. For geosites with `locationIsSensitive: true`, strip metadata from textures and prefer specimen-only scans over in-situ captures.
+Model files can reveal location details, such as GPS EXIF in textures or recognisable surroundings. For geosites with `locationIsSensitive`, prefer specimen-only scans over in-situ captures.

@@ -21,7 +21,7 @@ Set `MONGODB_URI` in `.env`, using one of these:
 Then:
 
 ```bash
-pnpm db:seed   # creates indexes + 7 sample geosites (coordinates are approximate)
+pnpm db:seed   # indexes + ~320 geosites from GEOSSIT (SGB/CPRM) + 3D model attachments
 pnpm dev       # http://localhost:3000
 ```
 
@@ -31,6 +31,7 @@ pnpm dev       # http://localhost:3000
 | --- | --- | --- | --- |
 | `MONGODB_URI` | yes | — | `src/lib/db.server.ts` |
 | `MONGODB_DB` | no | `geoparquebr` | `src/lib/db.server.ts` |
+| `SKETCHFAB_TOKEN` | only for `models:fetch` | — | `scripts/fetch-models.ts` |
 
 Server code reads them through `process.env`. Nothing secret should ever use the `VITE_` prefix, because Vite inlines those values into the client bundle.
 
@@ -44,7 +45,8 @@ Server code reads them through `process.env`. Nothing secret should ever use the
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | `biome check .` (lint + format + import sorting) |
 | `pnpm format` | `biome check --write .` |
-| `pnpm db:seed` | `tsx --env-file=.env scripts/seed.ts`: indexes plus sample-data upsert, safe to re-run |
+| `pnpm db:seed` | `tsx --env-file=.env scripts/seed.ts`: indexes, GEOSSIT sync (upsert + prune) and 3D model attachments; safe to re-run |
+| `pnpm models:fetch` | downloads CC BY models from Sketchfab, optimizes them into `public/models/` (`--force` to refresh) |
 
 ## Checks before committing
 
@@ -71,14 +73,18 @@ src/
 │   └── index.tsx                 explorer route: validateSearch → loader → UI
 ├── features/geosites/
 │   ├── schemas.ts                Zod: single source of truth
-│   ├── geosites.server.ts        Mongo queries, indexes, DTO mapping (server-only)
+│   ├── geosites.server.ts        Mongo queries, indexes, DTO mapping, sync (server-only)
+│   ├── geossit.server.ts         GEOSSIT fetch + Zod validation + mapping (server-only)
+│   ├── model-catalog.server.ts   curated 3D models and where they attach (server-only)
 │   ├── geosites.functions.ts     createServerFn RPCs
-│   └── components/               Explorer, List, LocationForm, Map, Drawer, ModelViewer
+│   └── components/               Explorer, List, LocationForm, Map, Drawer, ModelViewer, SketchfabEmbed
 ├── lib/db.server.ts              pooled MongoClient (cached on globalThis for HMR)
 ├── router.tsx                    getRouter() factory
 ├── routeTree.gen.ts              generated, committed, not linted
 └── theme.ts                      Mantine theme ("laterite" primary color)
-scripts/seed.ts                   indexes + sample data
+scripts/seed.ts                   indexes + GEOSSIT sync + model attachments
+scripts/fetch-models.ts           Sketchfab download → optimize → public/models/
+scripts/lib/optimize-glb.ts       glTF-Transform pipeline (simplify, WebP, meshopt)
 docs/                             these docs
 ```
 
@@ -93,4 +99,8 @@ docs/                             these docs
 | `MongoServerSelectionError` against Atlas | IP not in the Atlas network access list, or a wrong user/password |
 | React "Encountered a script tag" warning | Mantine's `ColorSchemeScript` came back; use `ScriptOnce` (see `__root.tsx`) |
 | React "synchronously unmount a root" errors | drei `<Html>` inside the Canvas; move the overlay outside the Canvas |
+| `GEOSSIT query failed` / TLS errors during `db:seed` | `geoportal.sgb.gov.br` is down or blocked. A proxy or sandbox that intercepts TLS can break the RNP/GlobalSign chain; check with `curl -v` |
+| `Skipped GEOSSIT <id>: …` | That record failed validation and the rest still imported. Adjust the mapping or limits in `geossit.server.ts` / `schemas.ts` |
+| Geosite photo missing | About 2% of GEOSSIT photo links 404 upstream; the drawer hides them |
+| `SKETCHFAB_TOKEN is not set` | Add an API token from https://sketchfab.com/settings/password to `.env` |
 | Biome errors in `routeTree.gen.ts` | It's excluded in `biome.json`; don't remove that entry |

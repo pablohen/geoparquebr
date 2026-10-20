@@ -1,6 +1,8 @@
 # GeoparqueBR
 
-Explore Brazilian UNESCO Global Geoparks: geosites, strata, fossil beds and karst caves, on a map and in 3D.
+Explore Brazilian UNESCO Global Geoparks and the wider geoheritage inventory: geosites, strata, fossil beds and karst caves, on a map and in 3D.
+
+Geosite data: [GEOSSIT](https://www.sgb.gov.br/geossit/), Serviço Geológico do Brasil (SGB/CPRM). 3D models: [GeoHereditas](https://sketchfab.com/geohereditas), Museu de Geociências IGc-USP.
 
 **Stack:** TanStack Start · MongoDB Atlas (2dsphere) · Zod 4 · Mantine 7 · React Hook Form · MapLibre GL · React Three Fiber · Biome · pnpm
 
@@ -10,7 +12,8 @@ Explore Brazilian UNESCO Global Geoparks: geosites, strata, fossil beds and kars
 pnpm install
 cp .env.example .env          # set MONGODB_URI (Atlas, or mongodb://localhost:27017)
 docker compose up -d          # optional: local MongoDB instead of Atlas
-pnpm db:seed                  # indexes (2dsphere, slug) + sample geosites
+pnpm db:seed                  # indexes + geosites from GEOSSIT (SGB/CPRM) + 3D models
+pnpm models:fetch             # optional: self-host CC BY 3D models (needs SKETCHFAB_TOKEN)
 pnpm dev                      # http://localhost:3000
 ```
 

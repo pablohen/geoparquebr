@@ -74,10 +74,27 @@ GeositeExplorer (AppShell)
 │   └── <ClientOnly> GeositeMap (lazy)   GeoJSON source + circle layer
 └── GeositeDrawer         Mantine Drawer, opened by ?site=
     ├── Overview tab
-    └── 3D tab → <ClientOnly> ModelViewer (lazy)   R3F Canvas + legend overlay
+    └── 3D tab ─┬─ SketchfabEmbed               iframe, for provider: "sketchfab"
+                └─ <ClientOnly> ModelViewer (lazy)  R3F Canvas, for provider: "gltf" / strata fallback
 ```
 
 `GeositeExplorer` is presentational. It receives `geosites`, `search` and an `onSearchChange` callback from the route, so the route stays the only owner of URL state.
+
+## Data pipeline
+
+```mermaid
+flowchart LR
+  G["GEOSSIT<br/>ArcGIS FeatureServer"] -->|"query · f=geojson"| F["fetchGeossitFeatures"]
+  F --> M["mapGeossitFeatures<br/>Zod-validate + map"]
+  C["MODEL_CATALOG"] --> A["modelsFor"]
+  P[("public/models/*.glb")] -.->|"exists?"| A
+  M --> S["syncSourcedGeosites<br/>upsert + prune"]
+  A --> S
+  S --> DB[("MongoDB")]
+  SF["Sketchfab API"] -->|"pnpm models:fetch<br/>+ optimize"| P
+```
+
+`scripts/seed.ts` runs this pipeline. The functions live in `src/features/geosites/*.server.ts` so a scheduled job can reuse them later.
 
 ### Code splitting
 
