@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { type BBox, haversineMeters } from "~/lib/geo";
 import type { FossilOccurrence, StrataUnit } from "./schemas";
+import { splitTaxa } from "./taxa";
 
 export const SGB_OGC_API = "https://geoservicos.sgb.gov.br/ogcapi";
 
@@ -76,31 +77,6 @@ const FossilPropertiesSchema = z.object({
 	status_exemplar: text,
 	referencia_bibliografica: text,
 });
-
-/** Sentence-cases names recorded in ALL CAPS; leaves mixed case alone. */
-function tidyCase(name: string): string {
-	const lower = name.toLowerCase();
-	const base = name === name.toUpperCase() ? lower : name;
-	return base.charAt(0).toUpperCase() + base.slice(1);
-}
-
-/**
- * "lepidosauria, squamata, tijubina pontei" → ["Lepidosauria", "Squamata", "Tijubina pontei"].
- * Commas also separate authorship years ("Dastilbe elongatus Santos, 1947"),
- * so a segment that starts with a year is glued back onto the previous one.
- */
-export function splitTaxa(...lists: (string | undefined)[]): string[] {
-	const out: string[] = [];
-	for (const raw of lists.flatMap((l) => l?.split(/[,;]/) ?? [])) {
-		const part = raw.trim();
-		if (!part) continue;
-		const last = out.at(-1);
-		if (/^\(?\d{4}/.test(part) && last !== undefined)
-			out[out.length - 1] = `${last}, ${part}`;
-		else out.push(tidyCase(part));
-	}
-	return [...new Set(out)];
-}
 
 /** An occurrence with its exact distance; rounding happens in the server function. */
 export type NearbyFossil = Omit<FossilOccurrence, "distanceKm"> & {

@@ -19,6 +19,7 @@ import {
 	type FossilOccurrence,
 	type GeositeFossils,
 } from "../schemas";
+import { shortTaxon } from "../taxa";
 
 const PAGE = 15;
 
@@ -104,19 +105,6 @@ function FossilsList({ data }: { data: GeositeFossils }) {
 			</Text>
 		</Stack>
 	);
-}
-
-/**
- * Drops authorship for display: "Dastilbe elongatus Santos, 1947" →
- * "Dastilbe elongatus", "Dastilbe Jordan, 1910" → "Dastilbe".
- */
-export function shortTaxon(name: string): string {
-	const match = name.match(/^(.*?)[,\s]*\(?\d{4}\)?.*$/);
-	if (!match?.[1]) return name;
-	const words = match[1].trim().split(/\s+/);
-	if (words.length >= 3) return words.slice(0, 2).join(" ");
-	if (words[1] && /^[A-Z]/.test(words[1])) return words[0] ?? name;
-	return words.join(" ");
 }
 
 /** The most specific name of each record, counted, to summarise what's there. */
