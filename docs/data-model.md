@@ -104,5 +104,9 @@ col.find({
 | `lat` | number | `-7.25` |
 | `radiusKm` | number, 0 < r ≤ 1000 | `150` |
 | `site` | slug? | `undefined` |
+| `tab` | `overview` \| `model`? | `undefined` (overview) |
+| `model` | int ≥ 0? | `undefined` (first model); out-of-range indexes fall back to 0 |
+
+`tab` and `model` hold the drawer's UI state, so a shared link opens the same tab and model. Default values are left out of the URL, and both are cleared when another geosite is selected or the drawer closes.
 
 Every field uses `z.coerce` + `.catch()`, so a hand-edited or stale URL never errors: it falls back to the defaults.

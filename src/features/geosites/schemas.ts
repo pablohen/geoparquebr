@@ -190,12 +190,19 @@ export type NearbyGeositesQuery = z.input<typeof NearbyGeositesQuerySchema>;
 /** Default map centre: Chapada do Araripe, Brazil's first UNESCO Global Geopark. */
 export const DEFAULT_CENTER = { lng: -39.6, lat: -7.25 } as const;
 
+export const DrawerTabSchema = z.enum(["overview", "model"]);
+export type DrawerTab = z.infer<typeof DrawerTabSchema>;
+
 /** URL search params for the explorer route (coerced, since URLs are strings). */
 export const ExplorerSearchSchema = z.object({
 	lng: z.coerce.number().pipe(LongitudeSchema).catch(DEFAULT_CENTER.lng),
 	lat: z.coerce.number().pipe(LatitudeSchema).catch(DEFAULT_CENTER.lat),
 	radiusKm: z.coerce.number().positive().max(1_000).catch(150),
 	site: SlugSchema.optional().catch(undefined),
+	/** Drawer tab; omitted means "overview". */
+	tab: DrawerTabSchema.optional().catch(undefined),
+	/** Index into the geosite's `models`; omitted means 0. */
+	model: z.coerce.number().int().nonnegative().optional().catch(undefined),
 });
 export type ExplorerSearch = z.infer<typeof ExplorerSearchSchema>;
 

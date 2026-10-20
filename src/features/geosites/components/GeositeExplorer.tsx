@@ -34,7 +34,8 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	const selected = geosites.find((g) => g.slug === search.site) ?? null;
 
 	const select = (slug: string) => {
-		onSearchChange({ site: slug });
+		// A different geosite starts on its overview tab.
+		onSearchChange({ site: slug, tab: undefined, model: undefined });
 		closeNav();
 	};
 
@@ -117,7 +118,11 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 
 			<GeositeDrawer
 				geosite={selected}
-				onClose={() => onSearchChange({ site: undefined })}
+				view={{ tab: search.tab, model: search.model }}
+				onViewChange={(view) => onSearchChange(view)}
+				onClose={() =>
+					onSearchChange({ site: undefined, tab: undefined, model: undefined })
+				}
 			/>
 		</AppShell>
 	);

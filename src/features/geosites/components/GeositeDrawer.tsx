@@ -15,8 +15,10 @@ import {
 } from "@mantine/core";
 import { Cube, Info } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, type ReactNode, Suspense, useState } from "react";
+import { lazy, type ReactNode, Suspense } from "react";
 import {
+	type DrawerTab,
+	DrawerTabSchema,
 	GEOPARK_LABELS,
 	GEOSITE_CATEGORY_LABELS,
 	type Geosite,
@@ -29,12 +31,17 @@ import { CATEGORY_COLORS, formatDistance } from "./categoryStyle";
 // three.js + R3F (~600 kB) only load when someone opens the 3D tab.
 const ModelViewer = lazy(() => import("./ModelViewer"));
 
+/** Drawer UI state, owned by the route's search params so it survives reloads and links. */
+type DrawerView = { tab?: DrawerTab; model?: number };
+
 type Props = {
 	geosite: GeositeWithDistance | null;
+	view: DrawerView;
+	onViewChange: (next: DrawerView) => void;
 	onClose: () => void;
 };
 
-export function GeositeDrawer({ geosite, onClose }: Props) {
+export function GeositeDrawer({ geosite, view, onViewChange, onClose }: Props) {
 	return (
 		<Drawer
 			opened={geosite !== null}
@@ -55,13 +62,35 @@ export function GeositeDrawer({ geosite, onClose }: Props) {
 			}
 		>
 			{/* `key` resets tab/model state when switching between geosites. */}
-			{geosite && <GeositeDetail key={geosite.id} geosite={geosite} />}
+			{geosite && (
+				<GeositeDetail
+					geosite={geosite}
+					view={view}
+					onViewChange={onViewChange}
+				/>
+			)}
 		</Drawer>
 	);
 }
 
-function GeositeDetail({ geosite }: { geosite: GeositeWithDistance }) {
-	const [tab, setTab] = useState<string | null>("overview");
+function GeositeDetail({
+	geosite,
+	view,
+	onViewChange,
+}: {
+	geosite: GeositeWithDistance;
+	view: DrawerView;
+	onViewChange: (next: DrawerView) => void;
+}) {
+	const tab = view.tab ?? "overview";
+	// Default values are omitted from the URL to keep links short.
+	const setTab = (value: string | null) => {
+		const parsed = DrawerTabSchema.safeParse(value);
+		if (parsed.success)
+			onViewChange({
+				tab: parsed.data === "overview" ? undefined : parsed.data,
+			});
+	};
 
 	return (
 		<Tabs value={tab} onChange={setTab} keepMounted={false}>
@@ -78,7 +107,13 @@ function GeositeDetail({ geosite }: { geosite: GeositeWithDistance }) {
 				<Overview geosite={geosite} />
 			</Tabs.Panel>
 			<Tabs.Panel value="model">
-				<ModelsPanel models={geosite.models} />
+				<ModelsPanel
+					models={geosite.models}
+					index={view.model ?? 0}
+					onIndexChange={(i) =>
+						onViewChange({ model: i === 0 ? undefined : i })
+					}
+				/>
 			</Tabs.Panel>
 		</Tabs>
 	);
@@ -145,16 +180,25 @@ function formatAge(age: NonNullable<Geosite["geologicAge"]>): string {
 	return [age.period, age.formation].filter(Boolean).join(" — ") + range;
 }
 
-function ModelsPanel({ models }: { models: Model3D[] }) {
-	const [index, setIndex] = useState("0");
-	const model = models[Number(index)];
+function ModelsPanel({
+	models,
+	index: requested,
+	onIndexChange,
+}: {
+	models: Model3D[];
+	index: number;
+	onIndexChange: (index: number) => void;
+}) {
+	// A stale/hand-edited ?model= past the end falls back to the first model.
+	const index = requested < models.length ? requested : 0;
+	const model = models[index];
 
 	return (
 		<Stack>
 			{models.length > 1 && (
 				<SegmentedControl
-					value={index}
-					onChange={setIndex}
+					value={String(index)}
+					onChange={(v) => onIndexChange(Number(v))}
 					data={models.map((m, i) => ({ value: String(i), label: m.title }))}
 				/>
 			)}
