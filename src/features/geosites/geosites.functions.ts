@@ -6,6 +6,7 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { cached } from "~/lib/cache.server";
 import { findGeositeBySlug, findGeositesInBounds } from "./geosites.server";
 import { GeositesInBoundsQuerySchema } from "./schemas";
 
@@ -19,4 +20,33 @@ export const getGeositeBySlug = createServerFn({ method: "GET" })
 		const geosite = await findGeositeBySlug(data.slug);
 		if (!geosite) throw notFound();
 		return geosite;
+	});
+
+/** ~2% of GEOSSIT photo links 404; never put a dead image in a share preview. */
+async function imageIsReachable(url: string): Promise<boolean> {
+	return cached(`image-ok:v1:${url}`, 7 * 24 * 60 * 60 * 1_000, async () => {
+		try {
+			const res = await fetch(url, {
+				method: "HEAD",
+				signal: AbortSignal.timeout(5_000),
+			});
+			return (
+				res.ok && (res.headers.get("content-type") ?? "").startsWith("image/")
+			);
+		} catch {
+			return false;
+		}
+	}).catch(() => false);
+}
+
+/** Geosite page data: the record plus whether its photo can be shared. */
+export const getGeositePage = createServerFn({ method: "GET" })
+	.validator(z.object({ slug: z.string().min(1) }))
+	.handler(async ({ data }) => {
+		const geosite = await findGeositeBySlug(data.slug);
+		if (!geosite) throw notFound();
+		const shareImageOk = geosite.coverImageUrl
+			? await imageIsReachable(geosite.coverImageUrl)
+			: false;
+		return { geosite, shareImageOk };
 	});

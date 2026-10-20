@@ -290,3 +290,18 @@ export async function findGeositeBySlug(slug: string): Promise<Geosite | null> {
 	const doc = await col.findOne({ slug });
 	return doc ? toDto(doc) : null;
 }
+
+/** Every geosite's slug and last update, for the sitemap. */
+export async function listGeositeSlugs(): Promise<
+	{ slug: string; updatedAt: string }[]
+> {
+	const col = await geositesCollection();
+	const docs = await col
+		.find({}, { projection: { _id: 0, slug: 1, updatedAt: 1 } })
+		.sort({ slug: 1 })
+		.toArray();
+	return docs.map((d) => ({
+		slug: d.slug,
+		updatedAt: d.updatedAt.toISOString(),
+	}));
+}

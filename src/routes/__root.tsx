@@ -17,6 +17,7 @@ import {
 } from "@tanstack/react-router";
 import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
 import type { ReactNode } from "react";
+import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "~/lib/site";
 import { theme } from "~/theme";
 
 /**
@@ -35,11 +36,16 @@ export const Route = createRootRoute({
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{ title: "GeoparqueBR — Geoparques Mundiais da UNESCO no Brasil" },
-			{
-				name: "description",
-				content:
-					"Explore geossítios, estratos, fósseis e cavernas cársticas dos geoparques brasileiros.",
-			},
+			{ name: "description", content: SITE_DESCRIPTION },
+			{ name: "theme-color", content: "#1f1f22" },
+			// Share-preview defaults; geosite pages override title/description/image/url.
+			{ property: "og:site_name", content: SITE_NAME },
+			{ property: "og:locale", content: "pt_BR" },
+			{ property: "og:type", content: "website" },
+			{ property: "og:title", content: SITE_NAME },
+			{ property: "og:description", content: SITE_DESCRIPTION },
+			{ property: "og:image", content: DEFAULT_OG_IMAGE },
+			{ name: "twitter:card", content: "summary_large_image" },
 		],
 		links: [
 			{ rel: "stylesheet", href: mantineCss },

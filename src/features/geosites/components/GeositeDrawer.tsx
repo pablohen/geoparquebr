@@ -1,6 +1,7 @@
 import { Center, Drawer, Loader, Stack, Text, Title } from "@mantine/core";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import type { Geosite } from "../schemas";
+import { GeositeActions } from "./GeositeActions";
 import { GeositeDetail, type GeositeView, geoparkLabel } from "./GeositeDetail";
 
 type Props = {
@@ -32,13 +33,14 @@ export function GeositeDrawer({
 			radius={isMobile ? "lg" : 0}
 			title={
 				geosite && (
-					<Stack gap={2}>
+					<Stack gap={6}>
 						<Title order={2} size="h3" fz={{ base: "h4", sm: "h3" }}>
 							{geosite.name}
 						</Title>
 						<Text size="sm" c="dimmed">
 							{geoparkLabel(geosite)}
 						</Text>
+						<GeositeActions geosite={geosite} context="drawer" />
 					</Stack>
 				)
 			}
