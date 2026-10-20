@@ -5,7 +5,7 @@
 import type { Collection, Filter, ObjectId } from "mongodb";
 import type { z } from "zod";
 import { getDb } from "~/lib/db.server";
-import { bboxCenter, bboxPolygon } from "~/lib/geo";
+import { bboxCenter, bboxPolygon, haversineMeters } from "~/lib/geo";
 import {
 	type Geosite,
 	type GeositeInputSchema,
@@ -117,6 +117,16 @@ function obfuscate([lng, lat]: [number, number]): [number, number] {
 	return [Math.round(lng * 100) / 100, Math.round(lat * 100) / 100];
 }
 
+/** Coordinates as the client may see them: rounded for sensitive sites. */
+export function publicPoint(doc: {
+	location: { coordinates: [number, number] };
+	locationIsSensitive: boolean;
+}): [number, number] {
+	return doc.locationIsSensitive
+		? obfuscate(doc.location.coordinates)
+		: doc.location.coordinates;
+}
+
 function toDto<T extends GeositeDoc>(
 	doc: T,
 ): Omit<T, "_id" | "createdAt" | "updatedAt"> & {
@@ -151,7 +161,7 @@ const SUMMARY_FIELDS = {
 	distanceMeters: 1,
 } as const;
 
-type SummaryDoc = Pick<
+export type SummaryDoc = Pick<
 	GeositeDoc,
 	Exclude<keyof typeof SUMMARY_FIELDS, "distanceMeters">
 > & {
@@ -283,6 +293,69 @@ export async function findGeositeLocation(
 	return doc
 		? { point: doc.location.coordinates, sensitive: doc.locationIsSensitive }
 		: null;
+}
+
+/** How many nearby geosites to fetch around one geosite, and how far out. */
+const NEARBY_CANDIDATES = 20;
+const NEARBY_MAX_METERS = 300_000;
+
+/**
+ * Ranks candidates by distance between *public* coordinates, rounded to
+ * 100 m. Distances measured from or to an exact sensitive location would let
+ * a client triangulate it from a few pages, so they never are.
+ */
+export function rankNearby(
+	origin: [number, number],
+	candidates: SummaryDoc[],
+	limit: number,
+): GeositeSummary[] {
+	return candidates
+		.map(({ _id, distanceMeters: _, ...rest }) => {
+			const point = publicPoint(rest);
+			return {
+				...rest,
+				id: _id.toHexString(),
+				location: { ...rest.location, coordinates: point },
+				distanceMeters: Math.round(haversineMeters(origin, point) / 100) * 100,
+			};
+		})
+		.sort(
+			(a, b) =>
+				a.distanceMeters - b.distanceMeters || a.name.localeCompare(b.name),
+		)
+		.slice(0, limit);
+}
+
+/** The geosites closest to one geosite (itself excluded), within 300 km. */
+export async function findNearbyGeosites(
+	slug: string,
+	limit = 6,
+): Promise<GeositeSummary[] | null> {
+	const col = await geositesCollection();
+	const doc = await col.findOne(
+		{ slug },
+		{ projection: { location: 1, locationIsSensitive: 1 } },
+	);
+	if (!doc) return null;
+	const origin = publicPoint(doc);
+	// $geoNear only shortlists; rankNearby re-measures on public coordinates.
+	const candidates = await col
+		.aggregate<SummaryDoc>([
+			{
+				$geoNear: {
+					near: { type: "Point", coordinates: origin },
+					key: "location",
+					spherical: true,
+					distanceField: "distanceMeters",
+					maxDistance: NEARBY_MAX_METERS,
+					query: { slug: { $ne: slug } },
+				},
+			},
+			{ $limit: NEARBY_CANDIDATES },
+			{ $project: SUMMARY_FIELDS },
+		])
+		.toArray();
+	return rankNearby(origin, candidates, limit);
 }
 
 export async function findGeositeBySlug(slug: string): Promise<Geosite | null> {

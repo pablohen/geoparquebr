@@ -234,6 +234,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 				status={detail.status}
 				view={{ tab: search.tab, model: search.model }}
 				onViewChange={(view) => onSearchChange(view)}
+				onSelectGeosite={select}
 				onClose={() =>
 					onSearchChange({ site: undefined, tab: undefined, model: undefined })
 				}

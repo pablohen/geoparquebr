@@ -1,4 +1,5 @@
 import type { MantineColor } from "@mantine/core";
+import { getLocale } from "~/paraglide/runtime.js";
 import type { GeositeCategory } from "../schemas";
 
 export const CATEGORY_COLORS = {
@@ -21,8 +22,11 @@ export const CATEGORY_COLORS = {
 	historical: "gray",
 } as const satisfies Record<GeositeCategory, MantineColor>;
 
+/** "850 m", "3,2 km" / "3.2 km", "42 km", in the current locale. */
 export function formatDistance(meters: number): string {
-	return meters < 1_000
-		? `${Math.round(meters)} m`
-		: `${(meters / 1_000).toFixed(meters < 10_000 ? 1 : 0)} km`;
+	if (meters < 1_000) return `${Math.round(meters)} m`;
+	const km = new Intl.NumberFormat(getLocale(), {
+		maximumFractionDigits: meters < 10_000 ? 1 : 0,
+	}).format(meters / 1_000);
+	return `${km} km`;
 }

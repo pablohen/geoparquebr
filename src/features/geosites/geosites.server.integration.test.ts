@@ -10,6 +10,7 @@ import {
 	findGeositeBySlug,
 	findGeositeLocation,
 	findGeositesInBounds,
+	findNearbyGeosites,
 	geositesCollection,
 	searchGeosites,
 	syncSourcedGeosites,
@@ -181,5 +182,17 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		await expect(syncSourcedGeosites(col, "geossit", [])).rejects.toThrow(
 			/refusing/,
 		);
+	});
+
+	it("lists nearby geosites without itself, using public coordinates", async () => {
+		const nearby = await findNearbyGeosites("centro");
+		const slugs = nearby?.map((g) => g.slug);
+		expect(slugs).not.toContain("centro");
+		// Brasília is ~1 300 km away, beyond the 300 km cut-off.
+		expect(slugs).not.toContain("longe");
+		const cave = nearby?.find((g) => g.slug === "sensivel");
+		expect(cave?.location.coordinates).toEqual([-39.12, -7.65]);
+		expect(cave && cave.distanceMeters % 100).toBe(0);
+		expect(await findNearbyGeosites("nao-existe")).toBeNull();
 	});
 });

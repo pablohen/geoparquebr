@@ -48,6 +48,7 @@ import {
 } from "../schemas";
 import { CATEGORY_COLORS } from "./categoryStyle";
 import type { StrataLayer } from "./ModelViewer";
+import { NearbyGeosites } from "./NearbyGeosites";
 import { SketchfabEmbed } from "./SketchfabEmbed";
 
 // three.js + R3F (~600 kB) only load when a self-hosted model or the strata fallback is shown.
@@ -74,10 +75,13 @@ export function GeositeDetail({
 	geosite,
 	view,
 	onViewChange,
+	onSelectGeosite,
 }: {
 	geosite: Geosite;
 	view: GeositeView;
 	onViewChange: (next: GeositeView) => void;
+	/** Opens another geosite in place (the map drawer); else nearby ones link to their pages. */
+	onSelectGeosite?: (slug: string) => void;
 }) {
 	const isMobile = useIsMobile();
 	const tab = view.tab ?? "overview";
@@ -110,7 +114,7 @@ export function GeositeDetail({
 			</Tabs.List>
 
 			<Tabs.Panel value="overview">
-				<Overview geosite={geosite} />
+				<Overview geosite={geosite} onSelectGeosite={onSelectGeosite} />
 			</Tabs.Panel>
 			<Tabs.Panel value="model">
 				<ModelsPanel
@@ -129,7 +133,13 @@ export function GeositeDetail({
 	);
 }
 
-function Overview({ geosite }: { geosite: Geosite }) {
+function Overview({
+	geosite,
+	onSelectGeosite,
+}: {
+	geosite: Geosite;
+	onSelectGeosite?: (slug: string) => void;
+}) {
 	const [lng, lat] = geosite.location.coordinates;
 	return (
 		<Stack>
@@ -205,6 +215,7 @@ function Overview({ geosite }: { geosite: Geosite }) {
 			</Table>
 
 			{geosite.scores && <Scores scores={geosite.scores} />}
+			<NearbyGeosites slug={geosite.slug} onSelect={onSelectGeosite} />
 			{geosite.source && <SourceCredit source={geosite.source} />}
 		</Stack>
 	);

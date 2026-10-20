@@ -13,6 +13,7 @@ type Props = {
 	status: "idle" | "pending" | "success" | "error";
 	view: GeositeView;
 	onViewChange: (next: GeositeView) => void;
+	onSelectGeosite: (slug: string) => void;
 	onClose: () => void;
 };
 
@@ -22,6 +23,7 @@ export function GeositeDrawer({
 	status,
 	view,
 	onViewChange,
+	onSelectGeosite,
 	onClose,
 }: Props) {
 	// A bottom sheet on phones keeps a strip of map in view; a side panel on desktop.
@@ -52,6 +54,7 @@ export function GeositeDrawer({
 					geosite={geosite}
 					view={view}
 					onViewChange={onViewChange}
+					onSelectGeosite={onSelectGeosite}
 				/>
 			) : status === "error" ? (
 				<Text c="dimmed">{m.drawer_not_found()}</Text>

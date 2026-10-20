@@ -7,7 +7,11 @@ import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { cached } from "~/lib/cache.server";
-import { findGeositeBySlug, findGeositesInBounds } from "./geosites.server";
+import {
+	findGeositeBySlug,
+	findGeositesInBounds,
+	findNearbyGeosites,
+} from "./geosites.server";
 import { GeositesInBoundsQuerySchema } from "./schemas";
 
 export const getGeositesInBounds = createServerFn({ method: "GET" })
@@ -20,6 +24,15 @@ export const getGeositeBySlug = createServerFn({ method: "GET" })
 		const geosite = await findGeositeBySlug(data.slug);
 		if (!geosite) throw notFound();
 		return geosite;
+	});
+
+/** Geosites around one geosite, nearest first, for "Perto daqui". */
+export const getNearbyGeosites = createServerFn({ method: "GET" })
+	.validator(z.object({ slug: z.string().min(1) }))
+	.handler(async ({ data }) => {
+		const nearby = await findNearbyGeosites(data.slug);
+		if (!nearby) throw notFound();
+		return nearby;
 	});
 
 /** ~2% of GEOSSIT photo links 404; never put a dead image in a share preview. */
