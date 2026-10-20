@@ -15,6 +15,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
+import { SearchBox } from "~/features/search/components/SearchBox";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
 import { useServerQuery } from "~/lib/use-server-query";
 import { getGeositeBySlug } from "../geosites.functions";
@@ -98,7 +99,17 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							GeoparqueBR
 						</Title>
 					</Group>
-					<ColorSchemeToggle />
+					<Group gap="xs" wrap="nowrap">
+						<SearchBox
+							onSelectGeosite={select}
+							onSelectPlace={(place) =>
+								onSearchChange({
+									bbox: roundBBox(place.bbox ?? bboxAround(place.point, 15)),
+								})
+							}
+						/>
+						<ColorSchemeToggle />
+					</Group>
 				</Group>
 			</AppShell.Header>
 

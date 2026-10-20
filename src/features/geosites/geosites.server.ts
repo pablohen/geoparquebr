@@ -9,6 +9,7 @@ import { bboxCenter, bboxPolygon } from "~/lib/geo";
 import {
 	type Geosite,
 	type GeositeInputSchema,
+	type GeositeSearchHit,
 	type GeositeSummary,
 	type GeositesInBoundsQuery,
 	GeositesInBoundsQuerySchema,
@@ -39,6 +40,13 @@ export async function ensureGeositeIndexes(col: Collection<GeositeDoc>) {
 			name: "source_unique",
 			unique: true,
 			partialFilterExpression: { "source.id": { $exists: true } },
+		},
+		{
+			// One text index per collection; diacritic-insensitive (v3).
+			key: { name: "text", municipality: "text", description: "text" },
+			name: "text_search",
+			weights: { name: 10, municipality: 5, description: 1 },
+			default_language: "portuguese",
 		},
 	]);
 }
@@ -194,6 +202,70 @@ export async function findGeositesInBounds(
 			? { ...location, coordinates: obfuscate(location.coordinates) }
 			: location,
 	}));
+}
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const stripAccents = (s: string) =>
+	s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+
+/**
+ * Free-text search for the search box. MongoDB text search matches whole
+ * (stemmed) words only, so a case-insensitive substring match on name,
+ * municipality and abstract tops it up for partial input like "ptero".
+ * GEOSSIT text is mostly unaccented, hence the accent stripping.
+ */
+export async function searchGeosites(
+	q: string,
+	limit = 8,
+): Promise<GeositeSearchHit[]> {
+	const col = await geositesCollection();
+	const projection = {
+		_id: 0,
+		slug: 1,
+		name: 1,
+		municipality: 1,
+		state: 1,
+		categories: 1,
+	} as const;
+
+	const byText = await col
+		.find(
+			{ $text: { $search: q } },
+			{ projection: { ...projection, score: { $meta: "textScore" } } },
+		)
+		.sort({ score: { $meta: "textScore" } })
+		.limit(limit)
+		.toArray();
+
+	const seen = new Set(byText.map((d) => d.slug));
+	const pattern = escapeRegex(stripAccents(q.trim()));
+	const byName =
+		byText.length < limit
+			? await col
+					.find(
+						{
+							slug: { $nin: [...seen] },
+							$or: (["name", "municipality", "description"] as const).map(
+								(field) => ({
+									[field]: { $regex: pattern, $options: "i" },
+								}),
+							),
+						},
+						{ projection },
+					)
+					.limit(limit - byText.length)
+					.toArray()
+			: [];
+
+	return [...byText, ...byName].map(
+		({ slug, name, municipality, state, categories }) => ({
+			slug,
+			name,
+			municipality,
+			state,
+			categories,
+		}),
+	);
 }
 
 /**

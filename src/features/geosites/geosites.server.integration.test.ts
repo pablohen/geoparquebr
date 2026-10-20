@@ -11,6 +11,7 @@ import {
 	findGeositeLocation,
 	findGeositesInBounds,
 	geositesCollection,
+	searchGeosites,
 	syncSourcedGeosites,
 } from "./geosites.server";
 import { GeositeInputSchema } from "./schemas";
@@ -42,7 +43,10 @@ function geosite(
 }
 
 const sites = [
-	geosite(1, "centro", [-39.5, -7.1]),
+	geosite(1, "centro", [-39.5, -7.1], {
+		name: "Pedreira Central",
+		description: "Calcários com pterossauros e peixes fósseis.",
+	}),
 	geosite(2, "leste", [-38.6, -7.0], {
 		categories: ["speleological"],
 		relevance: "international",
@@ -132,6 +136,23 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		expect(all.map((g) => g.slug).sort()).toEqual(
 			["centro", "leste", "longe", "sensivel"].sort(),
 		);
+	});
+
+	it("searches by whole words (stemmed) and by partial input", async () => {
+		expect((await searchGeosites("pterossauro")).map((g) => g.slug)).toEqual([
+			"centro",
+		]);
+		expect((await searchGeosites("ptero")).map((g) => g.slug)).toEqual([
+			"centro",
+		]);
+		expect((await searchGeosites("pedreira")).map((g) => g.slug)).toEqual([
+			"centro",
+		]);
+		expect(await searchGeosites("inexistente")).toEqual([]);
+	});
+
+	it("treats regex characters in the query literally", async () => {
+		await expect(searchGeosites("(.*")).resolves.toEqual([]);
 	});
 
 	it("re-syncs idempotently and prunes records dropped upstream", async () => {

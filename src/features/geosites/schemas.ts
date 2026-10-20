@@ -305,6 +305,15 @@ export const GeositeSummarySchema = GeositeSchema.pick({
 });
 export type GeositeSummary = z.infer<typeof GeositeSummarySchema>;
 
+export const GeositeSearchHitSchema = GeositeSchema.pick({
+	slug: true,
+	name: true,
+	municipality: true,
+	state: true,
+	categories: true,
+});
+export type GeositeSearchHit = z.infer<typeof GeositeSearchHitSchema>;
+
 export const DrawerTabSchema = z.enum(["overview", "model", "fossils"]);
 export type DrawerTab = z.infer<typeof DrawerTabSchema>;
 
