@@ -11,7 +11,11 @@ Each geosite can carry up to 20 `models`, shown in the drawer's **Modelo 3D** ta
 | `sketchfab` | [`SketchfabEmbed`](../src/features/geosites/components/SketchfabEmbed.tsx): Sketchfab's own iframe viewer (`dnt=1`) | view-only models we may display but not redistribute, and CC BY models not downloaded yet |
 | `gltf` | [`ModelViewer`](../src/features/geosites/components/ModelViewer.tsx): React Three Fiber | self-hosted GLBs in `public/models/`, or any HTTPS URL with CORS |
 
-The three.js chunk (~270 kB gzip) loads only when a `gltf` model, or the strata fallback, is on screen; Sketchfab embeds don't need it. With no models at all, the viewer draws an **illustrative stratigraphic column**.
+The three.js chunk (~270 kB gzip) loads only when a `gltf` model or a strata column is on screen; Sketchfab embeds don't need it.
+
+## Strata column
+
+Every geosite's model picker ends with **"Coluna estratigráfica (mapa do SGB)"**. For geosites without scans, it's the only entry. The column is built from the lithostratigraphic units the SGB has mapped within ~3 km (see [data model → geology lookups](data-model.md#geology-lookups)). Bands are ordered youngest (top) → oldest (base) and coloured with ICS colours. All bands get equal thickness, which is illustrative because the map has no thickness data, and the caption says so. If nothing is mapped or the service is down, the viewer falls back to an illustrative Araripe column and says that instead.
 
 ### Shared fields
 

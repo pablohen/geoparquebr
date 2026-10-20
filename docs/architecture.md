@@ -38,29 +38,33 @@ The TanStack Start compiler replaces each `createServerFn(...).handler(...)` bod
 
 ## Request lifecycle
 
-What happens on `GET /?lng=-39.6&lat=-7.25&radiusKm=150&site=pedra-cariri`:
+What happens on `GET /?bbox=[…]&cat=["paleontological"]&site=pedra-cariri&tab=fossils`:
 
 ```mermaid
 sequenceDiagram
   participant B as Browser
   participant R as Router (SSR or client)
-  participant F as getNearbyGeosites
+  participant F as getGeositesInBounds
+  participant D as getGeositeBySlug / getGeositeFossils
   participant M as MongoDB
+  participant X as SGB / GBIF
 
   B->>R: navigate with search params
   R->>R: validateSearch(ExplorerSearchSchema)<br/>bad values fall back via .catch()
-  R->>R: loaderDeps = { lng, lat, radiusKm }<br/>(site is not a dep)
-  R->>F: getNearbyGeosites({ data: deps })
-  F->>F: .validator(NearbyGeositesQuerySchema)
-  F->>M: aggregate([$geoNear, $limit])
-  M-->>F: docs + distanceMeters
-  F-->>R: GeositeWithDistance[] (toDto)
-  R-->>B: render Explorer; drawer opens for ?site
+  R->>F: loaderDeps = { bbox, cat, rel, gp }
+  F->>M: $geoNear + $geoWithin(bbox) + filters
+  M-->>F: summaries + distanceMeters
+  F-->>R: GeositeSummary[]
+  R-->>B: render list + clustered map
+  B->>D: useServerQuery("geosite:<slug>"), then the tab's lookup
+  D->>M: findGeositeBySlug / findGeositeLocation
+  D->>X: fossils / strata (cache miss only)
+  D-->>B: drawer content
 ```
 
-- On first load this runs on the server and streams HTML. Later navigations call the server function over HTTP from the client.
-- Changing `site` (opening or closing the drawer) does **not** re-run the loader, because `site` is left out of `loaderDeps`.
-- "Buscar nesta área", the location form and "Minha posição" all just update search params. The loader does the rest.
+- On first load the list query runs on the server and streams HTML. Later navigations call the server function over HTTP from the client.
+- Panning or zooming the map replaces `bbox` in the URL, which re-runs only the list query. The route sets `pendingMs: Infinity`, so the current list stays on screen meanwhile.
+- The drawer and its tabs use [`useServerQuery`](../src/lib/use-server-query.ts), a tiny keyed promise cache. Opening a geosite or switching tabs therefore never re-runs the list loader, and returning to a site is instant.
 
 ## UI composition
 
@@ -68,17 +72,20 @@ sequenceDiagram
 GeositeExplorer (AppShell)
 ├── Header: brand, color-scheme toggle
 ├── Navbar
-│   ├── LocationForm      RHF + zodResolver(LocationFormSchema)
-│   └── GeositeList       NavLink per geosite, category badges, distance
+│   ├── LocationForm      RHF + zodResolver: jump the viewport to a point + radius
+│   ├── GeositeFilters    themes / relevance / UNESCO geopark → cat, rel, gp
+│   └── GeositeList       summaries in the viewport, nearest to centre first
 ├── Main
-│   └── <ClientOnly> GeositeMap (lazy)   GeoJSON source + circle layer
-└── GeositeDrawer         Mantine Drawer, opened by ?site=
-    ├── Overview tab
-    └── 3D tab ─┬─ SketchfabEmbed               iframe, for provider: "sketchfab"
-                └─ <ClientOnly> ModelViewer (lazy)  R3F Canvas, for provider: "gltf" / strata fallback
+│   └── <ClientOnly> GeositeMap (lazy)   clustered GeoJSON source; owns the viewport
+└── GeositeDrawer         opened by ?site=, loads the full geosite by slug
+    ├── Visão geral       GEOSSIT data, photo, scores, credit
+    ├── Fósseis           FossilsPanel: SGB + GBIF occurrences within 5 km
+    └── Modelo 3D ─┬─ SketchfabEmbed                iframe, provider: "sketchfab"
+                   ├─ <ClientOnly> ModelViewer      R3F, provider: "gltf"
+                   └─ <ClientOnly> ModelViewer      mapped strata column (or illustrative)
 ```
 
-`GeositeExplorer` is presentational. It receives `geosites`, `search` and an `onSearchChange` callback from the route, so the route stays the only owner of URL state.
+`GeositeExplorer` is presentational. It receives `geosites`, `search` and an `onSearchChange(next, { replace })` callback from the route, so the route stays the only owner of URL state.
 
 ## Data pipeline
 

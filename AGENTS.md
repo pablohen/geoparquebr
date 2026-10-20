@@ -49,10 +49,11 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm build`. 
 ## Domain invariants
 
 - GeoJSON coordinates are **`[longitude, latitude]`**, the reverse of most map UIs. `PositionSchema` enforces the ranges.
-- Distances are stored and returned in **metres** (`distanceMeters`); radii in the UI and URL are **kilometres** (`radiusKm`).
+- The map viewport is the URL's `bbox` (`[west, south, east, north]`). Distances are in **metres** (`distanceMeters`, from the box centre); radii in forms and lookups are **kilometres**.
 - `_id` and `Date` never leave the server. Map documents through `toDto` in `geosites.server.ts`, which returns `id: string` and ISO-string dates.
 - Geosites with `locationIsSensitive: true` (fragile caves, fossil beds) get their coordinates rounded to about 1 km in `toDto`. Never add a code path that returns their exact coordinates to the client.
-- Nearby queries use the `$geoNear` aggregation stage, because it returns the distance. It must be the first pipeline stage and needs the `location_2dsphere` index.
+- The list query is `$geoNear` (first stage, needs `location_2dsphere`) with `$geoWithin` on a densified box polygon in its `query`. Return summaries only; the drawer fetches the full geosite by slug.
+- Per-geosite lookups (fossils, strata) take a **slug** and resolve exact coordinates server-side via `findGeositeLocation`. Never accept coordinates from the client for them, and never return exact coordinates of sensitive sites.
 - User-facing text is **Brazilian Portuguese**. Enum values stay English slugs, with pt-BR label maps (`GEOSITE_CATEGORY_LABELS`, `GEOPARK_LABELS`, `RELEVANCE_LABELS`, `DEGRADATION_RISK_LABELS`). Show labels, never raw enum values.
 
 ## External data
@@ -63,12 +64,16 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm build`. 
 - Credit sources in the UI: GEOSSIT (with a link to the site's GEOSSIT page) and each 3D model's `attribution`/`license`.
 - **3D model provenance must be honest.** Only attach a model where you can justify the link, and set `provenance` (`locality` / `region` / `illustrative`) accordingly. Only CC BY models may be self-hosted; view-only ones use the Sketchfab embed. See [3D models](docs/3d-models.md).
 
+- Upstream geology APIs (SGB OGC API, GBIF) are cached in `api_cache` through `cached()` (`src/lib/cache.server.ts`). Each source must fail independently, returning `status: "unavailable"`. Bump the cache-key version when a mapping changes.
+
 ## Known gotchas
 
 - **MapLibre worker:** MapLibre 6 finds its web worker relative to its own module URL, and that breaks under Vite bundling. `GeositeMap.tsx` imports `maplibre-gl/dist/maplibre-gl-worker.mjs?url` and calls `setWorkerUrl` before creating a map. Keep that call if you refactor.
 - **MapLibre 6 has no default export.** Use named imports (`Map`, `NavigationControl`, …).
 - **No drei `<Html>`.** Each `<Html>` mounts its own React root, and React 19 logs "synchronously unmount a root" errors. Put overlays (legends, errors, loaders) in plain DOM outside the `<Canvas>`.
 - **Color-scheme script:** don't use Mantine's `<ColorSchemeScript>`, which triggers a React 19 "script tag" warning on hydration. `__root.tsx` injects the same script with TanStack's `<ScriptOnce>`.
+- **Don't gate MapLibre handlers on `map.loaded()`.** It's false whenever tiles are still streaming, i.e. right after most moves. `GeositeMap` keeps its own `ready` flag set in `on("load")`.
+- **Viewport ↔ URL loop.** The map reports moves with history *replace*, and only re-fits when the URL `bbox` differs from the last value it emitted. Keep that guard, or fit→move→navigate will loop.
 - **Map effects that need the style loaded** must also run inside `map.on("load")`. Effects that fire earlier find no layer and return early (deep-linked `?site=` relies on this).
 - **`src/routeTree.gen.ts` is generated** by the TanStack Start plugin on dev and build. It's committed, but excluded from Biome. Don't edit it by hand.
 - Env vars (`MONGODB_URI`, `MONGODB_DB`) are read with `process.env` in `*.server.ts` only. Never prefix secrets with `VITE_`.

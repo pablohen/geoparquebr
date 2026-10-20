@@ -99,6 +99,9 @@ docs/                             these docs
 | `MongoServerSelectionError` against Atlas | IP not in the Atlas network access list, or a wrong user/password |
 | React "Encountered a script tag" warning | Mantine's `ColorSchemeScript` came back; use `ScriptOnce` (see `__root.tsx`) |
 | React "synchronously unmount a root" errors | drei `<Html>` inside the Canvas; move the overlay outside the Canvas |
+| Fósseis tab says "SGB/CPRM: indisponível" | The SGB OGC API (experimental) or GBIF is down; the other source still shows. Results are cached for 7 days once fetched |
+| Strata column shows the illustrative Araripe column | No units mapped within ~3 km, or the SGB API is down (the caption says which) |
+| Stale fossil/strata data after changing a mapping | Bump the cache-key version in `geology.functions.ts`, or drop the `api_cache` collection |
 | `GEOSSIT query failed` / TLS errors during `db:seed` | `geoportal.sgb.gov.br` is down or blocked. A proxy or sandbox that intercepts TLS can break the RNP/GlobalSign chain; check with `curl -v` |
 | `Skipped GEOSSIT <id>: …` | That record failed validation and the rest still imported. Adjust the mapping or limits in `geossit.server.ts` / `schemas.ts` |
 | Geosite photo missing | About 2% of GEOSSIT photo links 404 upstream; the drawer hides them |

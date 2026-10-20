@@ -71,9 +71,12 @@ https://geoportal.sgb.gov.br/server/rest/services/gestaoterritorial/geossit/Feat
 
 `GeositeDoc` in `geosites.server.ts` is the parsed input plus `_id: ObjectId`, `createdAt: Date` (first import) and `updatedAt: Date` (the **last sync**, not the last upstream change; that's `source.updatedAt`). Absent optional fields are left out of the document entirely, because the client is configured with `ignoreUndefined`, rather than stored as `null`.
 
-### API shape (DTO)
+### API shapes (DTOs)
 
-`GeositeSchema` = input + `id: string`, with `createdAt`/`updatedAt` as ISO strings. Nearby queries return `GeositeWithDistanceSchema`, which adds `distanceMeters: number`. `toDto()` is the only path from document to DTO, and it's where sensitive coordinates get rounded.
+- `GeositeSchema` = input + `id: string`, with `createdAt`/`updatedAt` as ISO strings. The drawer loads it via `getGeositeBySlug`.
+- `GeositeSummarySchema` is the light list/map record (id, slug, name, municipality, state, categories, relevance, geoparkId, location, locationIsSensitive) plus `distanceMeters` from the centre of the queried box.
+
+`toDto()` and the summary mapper are the only paths from document to client, and they're where sensitive coordinates get rounded.
 
 ## Indexes
 
@@ -81,78 +84,88 @@ Created idempotently by `ensureGeositeIndexes()`, which `pnpm db:seed` calls:
 
 | Name | Keys | Purpose |
 | --- | --- | --- |
-| `location_2dsphere` | `{ location: "2dsphere" }` | `$geoNear`, `$geoWithin`, `$near` |
+| `location_2dsphere` | `{ location: "2dsphere" }` | `$geoNear` + `$geoWithin` viewport query |
 | `slug_unique` | `{ slug: 1 }`, unique | lookups by slug |
 | `geopark_categories` | `{ geoparkId: 1, categories: 1 }` | filtering per geopark and category |
 | `source_unique` | `{ "source.system": 1, "source.id": 1 }`, unique, partial | sync upsert key |
 
+The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own TTL index on `expiresAt`, created on first use.
+
 ## Queries
 
-### Nearby geosites: `findGeositesNear`
+### Viewport: `findGeositesInBounds`
 
 ```ts
 [
   {
     $geoNear: {
-      near: { type: "Point", coordinates: [lng, lat] },
+      near: { type: "Point", coordinates: bboxCenter(bbox) },
       key: "location",
       spherical: true,
       distanceField: "distanceMeters",
-      maxDistance: radiusKm * 1000,
-      query: categories?.length ? { categories: { $in: categories } } : {},
-    },
-  },
-  { $limit: limit },
-]
-```
-
-- Input comes from `NearbyGeositesQuerySchema`: `radiusKm` defaults to 250 (max 1000) and `limit` defaults to 50 (max 200).
-- Results are sorted by distance, nearest first.
-- `$geoNear` is used instead of `find({ $near })` because it can return the distance. It must be the first stage of the pipeline.
-
-### By slug: `findGeositeBySlug`
-
-`findOne({ slug })`. The `getGeositeBySlug` server function throws TanStack Router's `notFound()` when nothing matches.
-
-### Adding a bounding-box query (map viewport)
-
-To load everything visible on the map, use `$geoWithin` with a `$geometry` polygon built from `map.getBounds()`. It uses the same `2dsphere` index:
-
-```ts
-col.find({
-  location: {
-    $geoWithin: {
-      $geometry: {
-        type: "Polygon",
-        coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]],
+      query: {
+        location: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
+        categories: { $in: categories }, // when filtered
+        relevance,                       // when filtered
+        geoparkId,                       // when filtered
       },
     },
   },
-});
+  { $limit: limit },          // default 500, max 1000
+  { $project: SUMMARY_FIELDS },
+]
 ```
+
+- `$geoNear` must be the first stage. It provides the nearest-to-centre ordering and the distance; `$geoWithin` inside its `query` restricts results to the viewport.
+- `bboxPolygon` ([`src/lib/geo.ts`](../src/lib/geo.ts)) densifies the box edges every 1°. MongoDB treats polygon edges as geodesics, which would otherwise bow toward the pole on wide boxes.
+- Only summary fields are projected, so a Brazil-wide view (~320 sites) stays small. The map clusters them client-side.
+
+### By slug: `findGeositeBySlug`
+
+`findOne({ slug })`, called through `getGeositeBySlug`, which throws TanStack Router's `notFound()` when nothing matches. Because the drawer loads by slug, a shared link opens the right geosite even when it lies outside the viewport or the active filters.
+
+### Exact location: `findGeositeLocation`
+
+This returns the **unrounded** coordinates. It's only for server-side lookups (fossils, strata); never return its result to the client.
 
 ## URL search params (`ExplorerSearchSchema`)
 
 | Param | Type | Invalid input becomes |
 | --- | --- | --- |
-| `lng` | number | `-39.6` (Chapada do Araripe) |
-| `lat` | number | `-7.25` |
-| `radiusKm` | number, 0 < r ≤ 1000 | `250` |
+| `bbox` | `[west, south, east, north]` | `DEFAULT_BBOX` (Araripe + Rio do Peixe basin) |
+| `cat` | category[] (≥ 1) | `undefined` (all) |
+| `rel` | relevance? | `undefined` (all) |
+| `gp` | geopark id? | `undefined` (all) |
 | `site` | slug? | `undefined` |
-| `tab` | `overview` \| `model`? | `undefined` (overview) |
-| `model` | int ≥ 0? | `undefined` (first model); out-of-range indexes fall back to 0 |
+| `tab` | `overview` \| `fossils` \| `model`? | `undefined` (overview) |
+| `model` | int ≥ 0? | `undefined` (first entry); out-of-range indexes fall back to 0 |
 
-`tab` and `model` hold the drawer's UI state, so a shared link opens the same tab and model. Default values are left out of the URL, and both are cleared when another geosite is selected or the drawer closes.
+- **Map ownership.** The map writes `bbox` back on every move using history *replace*, so panning doesn't fill the back stack. It only re-fits to `bbox` when the value changes from outside (location form, back/forward).
+- **What re-runs the loader.** Only `bbox`, `cat`, `rel` and `gp` are loader deps. `site`, `tab` and `model` are drawer state, fetched separately.
+- **Drawer defaults.** Default values are left out of the URL. `tab` and `model` reset when another geosite is selected or the drawer closes.
+- **Model indexes.** `model` indexes the geosite's models, followed by the mapped strata column as the last entry.
 
-Every field uses `z.coerce` + `.catch()`, so a hand-edited or stale URL never errors: it falls back to the defaults.
+Every field uses `.catch()`, so a hand-edited or stale URL falls back to the defaults instead of erroring. Arrays are JSON-encoded by TanStack Router (e.g. `bbox=[-40.6,-7.9,-37.9,-6.3]`, URL-escaped).
 
-The drawer only opens a `site` that is among the loaded nearby results. A link whose `lng`/`lat`/`radiusKm` don't include the site shows the map without the drawer.
+## Geology lookups
 
-## Other open data sources (not imported yet)
+These are per-geosite queries to public APIs, made by server functions in [`src/features/geology/`](../src/features/geology). The client sends a **slug**, never coordinates; the server resolves the exact location itself, so sensitive sites stay private. Each source fails independently and reports `unavailable` instead of failing the request. Results are cached in the `api_cache` collection.
 
-| Source | What it adds |
+| Lookup | Source | Radius | Cache | UI |
+| --- | --- | --- | --- | --- |
+| `getGeositeFossils` | SGB OGC API `geologia/ocorrencias-fossiliferas` (bbox, then haversine filter) | 5 km | 7 days | "Fósseis" tab |
+| `getGeositeFossils` | GBIF `occurrence/search?geoDistance=…&basisOfRecord=FOSSIL_SPECIMEN` (first 100) | 5 km | 7 days | "Fósseis" tab |
+| `getGeositeStrata` | SGB OGC API `geologia/litoestratigrafia/{25000…1000000}` with `skipGeometry` | ~3 km box | 30 days | 3D tab, "Coluna estratigráfica" |
+
+**Fossil records.** Taxa recorded in ALL CAPS are sentence-cased. Comma-separated authorship years ("Dastilbe elongatus Santos, 1947") are kept with their name rather than split into fake taxa. For sensitive geosites, distances are rounded to whole kilometres. GBIF licences vary per record (CC0 / CC-BY / CC-BY-NC), and each card shows its own.
+
+**Strata.** Detailed scales cover only parts of Brazil. The lookup uses the most detailed scale with any unit and falls back to 1:1,000,000, which covers the whole country. Units are deduplicated by code and ordered youngest (top) → oldest (base), coloured with ICS colours by mid-age ([`time-scale.ts`](../src/features/geology/time-scale.ts)). The map has no thickness data, so the column's thicknesses are illustrative, and the UI says so.
+
+Cache keys are versioned (`fossils:sgb:v2:<slug>`). Bump the version when the mapping changes, so stale entries are ignored and expire on their own.
+
+## Other open data sources (not used yet)
+
+| Source | What it would add |
 | --- | --- |
-| SGB OGC API `geologia/ocorrencias-fossiliferas` (`https://geoservicos.sgb.gov.br/ogcapi`) | fossil occurrences: taxon, holotype status, collection number, formation, bibliography |
-| SGB OGC API `geologia/litoestratigrafia/{1000000…25000}` | lithostratigraphic unit polygons with ages; could replace the illustrative strata column |
-| GBIF Occurrence API (`basisOfRecord=FOSSIL_SPECIMEN`) | museum specimens with CC-BY photos |
-| Overpass (`natural=cave_entrance`) | cave entrances from OpenStreetMap |
+| Overpass (`natural=cave_entrance`) | ~590 cave entrances in Brazil from OpenStreetMap |
+| SGB ArcGIS `geologia/*` MapServers | geology map tiles for a map overlay |
