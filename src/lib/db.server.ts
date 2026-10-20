@@ -18,6 +18,9 @@ function connect(): Promise<MongoClient> {
 	const client = new MongoClient(requireEnv("MONGODB_URI"), {
 		appName: "geoparquebr",
 		maxPoolSize: 20,
+		// Fail well within the 30 s function limit instead of the driver's
+		// 30 s default when the cluster is unreachable.
+		serverSelectionTimeoutMS: 10_000,
 		// Zod outputs omit absent optionals as `undefined`; don't store them as null.
 		ignoreUndefined: true,
 	});
