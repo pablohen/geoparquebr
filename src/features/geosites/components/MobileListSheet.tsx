@@ -88,7 +88,7 @@ export function MobileListSheet({
 						aria-expanded={controlsOpen}
 					>
 						<Group justify="space-between">
-							<Text size="sm" fw={500}>
+							<Text size="sm" fw={500} component="div">
 								{m.sheet_controls()}
 								{filtered && (
 									<Badge size="xs" ml={6} variant="light">
