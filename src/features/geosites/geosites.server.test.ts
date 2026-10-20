@@ -1,7 +1,12 @@
 import { ObjectId } from "mongodb";
 import { describe, expect, it } from "vitest";
 import { haversineMeters } from "~/lib/geo";
-import { publicPoint, rankNearby, type SummaryDoc } from "./geosites.server";
+import {
+	ageOverlaps,
+	publicPoint,
+	rankNearby,
+	type SummaryDoc,
+} from "./geosites.server";
 
 function summary(
 	slug: string,
@@ -62,5 +67,21 @@ describe("rankNearby", () => {
 		);
 		expect(g?.distanceMeters).not.toBe(1234.5678);
 		expect((g?.distanceMeters ?? 1) % 100).toBe(0);
+	});
+});
+
+describe("ageOverlaps", () => {
+	it("matches ages overlapping the periods' span, not just touching it", () => {
+		expect(ageOverlaps(["cretaceous", "cretaceous"])).toEqual({
+			"geologicAge.maxMa": { $gt: 66 },
+			"geologicAge.minMa": { $lt: 145 },
+		});
+	});
+
+	it("has no lower limit when the oldest period is included", () => {
+		expect(ageOverlaps(["cambrian", "archean"])).toEqual({
+			"geologicAge.maxMa": { $gt: 485.4 },
+			"geologicAge.minMa": { $exists: true },
+		});
 	});
 });

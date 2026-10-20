@@ -79,7 +79,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 		closeSheet();
 	};
 
-	const filtered = Boolean(search.cat || search.rel || search.gp);
+	const filtered = Boolean(search.cat || search.rel || search.gp || search.age);
 	const locationForm = (
 		<LocationForm
 			values={formValuesFor(search.bbox)}
@@ -93,7 +93,12 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	);
 	const filters = (
 		<GeositeFilters
-			value={{ cat: search.cat, rel: search.rel, gp: search.gp }}
+			value={{
+				cat: search.cat,
+				rel: search.rel,
+				gp: search.gp,
+				age: search.age,
+			}}
 			onChange={(next) => onSearchChange(next)}
 		/>
 	);

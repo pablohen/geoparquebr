@@ -5,6 +5,7 @@
  * Isomorphic: imports nothing server-only, so it is safe in client bundles.
  */
 import { z } from "zod";
+import { GEOLOGIC_PERIOD_IDS } from "~/features/geology/time-scale";
 
 // ---------------------------------------------------------------------------
 // GeoJSON
@@ -237,11 +238,22 @@ export type BBox = z.infer<typeof BBoxSchema>;
 /** Default view: the Chapada do Araripe (Brazil's first UNESCO Global Geopark) and the Rio do Peixe basin. */
 export const DEFAULT_BBOX: BBox = [-40.6, -7.9, -37.9, -6.3];
 
+export const GeologicPeriodSchema = z.enum(GEOLOGIC_PERIOD_IDS);
+
+/** A span of geological time as [youngest, oldest] period, inclusive. */
+export const AgeRangeSchema = z.tuple([
+	GeologicPeriodSchema,
+	GeologicPeriodSchema,
+]);
+export type AgeRange = z.infer<typeof AgeRangeSchema>;
+
 /** Optional filters shared by the URL, the filter UI and the query. */
 export const GeositeFiltersSchema = z.object({
 	categories: z.array(GeositeCategorySchema).optional(),
 	relevance: RelevanceSchema.optional(),
 	geoparkId: GeoparkIdSchema.optional(),
+	/** Geosites whose mapped age overlaps this span; ones without an age drop out. */
+	age: AgeRangeSchema.optional(),
 });
 export type GeositeFilters = z.infer<typeof GeositeFiltersSchema>;
 
@@ -291,6 +303,8 @@ export const ExplorerSearchSchema = z.object({
 	cat: z.array(GeositeCategorySchema).min(1).optional().catch(undefined),
 	rel: RelevanceSchema.optional().catch(undefined),
 	gp: GeoparkIdSchema.optional().catch(undefined),
+	/** Geological age filter, [youngest, oldest] period. */
+	age: AgeRangeSchema.optional().catch(undefined),
 	/** Geology map layer on. */
 	geo: z.literal(true).optional().catch(undefined),
 	site: SlugSchema.optional().catch(undefined),

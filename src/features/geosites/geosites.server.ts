@@ -4,9 +4,11 @@
  */
 import type { Collection, Filter, ObjectId } from "mongodb";
 import type { z } from "zod";
+import { periodRangeMa } from "~/features/geology/time-scale";
 import { getDb } from "~/lib/db.server";
 import { bboxCenter, bboxPolygon, haversineMeters } from "~/lib/geo";
 import {
+	type AgeRange,
 	type Geosite,
 	type GeositeInputSchema,
 	type GeositeSearchHit,
@@ -169,6 +171,20 @@ export type SummaryDoc = Pick<
 };
 
 /**
+ * Mongo condition: the geosite's dated age range overlaps the periods. Ranges
+ * that merely touch (Cretaceous ends where the Paleogene starts) don't count.
+ */
+export function ageOverlaps(range: AgeRange): Filter<GeositeDoc> {
+	const [young, old] = periodRangeMa(range);
+	return {
+		"geologicAge.maxMa": { $gt: young },
+		"geologicAge.minMa": Number.isFinite(old)
+			? { $lt: old }
+			: { $exists: true },
+	};
+}
+
+/**
  * Geosites inside a map viewport, nearest to its centre first.
  *
  * `$geoNear` (first stage, needs the 2dsphere index) gives the distance and
@@ -178,7 +194,7 @@ export type SummaryDoc = Pick<
 export async function findGeositesInBounds(
 	input: GeositesInBoundsQuery,
 ): Promise<GeositeSummary[]> {
-	const { bbox, categories, relevance, geoparkId, limit } =
+	const { bbox, categories, relevance, geoparkId, age, limit } =
 		GeositesInBoundsQuerySchema.parse(input);
 	const col = await geositesCollection();
 
@@ -187,6 +203,7 @@ export async function findGeositesInBounds(
 		...(categories?.length && { categories: { $in: categories } }),
 		...(relevance && { relevance }),
 		...(geoparkId && { geoparkId }),
+		...(age && ageOverlaps(age)),
 	};
 
 	const docs = await col

@@ -44,8 +44,12 @@ const ALLOWED = new Set<string>([
 const hasWords = (s: string) => /\p{L}{2,}/u.test(s);
 // A string in code is copy if it reads like text: words separated by spaces, or accented letters.
 // Braces and angle brackets mean code (an inline script, XML), which copy never contains.
+// CSS values (gradients, shadows, variables) aren't copy either.
+const looksLikeCss = (s: string) =>
+	/^[a-z-]+\(|var\(--|\d(px|rem|em)\b/.test(s);
 const looksLikeCopy = (s: string) =>
 	hasWords(s) &&
+	!looksLikeCss(s) &&
 	!/[{}<>]/.test(s) &&
 	(/\p{L}\s+\p{L}/u.test(s) || /[À-ú]/.test(s));
 
@@ -64,7 +68,7 @@ function findCopy(source: string): string[] {
 			return;
 		if (n.type === "JSXAttribute") {
 			const name = (n.name as { name: string }).name;
-			if (name === "style" || name === "className" || name === "key") return;
+			if (["style", "styles", "className", "key"].includes(name)) return;
 			const value = n.value as Node | null;
 			if (value?.type === "Literal") {
 				const text = String(value.value);

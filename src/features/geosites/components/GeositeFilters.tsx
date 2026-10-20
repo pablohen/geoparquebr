@@ -3,6 +3,7 @@ import { FunnelSimpleX } from "@phosphor-icons/react";
 import { m } from "~/paraglide/messages.js";
 import { categoryLabel, geoparkIdLabel, relevanceLabel } from "../labels";
 import {
+	type AgeRange,
 	GEOPARK_IDS,
 	GEOSITE_CATEGORIES,
 	type GeoparkId,
@@ -12,11 +13,13 @@ import {
 	type Relevance,
 	RelevanceSchema,
 } from "../schemas";
+import { AgeFilter } from "./AgeFilter";
 
 export type FilterValues = {
 	cat?: GeositeCategory[];
 	rel?: Relevance;
 	gp?: GeoparkId;
+	age?: AgeRange;
 };
 
 type Props = {
@@ -24,7 +27,7 @@ type Props = {
 	onChange: (next: FilterValues) => void;
 };
 
-/** Filters live in the URL (`cat`, `rel`, `gp`); empty values are omitted. */
+/** Filters live in the URL (`cat`, `rel`, `gp`, `age`); empty values are omitted. */
 export function GeositeFilters({ value, onChange }: Props) {
 	// Built per render: labels follow the request's locale.
 	const categoryOptions = GEOSITE_CATEGORIES.map((c) => ({
@@ -39,7 +42,9 @@ export function GeositeFilters({ value, onChange }: Props) {
 		value: g,
 		label: geoparkIdLabel(g),
 	}));
-	const active = Boolean(value.cat?.length || value.rel || value.gp);
+	const active = Boolean(
+		value.cat?.length || value.rel || value.gp || value.age,
+	);
 
 	return (
 		<Stack gap="xs">
@@ -85,13 +90,22 @@ export function GeositeFilters({ value, onChange }: Props) {
 					clearable
 				/>
 			</Group>
+			<AgeFilter
+				value={value.age}
+				onChange={(age) => onChange({ ...value, age })}
+			/>
 			{active && (
 				<Button
 					size="compact-xs"
 					variant="subtle"
 					leftSection={<FunnelSimpleX size={14} />}
 					onClick={() =>
-						onChange({ cat: undefined, rel: undefined, gp: undefined })
+						onChange({
+							cat: undefined,
+							rel: undefined,
+							gp: undefined,
+							age: undefined,
+						})
 					}
 					style={{ alignSelf: "flex-start" }}
 				>

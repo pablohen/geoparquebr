@@ -37,7 +37,13 @@ export const Route = createFileRoute("/")({
 	}),
 	// Only the viewport and filters change the list; the drawer state
 	// (site/tab/model) is fetched separately and must not re-run this.
-	loaderDeps: ({ search: { bbox, cat, rel, gp } }) => ({ bbox, cat, rel, gp }),
+	loaderDeps: ({ search: { bbox, cat, rel, gp, age } }) => ({
+		bbox,
+		cat,
+		rel,
+		gp,
+		age,
+	}),
 	loader: ({ deps }) =>
 		listGeositesOrEmptyOffline({
 			data: {
@@ -45,6 +51,7 @@ export const Route = createFileRoute("/")({
 				categories: deps.cat,
 				relevance: deps.rel,
 				geoparkId: deps.gp,
+				age: deps.age,
 			},
 		}),
 	// Keep showing the current list while panning instead of a pending screen.

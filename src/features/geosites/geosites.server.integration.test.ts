@@ -3,6 +3,7 @@
  * Uses a throwaway database per run and drops it afterwards.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { GeologicPeriodId } from "~/features/geology/time-scale";
 import { closeDb, getDb } from "~/lib/db.server";
 import { bboxCenter, haversineMeters } from "~/lib/geo";
 import {
@@ -47,6 +48,13 @@ const sites = [
 	geosite(1, "centro", [-39.5, -7.1], {
 		name: "Pedreira Central",
 		description: "Calcários com pterossauros e peixes fósseis.",
+		geologicAge: {
+			period: "Cretáceo",
+			formation: "Formação Crato",
+			minMa: 100.5,
+			maxMa: 125,
+			mapScale: 1_000_000,
+		},
 	}),
 	geosite(2, "leste", [-38.6, -7.0], {
 		categories: ["speleological"],
@@ -194,5 +202,13 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		expect(cave?.location.coordinates).toEqual([-39.12, -7.65]);
 		expect(cave && cave.distanceMeters % 100).toBe(0);
 		expect(await findNearbyGeosites("nao-existe")).toBeNull();
+	});
+
+	it("filters by geological age, dropping geosites without one", async () => {
+		const slugs = async (age: [GeologicPeriodId, GeologicPeriodId]) =>
+			(await findGeositesInBounds({ bbox: box, age })).map((g) => g.slug);
+		expect(await slugs(["cretaceous", "cretaceous"])).toEqual(["centro"]);
+		expect(await slugs(["quaternary", "jurassic"])).toEqual(["centro"]);
+		expect(await slugs(["jurassic", "archean"])).toEqual([]);
 	});
 });
