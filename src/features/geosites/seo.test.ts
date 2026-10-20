@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { DEFAULT_OG_IMAGE } from "~/lib/site";
+import { baseLocale, overwriteGetLocale } from "~/paraglide/runtime.js";
 import type { Geosite } from "./schemas";
 import {
 	directionsUrl,
@@ -139,22 +140,58 @@ describe("directionsUrl", () => {
 });
 
 describe("sitemapXml", () => {
-	it("lists the home page and every geosite page", () => {
+	it("lists the home page and every geosite page in both languages", () => {
 		const xml = sitemapXml([
 			{ slug: "pedra-cariri", updatedAt: "2026-10-20T12:00:00.000Z" },
 			{ slug: "caverna-agua-suja" },
 		]);
 		expect(xml).toContain("<loc>https://geoparquebr.vercel.app/</loc>");
+		expect(xml).toContain("<loc>https://geoparquebr.vercel.app/en/</loc>");
 		expect(xml).toContain(
 			`<loc>https://geoparquebr.vercel.app${geositePath("pedra-cariri")}</loc><lastmod>2026-10-20</lastmod>`,
 		);
 		expect(xml).toContain(
-			"<loc>https://geoparquebr.vercel.app/geosites/caverna-agua-suja</loc></url>",
+			"<loc>https://geoparquebr.vercel.app/en/geosites/caverna-agua-suja</loc><xhtml:link",
 		);
+		expect(xml.match(/<url>/g)).toHaveLength(6);
 		expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+	});
+
+	it("links each page to its other language version", () => {
+		const xml = sitemapXml([{ slug: "pedra-cariri" }]);
+		expect(xml).toContain(
+			'<xhtml:link rel="alternate" hreflang="en" href="https://geoparquebr.vercel.app/en/geosites/pedra-cariri"/>',
+		);
+		expect(xml).toContain(
+			'<xhtml:link rel="alternate" hreflang="pt-BR" href="https://geoparquebr.vercel.app/geosites/pedra-cariri"/>',
+		);
 	});
 
 	it("escapes XML special characters", () => {
 		expect(sitemapXml([{ slug: "a&b" }])).toContain("/geosites/a&amp;b");
+	});
+});
+
+describe("in English", () => {
+	afterEach(() => overwriteGetLocale(() => baseLocale));
+
+	it("translates labels and links to the /en page", () => {
+		overwriteGetLocale(() => "en");
+		const m = geositeMeta(base);
+		expect(m.url).toBe(
+			"https://geoparquebr.vercel.app/en/geosites/pedra-cariri",
+		);
+		expect(
+			m.description.startsWith("Nova Olinda – CE · Araripe Geopark (CE)."),
+		).toBe(true);
+		expect(geositeJsonLd(base)).toMatchObject({
+			inLanguage: "en",
+			keywords: "Paleontological",
+			containedInPlace: { name: "Araripe Geopark (CE)" },
+		});
+		expect(geositeMetaTags(base)).toContainEqual({
+			property: "og:locale",
+			content: "en_US",
+		});
 	});
 });

@@ -1,3 +1,201 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"actions_directions": "Como chegar",
+	"actions_directions_approximate": "Como chegar (aprox.)",
+	"actions_directions_approximate_title": "Localização aproximada (sítio protegido)",
+	"actions_geosite_page": "Página do geossítio",
+	"actions_view_on_map": "Ver no mapa",
+	"back_to_map": "Voltar ao mapa",
+	"category_geomorphological": "Geomorfológico",
+	"category_historical": "História da geologia/mineração",
+	"category_hydrogeological": "Hidrogeológico",
+	"category_igneous": "Ígneo (plutonismo/vulcanismo)",
+	"category_impact": "Astroblema",
+	"category_marine": "Ambiente marinho",
+	"category_metallogenic": "Metalogenético",
+	"category_metamorphic": "Metamórfico",
+	"category_mineralogical": "Mineralógico",
+	"category_paleoenvironmental": "Paleoambiental",
+	"category_paleontological": "Paleontológico",
+	"category_pedological": "Pedológico",
+	"category_petrological": "Petrológico",
+	"category_sedimentological": "Sedimentológico",
+	"category_speleological": "Espeleológico (carste)",
+	"category_stratigraphic": "Estratigráfico",
+	"category_tectonic": "Tectônico",
+	"common_close": "Fechar",
+	"detail_coordinates": "Coordenadas",
+	"detail_coordinates_approximate": "(aproximadas — sítio protegido)",
+	"detail_degradation_risk": "Risco de degradação",
+	"detail_description_language": "Descrição do GEOSSIT, em português.",
+	"detail_geological_age": "Idade geológica",
+	"detail_geological_setting": "Contexto geológico",
+	"detail_model_select": "Modelo",
+	"detail_model_source": "Fonte",
+	"detail_model_strata_option": "Coluna estratigráfica (mapa do SGB)",
+	"detail_municipality": "Município",
+	"detail_read_more": "Ler mais",
+	"detail_relevance": "Relevância",
+	"detail_score_aria": "{label}: {value} de 400",
+	"detail_scores_title": "Avaliação quantitativa (0–400)",
+	"detail_show_less": "Mostrar menos",
+	"detail_source_authors": "Autores: {authors}",
+	"detail_source_geossit": "Fonte: GEOSSIT — Serviço Geológico do Brasil (SGB/CPRM).",
+	"detail_source_link": "Ver ficha no GEOSSIT",
+	"detail_strata_caption": "Mapa geológico do SGB/CPRM, escala 1:{scale}. Da mais recente (topo) à mais antiga (base); cores da carta cronoestratigráfica internacional. Espessuras ilustrativas — o mapa não informa espessuras.",
+	"detail_strata_none": "Nenhuma unidade mapeada encontrada — exibindo uma coluna estratigráfica ilustrativa (Bacia do Araripe).",
+	"detail_strata_title": "Unidades litoestratigráficas num raio de ~{radiusKm} km",
+	"detail_strata_unavailable": "Mapa geológico do SGB indisponível no momento — exibindo uma coluna estratigráfica ilustrativa (Bacia do Araripe).",
+	"detail_tab_fossils": "Fósseis",
+	"detail_tab_model": "Modelo 3D",
+	"detail_tab_overview": "Visão geral",
+	"detail_tab_overview_short": "Geral",
+	"drawer_not_found": "Geossítio não encontrado.",
+	"explorer_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios nesta área",
+				"count=*, countPlural=one": "{count} geossítio nesta área",
+				"count=*, countPlural=other": "{count} geossítios nesta área"
+			}
+		}
+	],
+	"explorer_count_filtered": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios nesta área (filtrados)",
+				"count=*, countPlural=one": "{count} geossítio nesta área (filtrados)",
+				"count=*, countPlural=other": "{count} geossítios nesta área (filtrados)"
+			}
+		}
+	],
+	"explorer_theme_dark": "Ativar tema escuro",
+	"explorer_theme_light": "Ativar tema claro",
+	"filters_all_feminine": "Todas",
+	"filters_all_masculine": "Todos",
+	"filters_clear": "Limpar filtros",
+	"filters_geopark": "Geoparque UNESCO",
+	"filters_no_theme": "Nenhum tema",
+	"filters_relevance": "Relevância",
+	"filters_themes": "Temas",
+	"fossils_credits": "Fontes: SGB/CPRM — Ocorrências Fossilíferas (OGC API); GBIF.org, com dados das instituições publicadoras. Cada registro mantém sua licença.",
+	"fossils_error": "Não foi possível consultar as ocorrências fósseis.",
+	"fossils_intro": "Ocorrências fósseis registradas num raio de {radiusKm} km do geossítio.",
+	"fossils_none": "Nenhuma ocorrência registrada nas bases consultadas.",
+	"fossils_show_all": "Mostrar todas ({count})",
+	"fossils_source_unavailable": "indisponível",
+	"fossils_sources_down": "{sources} fora do ar no momento; a lista pode estar incompleta.",
+	"fossils_top_taxa": "Táxons mais frequentes",
+	"fossils_view_record": "Ver registro",
+	"geology_at_none": "Nenhuma unidade mapeada neste ponto.",
+	"geology_at_unavailable": "Serviço do SGB indisponível no momento.",
+	"geology_identify_hint": "Toque/clique no mapa para identificar a unidade.",
+	"geology_layer": "Mapa geológico (SGB, 1:1M)",
+	"geology_layer_short": "Geologia",
+	"geology_opacity": "Opacidade do mapa geológico",
+	"geopark_araripe": "Geoparque Araripe (CE)",
+	"geopark_cacapava": "Geoparque Caçapava (RS)",
+	"geopark_caminhos_dos_canions_do_sul": "Geoparque Caminhos dos Cânions do Sul (SC/RS)",
+	"geopark_none": "Fora dos geoparques mundiais da UNESCO",
+	"geopark_proposal": "Proposta de geoparque: {name}",
+	"geopark_quarta_colonia": "Geoparque Quarta Colônia (RS)",
+	"geopark_serido": "Geoparque Seridó (RN)",
+	"geopark_uberaba": "Geoparque Uberaba – Terra de Gigantes (MG)",
+	"language_switch_aria": "Read in English",
+	"language_switch_short": "EN",
+	"list_empty_hint": "Aumente o raio ou mova o mapa.",
+	"list_empty_title": "Nenhum geossítio neste raio.",
+	"location_my_position": "Minha posição",
+	"location_radius": "Raio: {radius} km",
+	"location_search": "Buscar",
+	"map_find_my_location": "Perto de mim",
+	"map_geology_attribution": "Geologia: SGB/CPRM, 1:1.000.000",
+	"map_location_not_available": "Localização indisponível",
+	"map_reset_bearing": "Apontar para o norte",
+	"map_zoom_in": "Aproximar",
+	"map_zoom_out": "Afastar",
+	"not_found_geosite": "Geossítio não encontrado",
+	"not_found_title": "Página não encontrada",
+	"provenance_illustrative": "Exemplo ilustrativo — não provém deste geossítio.",
+	"provenance_locality": "Coletado/digitalizado neste geossítio.",
+	"provenance_region": "Exemplar da mesma bacia/região — local exato de coleta não informado.",
+	"relevance_geodiversity": "Sítio da geodiversidade",
+	"relevance_international": "Geossítio de relevância internacional",
+	"relevance_national": "Geossítio de relevância nacional",
+	"risk_high": "Alto",
+	"risk_low": "Baixo",
+	"risk_medium": "Médio",
+	"score_didactic": "Potencial didático",
+	"score_scientific": "Valor científico",
+	"score_tourism": "Potencial turístico",
+	"score_vulnerability": "Vulnerabilidade",
+	"search_aria": "Buscar geossítios e lugares",
+	"search_group_geosites": "Geossítios",
+	"search_group_places": "Lugares",
+	"search_nothing_found": "Nada encontrado",
+	"search_placeholder": "Buscar geossítio, município ou lugar…",
+	"search_placeholder_short": "Buscar…",
+	"share_copy_link": "Copiar link",
+	"share_link_copied": "Link copiado",
+	"share_share": "Compartilhar",
+	"sheet_controls": "Filtros e localização",
+	"sheet_controls_active": "ativos",
+	"sheet_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios",
+				"count=*, countPlural=one": "{count} geossítio",
+				"count=*, countPlural=other": "{count} geossítios"
+			}
+		}
+	],
+	"sheet_filters_badge": "filtros",
+	"sheet_open_list_aria": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "Ver lista: {count} geossítios nesta área",
+				"count=*, countPlural=one": "Ver lista: {count} geossítio nesta área",
+				"count=*, countPlural=other": "Ver lista: {count} geossítios nesta área"
+			}
+		}
+	],
+	"sheet_title": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios nesta área",
+				"count=*, countPlural=one": "{count} geossítio nesta área",
+				"count=*, countPlural=other": "{count} geossítios nesta área"
+			}
+		}
+	],
+	"sheet_title_filtered": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios nesta área (filtrados)",
+				"count=*, countPlural=one": "{count} geossítio nesta área (filtrados)",
+				"count=*, countPlural=other": "{count} geossítios nesta área (filtrados)"
+			}
+		}
+	],
+	"site_description": "Explore geossítios, fósseis, estratos e cavernas dos geoparques e do patrimônio geológico do Brasil.",
+	"site_title": "GeoparqueBR — Geoparques Mundiais da UNESCO no Brasil",
+	"strata_barbalha": "Fm. Barbalha — arenito/argilito",
+	"strata_basement": "Embasamento cristalino",
+	"strata_crato": "Fm. Crato — calcário laminado",
+	"strata_exu": "Fm. Exu — arenito",
+	"strata_ipubi": "Fm. Ipubi — gipsita",
+	"strata_romualdo": "Fm. Romualdo — folhelho c/ concreções",
+	"viewer_load_failed": "Falha ao carregar o modelo 3D."
 }

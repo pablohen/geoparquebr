@@ -7,6 +7,7 @@ import {
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Component, type ReactNode, Suspense } from "react";
+import { m } from "~/paraglide/messages.js";
 import type { GltfModel3D } from "../schemas";
 
 /** One band of the stratigraphic column, listed top → bottom. */
@@ -36,7 +37,7 @@ type Props = {
  */
 export default function ModelViewer({
 	model,
-	strata = ILLUSTRATIVE_STRATA,
+	strata = illustrativeStrata(),
 }: Props) {
 	return (
 		<Box pos="relative" h="100%">
@@ -44,7 +45,7 @@ export default function ModelViewer({
 				fallback={
 					<Center h="100%">
 						<Text size="sm" c="dimmed">
-							Falha ao carregar o modelo 3D.
+							{m.viewer_load_failed()}
 						</Text>
 					</Center>
 				}
@@ -91,40 +92,40 @@ function GltfModel({ model }: { model: GltfModel3D }) {
 }
 
 /** Illustrative layers (top → bottom), loosely modelled on the Araripe basin. */
-const ILLUSTRATIVE_STRATA: StrataLayer[] = [
+const illustrativeStrata = (): StrataLayer[] => [
 	{
 		id: "exu",
-		name: "Fm. Exu — arenito",
+		name: m.strata_exu(),
 		color: "#c9814f",
 		thickness: 0.6,
 	},
 	{
 		id: "romualdo",
-		name: "Fm. Romualdo — folhelho c/ concreções",
+		name: m.strata_romualdo(),
 		color: "#7d7466",
 		thickness: 0.45,
 	},
 	{
 		id: "ipubi",
-		name: "Fm. Ipubi — gipsita",
+		name: m.strata_ipubi(),
 		color: "#e8e1d3",
 		thickness: 0.25,
 	},
 	{
 		id: "crato",
-		name: "Fm. Crato — calcário laminado",
+		name: m.strata_crato(),
 		color: "#d8c39a",
 		thickness: 0.5,
 	},
 	{
 		id: "barbalha",
-		name: "Fm. Barbalha — arenito/argilito",
+		name: m.strata_barbalha(),
 		color: "#a65a3a",
 		thickness: 0.55,
 	},
 	{
 		id: "embasamento",
-		name: "Embasamento cristalino",
+		name: m.strata_basement(),
 		color: "#4a4a52",
 		thickness: 0.6,
 	},

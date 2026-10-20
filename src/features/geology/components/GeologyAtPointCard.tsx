@@ -1,5 +1,6 @@
 import { CloseButton, Group, Loader, Paper, Stack, Text } from "@mantine/core";
 import { useServerQuery } from "~/lib/use-server-query";
+import { m } from "~/paraglide/messages.js";
 import { getGeologyAt } from "../geology.functions";
 import { formatAgeRange, icsColorForAge, midAge } from "../time-scale";
 
@@ -33,7 +34,11 @@ export function GeologyAtPointCard({ point: [lng, lat], onClose }: Props) {
 				<Text size="xs" c="dimmed">
 					{lat.toFixed(4)}, {lng.toFixed(4)}
 				</Text>
-				<CloseButton size="sm" onClick={onClose} aria-label="Fechar" />
+				<CloseButton
+					size="sm"
+					onClick={onClose}
+					aria-label={m.common_close()}
+				/>
 			</Group>
 			{result.status === "pending" ? (
 				<Loader size="sm" type="dots" />
@@ -74,8 +79,8 @@ export function GeologyAtPointCard({ point: [lng, lat], onClose }: Props) {
 			) : (
 				<Text size="sm" c="dimmed">
 					{data?.status === "unavailable" || result.status === "error"
-						? "Serviço do SGB indisponível no momento."
-						: "Nenhuma unidade mapeada neste ponto."}
+						? m.geology_at_unavailable()
+						: m.geology_at_none()}
 				</Text>
 			)}
 		</Paper>

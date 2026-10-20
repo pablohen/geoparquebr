@@ -52,26 +52,6 @@ export const GEOSITE_CATEGORIES = [
 export const GeositeCategorySchema = z.enum(GEOSITE_CATEGORIES);
 export type GeositeCategory = z.infer<typeof GeositeCategorySchema>;
 
-export const GEOSITE_CATEGORY_LABELS = {
-	paleontological: "Paleontológico",
-	paleoenvironmental: "Paleoambiental",
-	geomorphological: "Geomorfológico",
-	speleological: "Espeleológico (carste)",
-	stratigraphic: "Estratigráfico",
-	sedimentological: "Sedimentológico",
-	mineralogical: "Mineralógico",
-	petrological: "Petrológico",
-	igneous: "Ígneo (plutonismo/vulcanismo)",
-	metamorphic: "Metamórfico",
-	tectonic: "Tectônico",
-	hydrogeological: "Hidrogeológico",
-	metallogenic: "Metalogenético",
-	pedological: "Pedológico",
-	impact: "Astroblema",
-	marine: "Ambiente marinho",
-	historical: "História da geologia/mineração",
-} as const satisfies Record<GeositeCategory, string>;
-
 /** UNESCO Global Geoparks in Brazil (plus aspiring ones as they're added). */
 export const GEOPARK_IDS = [
 	"araripe",
@@ -84,16 +64,6 @@ export const GEOPARK_IDS = [
 export const GeoparkIdSchema = z.enum(GEOPARK_IDS);
 export type GeoparkId = z.infer<typeof GeoparkIdSchema>;
 
-export const GEOPARK_LABELS = {
-	araripe: "Geoparque Araripe (CE)",
-	serido: "Geoparque Seridó (RN)",
-	"caminhos-dos-canions-do-sul":
-		"Geoparque Caminhos dos Cânions do Sul (SC/RS)",
-	"quarta-colonia": "Geoparque Quarta Colônia (RS)",
-	cacapava: "Geoparque Caçapava (RS)",
-	uberaba: "Geoparque Uberaba – Terra de Gigantes (MG)",
-} as const satisfies Record<GeoparkId, string>;
-
 /** GEOSSIT's "indicativo de relevância". */
 export const RelevanceSchema = z.enum([
 	"international",
@@ -102,20 +72,8 @@ export const RelevanceSchema = z.enum([
 ]);
 export type Relevance = z.infer<typeof RelevanceSchema>;
 
-export const RELEVANCE_LABELS = {
-	international: "Geossítio de relevância internacional",
-	national: "Geossítio de relevância nacional",
-	geodiversity: "Sítio da geodiversidade",
-} as const satisfies Record<Relevance, string>;
-
 export const DegradationRiskSchema = z.enum(["low", "medium", "high"]);
 export type DegradationRisk = z.infer<typeof DegradationRiskSchema>;
-
-export const DEGRADATION_RISK_LABELS = {
-	low: "Baixo",
-	medium: "Médio",
-	high: "Alto",
-} as const satisfies Record<DegradationRisk, string>;
 
 const ScoreSchema = z.number().int().min(0).max(400);
 

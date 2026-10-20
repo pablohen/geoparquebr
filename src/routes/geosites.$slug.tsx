@@ -3,17 +3,20 @@ import { Mountains } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { GeositeActions } from "~/features/geosites/components/GeositeActions";
-import {
-	GeositeDetail,
-	geoparkLabel,
-} from "~/features/geosites/components/GeositeDetail";
+import { GeositeDetail } from "~/features/geosites/components/GeositeDetail";
 import { getGeositePage } from "~/features/geosites/geosites.functions";
+import { geoparkLabel } from "~/features/geosites/labels";
 import { ExplorerSearchSchema } from "~/features/geosites/schemas";
 import {
 	geositeJsonLd,
 	geositeMeta,
 	geositeMetaTags,
+	geositePath,
 } from "~/features/geosites/seo";
+import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
+import { alternateLinks } from "~/lib/i18n";
+import { SITE_NAME, SITE_URL } from "~/lib/site";
+import { m } from "~/paraglide/messages.js";
 
 /**
  * Standalone, indexable page for one geosite: server-rendered overview with
@@ -33,6 +36,7 @@ export const Route = createFileRoute("/geosites/$slug")({
 					}),
 					links: [
 						{ rel: "canonical", href: geositeMeta(loaderData.geosite).url },
+						...alternateLinks(geositePath(loaderData.geosite.slug), SITE_URL),
 					],
 					scripts: [
 						{
@@ -50,10 +54,10 @@ export const Route = createFileRoute("/geosites/$slug")({
 	notFoundComponent: () => (
 		<Container size="sm" py="xl">
 			<Title order={1} size="h2">
-				Geossítio não encontrado
+				{m.not_found_geosite()}
 			</Title>
 			<Anchor component={Link} to="/">
-				Voltar ao mapa
+				{m.back_to_map()}
 			</Anchor>
 		</Container>
 	),
@@ -75,9 +79,10 @@ function GeositePage() {
 							color="var(--mantine-primary-color-filled)"
 							aria-hidden
 						/>
-						<Text fw={700}>GeoparqueBR</Text>
+						<Text fw={700}>{SITE_NAME}</Text>
 					</Group>
 				</Anchor>
+				<LanguageSwitcher />
 			</Group>
 
 			<Stack gap={4} mb="md">

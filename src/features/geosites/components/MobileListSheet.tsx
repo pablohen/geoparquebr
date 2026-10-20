@@ -11,6 +11,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { CaretDown, CaretUp, ListBullets } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
+import { m } from "~/paraglide/messages.js";
 
 type Props = {
 	opened: boolean;
@@ -53,14 +54,14 @@ export function MobileListSheet({
 				rightSection={
 					filtered ? (
 						<Badge size="xs" variant="white" color="dark">
-							filtros
+							{m.sheet_filters_badge()}
 						</Badge>
 					) : null
 				}
 				onClick={onOpen}
-				aria-label={`Ver lista: ${count} geossítios nesta área`}
+				aria-label={m.sheet_open_list_aria({ count })}
 			>
-				{count} geossítios
+				{m.sheet_count({ count })}
 			</Button>
 
 			<Drawer
@@ -72,7 +73,9 @@ export function MobileListSheet({
 				radius="lg"
 				title={
 					<Text fw={600}>
-						{count} geossítios nesta área{filtered && " (filtrados)"}
+						{filtered
+							? m.sheet_title_filtered({ count })
+							: m.sheet_title({ count })}
 					</Text>
 				}
 				styles={{ body: { paddingInline: 8 } }}
@@ -86,10 +89,10 @@ export function MobileListSheet({
 					>
 						<Group justify="space-between">
 							<Text size="sm" fw={500}>
-								Filtros e localização
+								{m.sheet_controls()}
 								{filtered && (
 									<Badge size="xs" ml={6} variant="light">
-										ativos
+										{m.sheet_controls_active()}
 									</Badge>
 								)}
 							</Text>

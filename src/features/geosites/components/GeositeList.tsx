@@ -1,6 +1,8 @@
 import { Badge, Group, NavLink, Stack, Text } from "@mantine/core";
 import { MapPinSimpleArea } from "@phosphor-icons/react";
-import { GEOSITE_CATEGORY_LABELS, type GeositeSummary } from "../schemas";
+import { m } from "~/paraglide/messages.js";
+import { categoryLabel } from "../labels";
+import type { GeositeSummary } from "../schemas";
 import { CATEGORY_COLORS, formatDistance } from "./categoryStyle";
 
 type Props = {
@@ -14,8 +16,8 @@ export function GeositeList({ geosites, selectedSlug, onSelect }: Props) {
 		return (
 			<Stack align="center" gap={4} py="xl" c="dimmed">
 				<MapPinSimpleArea size={32} />
-				<Text size="sm">Nenhum geossítio neste raio.</Text>
-				<Text size="xs">Aumente o raio ou mova o mapa.</Text>
+				<Text size="sm">{m.list_empty_title()}</Text>
+				<Text size="xs">{m.list_empty_hint()}</Text>
 			</Stack>
 		);
 	}
@@ -45,7 +47,7 @@ export function GeositeList({ geosites, selectedSlug, onSelect }: Props) {
 										variant="light"
 										color={CATEGORY_COLORS[c]}
 									>
-										{GEOSITE_CATEGORY_LABELS[c]}
+										{categoryLabel(c)}
 									</Badge>
 								))}
 							</Group>

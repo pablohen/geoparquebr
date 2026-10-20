@@ -1,8 +1,10 @@
 import { Center, Drawer, Loader, Stack, Text, Title } from "@mantine/core";
 import { useIsMobile } from "~/lib/use-is-mobile";
+import { m } from "~/paraglide/messages.js";
+import { geoparkLabel } from "../labels";
 import type { Geosite } from "../schemas";
 import { GeositeActions } from "./GeositeActions";
-import { GeositeDetail, type GeositeView, geoparkLabel } from "./GeositeDetail";
+import { GeositeDetail, type GeositeView } from "./GeositeDetail";
 
 type Props = {
 	opened: boolean;
@@ -52,7 +54,7 @@ export function GeositeDrawer({
 					onViewChange={onViewChange}
 				/>
 			) : status === "error" ? (
-				<Text c="dimmed">Geossítio não encontrado.</Text>
+				<Text c="dimmed">{m.drawer_not_found()}</Text>
 			) : (
 				<Center py="xl">
 					<Loader type="dots" />

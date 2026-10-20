@@ -13,6 +13,8 @@ import {
 import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useServerQuery } from "~/lib/use-server-query";
+import { m } from "~/paraglide/messages.js";
+import { getLocale } from "~/paraglide/runtime.js";
 import { getGeositeFossils } from "../geology.functions";
 import {
 	FOSSIL_SOURCE_LABELS,
@@ -37,7 +39,7 @@ export function FossilsPanel({ slug }: { slug: string }) {
 	if (query.status === "error")
 		return (
 			<Alert color="red" icon={<Warning />}>
-				Não foi possível consultar as ocorrências fósseis.
+				{m.fossils_error()}
 			</Alert>
 		);
 	return <FossilsList data={query.data} />;
@@ -55,10 +57,7 @@ function FossilsList({ data }: { data: GeositeFossils }) {
 
 	return (
 		<Stack>
-			<Text size="sm">
-				Ocorrências fósseis registradas num raio de {data.radiusKm} km do
-				geossítio.
-			</Text>
+			<Text size="sm">{m.fossils_intro({ radiusKm: data.radiusKm })}</Text>
 			<Group gap="xs">
 				{(["sgb", "gbif"] as const).map((k) => {
 					const s = data[k];
@@ -69,21 +68,24 @@ function FossilsList({ data }: { data: GeositeFossils }) {
 							color={s.status === "ok" ? "gray" : "red"}
 						>
 							{FOSSIL_SOURCE_LABELS[k]}:{" "}
-							{s.status === "ok" ? s.total : "indisponível"}
+							{s.status === "ok" ? s.total : m.fossils_source_unavailable()}
 						</Badge>
 					);
 				})}
 			</Group>
 			{unavailable.length > 0 && (
 				<Alert color="yellow" icon={<Warning />} p="xs">
-					{unavailable.map((k) => FOSSIL_SOURCE_LABELS[k]).join(" e ")} fora do
-					ar no momento; a lista pode estar incompleta.
+					{m.fossils_sources_down({
+						sources: new Intl.ListFormat(getLocale()).format(
+							unavailable.map((k) => FOSSIL_SOURCE_LABELS[k]),
+						),
+					})}
 				</Alert>
 			)}
 
 			{items.length === 0 ? (
 				<Text c="dimmed" size="sm">
-					Nenhuma ocorrência registrada nas bases consultadas.
+					{m.fossils_none()}
 				</Text>
 			) : (
 				<>
@@ -93,15 +95,14 @@ function FossilsList({ data }: { data: GeositeFossils }) {
 					))}
 					{items.length > shown && (
 						<Button variant="subtle" onClick={() => setShown(items.length)}>
-							Mostrar todas ({items.length})
+							{m.fossils_show_all({ count: items.length })}
 						</Button>
 					)}
 				</>
 			)}
 
 			<Text size="xs" c="dimmed">
-				Fontes: SGB/CPRM — Ocorrências Fossilíferas (OGC API); GBIF.org, com
-				dados das instituições publicadoras. Cada registro mantém sua licença.
+				{m.fossils_credits()}
 			</Text>
 		</Stack>
 	);
@@ -123,7 +124,7 @@ function TopTaxa({ items }: { items: FossilOccurrence[] }) {
 	return (
 		<Stack gap={4}>
 			<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-				Táxons mais frequentes
+				{m.fossils_top_taxa()}
 			</Text>
 			<Group gap={6}>
 				{top.map(([name, n]) => (
@@ -178,7 +179,7 @@ function OccurrenceCard({ item }: { item: FossilOccurrence }) {
 				)}
 				{item.url && (
 					<Anchor href={item.url} target="_blank" rel="noreferrer" size="xs">
-						Ver registro <ArrowSquareOut size={12} />
+						{m.fossils_view_record()} <ArrowSquareOut size={12} />
 					</Anchor>
 				)}
 			</Stack>

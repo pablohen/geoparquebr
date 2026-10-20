@@ -1,13 +1,12 @@
 /**
  * Metadata for geosite pages: titles, share previews, structured data,
- * directions links and the sitemap. Pure functions, isomorphic.
+ * directions links and the sitemap. Pure functions, isomorphic; copy and
+ * URLs follow the current locale.
  */
-import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "~/lib/site";
-import {
-	GEOPARK_LABELS,
-	GEOSITE_CATEGORY_LABELS,
-	type Geosite,
-} from "./schemas";
+import { getLocale, locales, OG_LOCALES } from "~/lib/i18n";
+import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME } from "~/lib/site";
+import { categoryLabel, geoparkIdLabel } from "./labels";
+import type { Geosite } from "./schemas";
 
 export const geositePath = (slug: string) => `/geosites/${slug}`;
 
@@ -37,7 +36,7 @@ export function geositeMeta(
 	const photo = imageOk ? g.coverImageUrl : undefined;
 	const context = [
 		`${g.municipality} – ${g.state}`,
-		g.geoparkId ? GEOPARK_LABELS[g.geoparkId] : undefined,
+		g.geoparkId ? geoparkIdLabel(g.geoparkId) : undefined,
 	]
 		.filter(Boolean)
 		.join(" · ");
@@ -51,6 +50,20 @@ export function geositeMeta(
 	};
 }
 
+/** `og:locale` for the current locale, plus the other one as an alternate. */
+export function ogLocaleTags() {
+	const current = getLocale();
+	return [
+		{ property: "og:locale", content: OG_LOCALES[current] },
+		...locales
+			.filter((l) => l !== current)
+			.map((l) => ({
+				property: "og:locale:alternate",
+				content: OG_LOCALES[l],
+			})),
+	];
+}
+
 /** `<meta>` tags for TanStack Router's `head()`. */
 export function geositeMetaTags(g: Geosite, options?: { imageOk?: boolean }) {
 	const m = geositeMeta(g, options);
@@ -58,6 +71,7 @@ export function geositeMetaTags(g: Geosite, options?: { imageOk?: boolean }) {
 		{ title: m.title },
 		{ name: "description", content: m.description },
 		{ property: "og:type", content: "place" },
+		...ogLocaleTags(),
 		{ property: "og:title", content: g.name },
 		{ property: "og:description", content: m.description },
 		{ property: "og:url", content: m.url },
@@ -97,6 +111,7 @@ export function geositeJsonLd(
 	return {
 		"@context": "https://schema.org",
 		"@type": "TouristAttraction",
+		inLanguage: getLocale(),
 		name: g.name,
 		description: truncate(g.summary || g.description || g.name, 300),
 		url: absoluteUrl(geositePath(g.slug)),
@@ -109,10 +124,13 @@ export function geositeJsonLd(
 			addressCountry: "BR",
 		},
 		...(g.categories.length > 0 && {
-			keywords: g.categories.map((c) => GEOSITE_CATEGORY_LABELS[c]).join(", "),
+			keywords: g.categories.map(categoryLabel).join(", "),
 		}),
 		...(g.geoparkId && {
-			containedInPlace: { "@type": "Place", name: GEOPARK_LABELS[g.geoparkId] },
+			containedInPlace: {
+				"@type": "Place",
+				name: geoparkIdLabel(g.geoparkId),
+			},
 		}),
 		...(g.source && { sameAs: g.source.url }),
 	};
@@ -134,17 +152,33 @@ const escapeXml = (s: string) =>
 			`&${{ "<": "lt", ">": "gt", "&": "amp", "'": "apos", '"': "quot" }[c]};`,
 	);
 
+/** One `<url>` per page and locale, each listing every language version. */
 export function sitemapXml(
 	geosites: { slug: string; updatedAt?: string }[],
 ): string {
-	const urls = [
-		`<url><loc>${SITE_URL}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`,
-		...geosites.map(
-			(g) =>
-				`<url><loc>${escapeXml(absoluteUrl(geositePath(g.slug)))}</loc>${
-					g.updatedAt ? `<lastmod>${g.updatedAt.slice(0, 10)}</lastmod>` : ""
-				}</url>`,
-		),
+	const pages = [
+		{
+			path: "/",
+			extra: "<changefreq>weekly</changefreq><priority>1.0</priority>",
+		},
+		...geosites.map((g) => ({
+			path: geositePath(g.slug),
+			extra: g.updatedAt
+				? `<lastmod>${g.updatedAt.slice(0, 10)}</lastmod>`
+				: "",
+		})),
 	];
-	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`;
+	const urls = pages.flatMap(({ path, extra }) => {
+		const alternates = locales
+			.map(
+				(l) =>
+					`<xhtml:link rel="alternate" hreflang="${l}" href="${escapeXml(absoluteUrl(path, l))}"/>`,
+			)
+			.join("");
+		return locales.map(
+			(l) =>
+				`<url><loc>${escapeXml(absoluteUrl(path, l))}</loc>${extra}${alternates}</url>`,
+		);
+	});
+	return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls.join("\n")}\n</urlset>\n`;
 }

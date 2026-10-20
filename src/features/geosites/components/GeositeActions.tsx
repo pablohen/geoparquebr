@@ -6,9 +6,9 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { bboxAround, roundBBox } from "~/lib/geo";
-import { absoluteUrl } from "~/lib/site";
+import { m } from "~/paraglide/messages.js";
 import type { Geosite } from "../schemas";
-import { directionsUrl, geositeMeta, geositePath } from "../seo";
+import { directionsUrl, geositeMeta } from "../seo";
 import { ShareButton } from "./ShareButton";
 
 type Props = {
@@ -23,7 +23,7 @@ export function GeositeActions({ geosite, context }: Props) {
 	return (
 		<Group gap="xs">
 			<ShareButton
-				url={absoluteUrl(geositePath(geosite.slug))}
+				url={meta.url}
 				title={geosite.name}
 				text={meta.description}
 			/>
@@ -37,11 +37,13 @@ export function GeositeActions({ geosite, context }: Props) {
 				leftSection={<NavigationArrow size={14} />}
 				title={
 					geosite.locationIsSensitive
-						? "Localização aproximada (sítio protegido)"
+						? m.actions_directions_approximate_title()
 						: undefined
 				}
 			>
-				Como chegar{geosite.locationIsSensitive && " (aprox.)"}
+				{geosite.locationIsSensitive
+					? m.actions_directions_approximate()
+					: m.actions_directions()}
 			</Button>
 			{context === "page" ? (
 				<Button
@@ -60,7 +62,7 @@ export function GeositeActions({ geosite, context }: Props) {
 					variant="default"
 					leftSection={<MapTrifold size={14} />}
 				>
-					Ver no mapa
+					{m.actions_view_on_map()}
 				</Button>
 			) : (
 				<Anchor
@@ -73,7 +75,7 @@ export function GeositeActions({ geosite, context }: Props) {
 					)}
 					size="xs"
 				>
-					Página do geossítio <ArrowSquareOut size={12} />
+					{m.actions_geosite_page()} <ArrowSquareOut size={12} />
 				</Anchor>
 			)}
 		</Group>

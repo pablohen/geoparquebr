@@ -80,11 +80,12 @@ self.addEventListener("fetch", (event) => {
  * Map URLs carry the viewport and must match exactly (handled above).
  */
 async function offlinePage(url) {
-	if (url.pathname.startsWith("/geosites/")) {
+	if (/^(\/en)?\/geosites\//.test(url.pathname)) {
 		const cache = await caches.open(CACHES.pages);
 		const copy = await cache.match(url.pathname, { ignoreSearch: true });
 		if (copy) return copy;
 	}
+	// The offline page picks its language from the URL it stands in for.
 	return caches.match("/offline.html");
 }
 

@@ -16,9 +16,12 @@ import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
 import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
+import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
 import { SearchBox } from "~/features/search/components/SearchBox";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
+import { SITE_NAME } from "~/lib/site";
 import { useServerQuery } from "~/lib/use-server-query";
+import { m } from "~/paraglide/messages.js";
 import { getGeositeBySlug } from "../geosites.functions";
 import type {
 	ExplorerSearch,
@@ -123,7 +126,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							aria-hidden
 						/>
 						<Title order={1} size="h4" visibleFrom="sm">
-							GeoparqueBR
+							{SITE_NAME}
 						</Title>
 					</Group>
 					{/* On phones the search takes all the remaining width. */}
@@ -141,6 +144,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								})
 							}
 						/>
+						<LanguageSwitcher />
 						<ColorSchemeToggle />
 					</Group>
 				</Group>
@@ -161,8 +165,9 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 				</AppShell.Section>
 				<AppShell.Section px="md" pt="sm">
 					<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-						{geosites.length} geossítios nesta área
-						{filtered && " (filtrados)"}
+						{filtered
+							? m.explorer_count_filtered({ count: geosites.length })
+							: m.explorer_count({ count: geosites.length })}
 					</Text>
 				</AppShell.Section>
 				<AppShell.Section grow component={ScrollArea} p="xs">
@@ -256,7 +261,9 @@ function ColorSchemeToggle() {
 			variant="default"
 			size="lg"
 			onClick={() => setColorScheme(next)}
-			aria-label={`Tema ${next}`}
+			aria-label={
+				next === "dark" ? m.explorer_theme_dark() : m.explorer_theme_light()
+			}
 		>
 			{computed === "dark" ? <Sun size={18} /> : <Moon size={18} />}
 		</ActionIcon>

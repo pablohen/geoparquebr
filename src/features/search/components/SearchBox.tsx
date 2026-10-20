@@ -11,6 +11,7 @@ import { MagnifyingGlass, MapPin, Mountains } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
+import { m } from "~/paraglide/messages.js";
 import type { Place } from "../schemas";
 import { searchGeositesFn, searchPlacesFn } from "../search.functions";
 
@@ -42,14 +43,14 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	const places = placeResults.data ?? [];
 	const data = [
 		{
-			group: "Geossítios",
+			group: m.search_group_geosites(),
 			items: geosites.map((g) => ({
 				value: `${GEOSITE}${g.slug}`,
 				label: g.name,
 			})),
 		},
 		{
-			group: "Lugares",
+			group: m.search_group_places(),
 			items: places.map((p) => ({ value: `${PLACE}${p.id}`, label: p.name })),
 		},
 	].filter((g) => g.items.length > 0);
@@ -87,9 +88,9 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	return (
 		<Select
 			searchable
-			aria-label="Buscar geossítios e lugares"
+			aria-label={m.search_aria()}
 			placeholder={
-				isMobile ? "Buscar…" : "Buscar geossítio, município ou lugar…"
+				isMobile ? m.search_placeholder_short() : m.search_placeholder()
 			}
 			leftSection={<MagnifyingGlass size={16} />}
 			rightSection={enabled && pending ? <Loader size={14} /> : null}
@@ -101,7 +102,9 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			// Results are already ranked server-side; don't re-filter by label.
 			filter={({ options }) => options}
 			renderOption={renderOption}
-			nothingFoundMessage={enabled && !pending ? "Nada encontrado" : undefined}
+			nothingFoundMessage={
+				enabled && !pending ? m.search_nothing_found() : undefined
+			}
 			limit={20}
 			maxDropdownHeight={360}
 			// On phones the input spans the header, so match its width.

@@ -1,6 +1,7 @@
 import { Button, type ButtonProps, CopyButton } from "@mantine/core";
 import { Check, LinkSimple, ShareNetwork } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { m } from "~/paraglide/messages.js";
 
 type Props = {
 	url: string;
@@ -35,7 +36,7 @@ export function ShareButton({
 					navigator.share({ url, title, text }).catch(() => {})
 				}
 			>
-				Compartilhar
+				{m.share_share()}
 			</Button>
 		);
 
@@ -49,7 +50,7 @@ export function ShareButton({
 					leftSection={copied ? <Check size={14} /> : <LinkSimple size={14} />}
 					onClick={copy}
 				>
-					{copied ? "Link copiado" : "Copiar link"}
+					{copied ? m.share_link_copied() : m.share_copy_link()}
 				</Button>
 			)}
 		</CopyButton>

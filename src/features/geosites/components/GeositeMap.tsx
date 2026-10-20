@@ -14,6 +14,7 @@ import {
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
 import { type BBox, roundBBox } from "~/lib/geo";
+import { m } from "~/paraglide/messages.js";
 import type { GeositeSummary } from "../schemas";
 
 // MapLibre resolves its worker relative to its own module URL, which breaks
@@ -149,11 +150,11 @@ export default function GeositeMap({
 			bounds: bbox,
 			attributionControl: { compact: true },
 			locale: {
-				"NavigationControl.ZoomIn": "Aproximar",
-				"NavigationControl.ZoomOut": "Afastar",
-				"NavigationControl.ResetBearing": "Apontar para o norte",
-				"GeolocateControl.FindMyLocation": "Perto de mim",
-				"GeolocateControl.LocationNotAvailable": "Localização indisponível",
+				"NavigationControl.ZoomIn": m.map_zoom_in(),
+				"NavigationControl.ZoomOut": m.map_zoom_out(),
+				"NavigationControl.ResetBearing": m.map_reset_bearing(),
+				"GeolocateControl.FindMyLocation": m.map_find_my_location(),
+				"GeolocateControl.LocationNotAvailable": m.map_location_not_available(),
 			},
 		});
 		map.addControl(
@@ -196,7 +197,7 @@ export default function GeositeMap({
 				tileSize: 256,
 				minzoom: SGB_ZOOM_OFFSET,
 				maxzoom: SGB_ZOOM_OFFSET + 9,
-				attribution: "Geologia: SGB/CPRM, 1:1.000.000",
+				attribution: m.map_geology_attribution(),
 			});
 			map.addLayer(
 				{

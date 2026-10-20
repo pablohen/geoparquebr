@@ -29,17 +29,22 @@ import {
 } from "~/features/geology/time-scale";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
+import { m } from "~/paraglide/messages.js";
+import { baseLocale, getLocale } from "~/paraglide/runtime.js";
 import {
-	DEGRADATION_RISK_LABELS,
+	categoryLabel,
+	degradationRiskLabel,
+	provenanceNote,
+	relevanceLabel,
+	SCORE_KEYS,
+	scoreLabel,
+} from "../labels";
+import {
 	type DrawerTab,
 	DrawerTabSchema,
-	GEOPARK_LABELS,
-	GEOSITE_CATEGORY_LABELS,
 	type Geosite,
 	type GeositeScores,
 	type Model3D,
-	type ModelProvenance,
-	RELEVANCE_LABELS,
 } from "../schemas";
 import { CATEGORY_COLORS } from "./categoryStyle";
 import type { StrataLayer } from "./ModelViewer";
@@ -62,12 +67,6 @@ function ShortLabel({ short, full }: { short: string; full: string }) {
 			</Text>
 		</>
 	);
-}
-
-export function geoparkLabel(g: Geosite): string {
-	if (g.geoparkId) return GEOPARK_LABELS[g.geoparkId];
-	if (g.geoparkProposal) return `Proposta de geoparque: ${g.geoparkProposal}`;
-	return "Fora dos geoparques mundiais da UNESCO";
 }
 
 /** Tabs (overview, 3D, fossils) for one geosite; shared by the drawer and the geosite page. */
@@ -96,14 +95,17 @@ export function GeositeDetail({
 			{/* Tabs share the width on phones, with shorter labels so all three fit. */}
 			<Tabs.List mb="md" grow={isMobile}>
 				<Tabs.Tab value="overview" leftSection={<Info size={16} />}>
-					<ShortLabel short="Geral" full="Visão geral" />
+					<ShortLabel
+						short={m.detail_tab_overview_short()}
+						full={m.detail_tab_overview()}
+					/>
 				</Tabs.Tab>
 				<Tabs.Tab value="model" leftSection={<Cube size={16} />}>
-					<ShortLabel short="3D" full="Modelo 3D" />
+					<ShortLabel short="3D" full={m.detail_tab_model()} />
 					{geosite.models.length > 0 && ` (${geosite.models.length})`}
 				</Tabs.Tab>
 				<Tabs.Tab value="fossils" leftSection={<Bone size={16} />}>
-					Fósseis
+					{m.detail_tab_fossils()}
 				</Tabs.Tab>
 			</Tabs.List>
 
@@ -142,44 +144,60 @@ function Overview({ geosite }: { geosite: Geosite }) {
 				<Group gap={6}>
 					{geosite.categories.map((c) => (
 						<Badge key={c} variant="light" color={CATEGORY_COLORS[c]}>
-							{GEOSITE_CATEGORY_LABELS[c]}
+							{categoryLabel(c)}
 						</Badge>
 					))}
 				</Group>
 			)}
-			<Spoiler maxHeight={120} showLabel="Ler mais" hideLabel="Mostrar menos">
-				<Text style={{ whiteSpace: "pre-line" }}>
-					{geosite.description ?? geosite.summary}
-				</Text>
-			</Spoiler>
+			<Stack gap={4}>
+				<Spoiler
+					maxHeight={120}
+					showLabel={m.detail_read_more()}
+					hideLabel={m.detail_show_less()}
+				>
+					<Text style={{ whiteSpace: "pre-line" }}>
+						{geosite.description ?? geosite.summary}
+					</Text>
+				</Spoiler>
+				{/* GEOSSIT records are Portuguese only; say so to other readers. */}
+				{getLocale() !== baseLocale && (
+					<Text size="xs" c="dimmed">
+						{m.detail_description_language()}
+					</Text>
+				)}
+			</Stack>
 
 			<Table variant="vertical" layout="fixed" withTableBorder>
 				<Table.Tbody>
-					<Row label="Município">
+					<Row label={m.detail_municipality()}>
 						{geosite.municipality} – {geosite.state}
 					</Row>
-					<Row label="Relevância">{RELEVANCE_LABELS[geosite.relevance]}</Row>
+					<Row label={m.detail_relevance()}>
+						{relevanceLabel(geosite.relevance)}
+					</Row>
 					{geosite.degradationRisk && (
-						<Row label="Risco de degradação">
-							{DEGRADATION_RISK_LABELS[geosite.degradationRisk]}
+						<Row label={m.detail_degradation_risk()}>
+							{degradationRiskLabel(geosite.degradationRisk)}
 						</Row>
 					)}
 					{geosite.geology && (
-						<Row label="Contexto geológico">
+						<Row label={m.detail_geological_setting()}>
 							{[geosite.geology.province, geosite.geology.setting]
 								.filter(Boolean)
 								.join(" · ")}
 						</Row>
 					)}
 					{geosite.geologicAge && (
-						<Row label="Idade geológica">{formatAge(geosite.geologicAge)}</Row>
+						<Row label={m.detail_geological_age()}>
+							{formatAge(geosite.geologicAge)}
+						</Row>
 					)}
-					<Row label="Coordenadas">
+					<Row label={m.detail_coordinates()}>
 						{lat.toFixed(4)}, {lng.toFixed(4)}
 						{geosite.locationIsSensitive && (
 							<Text span size="xs" c="dimmed">
 								{" "}
-								(aproximadas — sítio protegido)
+								{m.detail_coordinates_approximate()}
 							</Text>
 						)}
 					</Row>
@@ -211,24 +229,17 @@ function CoverImage({ src, alt }: { src: string; alt: string }) {
 	);
 }
 
-const SCORE_LABELS = {
-	scientific: "Valor científico",
-	tourism: "Potencial turístico",
-	didactic: "Potencial didático",
-	vulnerability: "Vulnerabilidade",
-} as const satisfies Record<keyof GeositeScores, string>;
-
 function Scores({ scores }: { scores: GeositeScores }) {
 	return (
 		<Stack gap={6}>
 			<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-				Avaliação quantitativa (0–400)
+				{m.detail_scores_title()}
 			</Text>
 			<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" verticalSpacing="xs">
-				{(Object.keys(SCORE_LABELS) as (keyof GeositeScores)[]).map((key) => (
+				{SCORE_KEYS.map((key) => (
 					<div key={key}>
 						<Group justify="space-between" mb={2}>
-							<Text size="sm">{SCORE_LABELS[key]}</Text>
+							<Text size="sm">{scoreLabel(key)}</Text>
 							<Text size="sm" ff="monospace">
 								{scores[key]}
 							</Text>
@@ -237,7 +248,10 @@ function Scores({ scores }: { scores: GeositeScores }) {
 							value={(scores[key] / 400) * 100}
 							color={key === "vulnerability" ? "red" : undefined}
 							size="sm"
-							aria-label={`${SCORE_LABELS[key]}: ${scores[key]} de 400`}
+							aria-label={m.detail_score_aria({
+								label: scoreLabel(key),
+								value: scores[key],
+							})}
 						/>
 					</div>
 				))}
@@ -250,14 +264,14 @@ function SourceCredit({ source }: { source: NonNullable<Geosite["source"]> }) {
 	return (
 		<Stack gap={4}>
 			<Text size="xs" c="dimmed">
-				Fonte: GEOSSIT — Serviço Geológico do Brasil (SGB/CPRM).{" "}
+				{m.detail_source_geossit()}{" "}
 				<Anchor href={source.url} target="_blank" rel="noreferrer" size="xs">
-					Ver ficha no GEOSSIT <ArrowSquareOut size={12} />
+					{m.detail_source_link()} <ArrowSquareOut size={12} />
 				</Anchor>
 			</Text>
 			{source.authors && (
 				<Text size="xs" c="dimmed" lineClamp={2}>
-					Autores: {source.authors}
+					{m.detail_source_authors({ authors: source.authors })}
 				</Text>
 			)}
 		</Stack>
@@ -283,13 +297,6 @@ function formatAge(age: NonNullable<Geosite["geologicAge"]>): string {
 	return [age.period, age.formation].filter(Boolean).join(" — ") + range;
 }
 
-const PROVENANCE_NOTES = {
-	locality: "Coletado/digitalizado neste geossítio.",
-	region:
-		"Exemplar da mesma bacia/região — local exato de coleta não informado.",
-	illustrative: "Exemplo ilustrativo — não provém deste geossítio.",
-} as const satisfies Record<ModelProvenance, string>;
-
 const STRATA_OPTION = "strata";
 
 function ModelsPanel({
@@ -312,7 +319,7 @@ function ModelsPanel({
 		<Stack>
 			{models.length > 0 && (
 				<Select
-					label="Modelo"
+					label={m.detail_model_select()}
 					value={model ? String(index) : STRATA_OPTION}
 					onChange={(v) =>
 						v !== null &&
@@ -322,7 +329,7 @@ function ModelsPanel({
 						...models.map((m, i) => ({ value: String(i), label: m.title })),
 						{
 							value: STRATA_OPTION,
-							label: "Coluna estratigráfica (mapa do SGB)",
+							label: m.detail_model_strata_option(),
 						},
 					]}
 					allowDeselect={false}
@@ -358,7 +365,7 @@ function ModelView({ model }: { model: Model3D }) {
 					{model.title}
 				</Text>
 				<Text size="xs" c="dimmed">
-					{PROVENANCE_NOTES[model.provenance]}
+					{provenanceNote(model.provenance)}
 				</Text>
 				<Text size="xs" c="dimmed">
 					{model.attribution} · {model.license}
@@ -372,7 +379,7 @@ function ModelView({ model }: { model: Model3D }) {
 								rel="noreferrer"
 								size="xs"
 							>
-								Fonte <ArrowSquareOut size={12} />
+								{m.detail_model_source()} <ArrowSquareOut size={12} />
 							</Anchor>
 						</>
 					)}
@@ -427,14 +434,12 @@ function StrataView({ slug }: { slug: string }) {
 			{strata.status === "pending" ? null : mapped ? (
 				<Stack gap={4}>
 					<Text size="sm" fw={600}>
-						Unidades litoestratigráficas num raio de ~{mapped.radiusKm} km
+						{m.detail_strata_title({ radiusKm: mapped.radiusKm })}
 					</Text>
 					<Text size="xs" c="dimmed">
-						Mapa geológico do SGB/CPRM, escala 1:
-						{mapped.scale.toLocaleString("pt-BR")}. Da mais recente (topo) à
-						mais antiga (base); cores da carta cronoestratigráfica
-						internacional. Espessuras ilustrativas — o mapa não informa
-						espessuras.
+						{m.detail_strata_caption({
+							scale: mapped.scale.toLocaleString(getLocale()),
+						})}
 					</Text>
 					{mapped.units.map((u) => (
 						<Text key={u.code} size="xs">
@@ -454,9 +459,8 @@ function StrataView({ slug }: { slug: string }) {
 			) : (
 				<Text size="xs" c="dimmed">
 					{data?.status === "unavailable" || strata.status === "error"
-						? "Mapa geológico do SGB indisponível no momento — "
-						: "Nenhuma unidade mapeada encontrada — "}
-					exibindo uma coluna estratigráfica ilustrativa (Bacia do Araripe).
+						? m.detail_strata_unavailable()
+						: m.detail_strata_none()}
 				</Text>
 			)}
 		</>

@@ -1,3 +1,201 @@
 {
-	"$schema": "https://inlang.com/schema/inlang-message-format"
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"actions_directions": "Directions",
+	"actions_directions_approximate": "Directions (approx.)",
+	"actions_directions_approximate_title": "Approximate location (protected site)",
+	"actions_geosite_page": "Geosite page",
+	"actions_view_on_map": "View on map",
+	"back_to_map": "Back to the map",
+	"category_geomorphological": "Geomorphological",
+	"category_historical": "History of geology/mining",
+	"category_hydrogeological": "Hydrogeological",
+	"category_igneous": "Igneous (plutonism/volcanism)",
+	"category_impact": "Impact structure",
+	"category_marine": "Marine environment",
+	"category_metallogenic": "Metallogenic",
+	"category_metamorphic": "Metamorphic",
+	"category_mineralogical": "Mineralogical",
+	"category_paleoenvironmental": "Paleoenvironmental",
+	"category_paleontological": "Paleontological",
+	"category_pedological": "Pedological",
+	"category_petrological": "Petrological",
+	"category_sedimentological": "Sedimentological",
+	"category_speleological": "Speleological (karst)",
+	"category_stratigraphic": "Stratigraphic",
+	"category_tectonic": "Tectonic",
+	"common_close": "Close",
+	"detail_coordinates": "Coordinates",
+	"detail_coordinates_approximate": "(approximate — protected site)",
+	"detail_degradation_risk": "Degradation risk",
+	"detail_description_language": "Description from GEOSSIT, in Portuguese.",
+	"detail_geological_age": "Geological age",
+	"detail_geological_setting": "Geological setting",
+	"detail_model_select": "Model",
+	"detail_model_source": "Source",
+	"detail_model_strata_option": "Stratigraphic column (SGB map)",
+	"detail_municipality": "Municipality",
+	"detail_read_more": "Read more",
+	"detail_relevance": "Relevance",
+	"detail_score_aria": "{label}: {value} of 400",
+	"detail_scores_title": "Quantitative assessment (0–400)",
+	"detail_show_less": "Show less",
+	"detail_source_authors": "Authors: {authors}",
+	"detail_source_geossit": "Source: GEOSSIT — Geological Survey of Brazil (SGB/CPRM).",
+	"detail_source_link": "View record on GEOSSIT",
+	"detail_strata_caption": "SGB/CPRM geological map, scale 1:{scale}. Youngest (top) to oldest (bottom); colours from the International Chronostratigraphic Chart. Thicknesses are illustrative — the map doesn't record them.",
+	"detail_strata_none": "No mapped units found — showing an illustrative stratigraphic column (Araripe Basin).",
+	"detail_strata_title": "Lithostratigraphic units within ~{radiusKm} km",
+	"detail_strata_unavailable": "The SGB geological map is unavailable right now — showing an illustrative stratigraphic column (Araripe Basin).",
+	"detail_tab_fossils": "Fossils",
+	"detail_tab_model": "3D model",
+	"detail_tab_overview": "Overview",
+	"detail_tab_overview_short": "Overview",
+	"drawer_not_found": "Geosite not found.",
+	"explorer_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites in this area",
+				"count=*, countPlural=one": "{count} geosite in this area",
+				"count=*, countPlural=other": "{count} geosites in this area"
+			}
+		}
+	],
+	"explorer_count_filtered": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites in this area (filtered)",
+				"count=*, countPlural=one": "{count} geosite in this area (filtered)",
+				"count=*, countPlural=other": "{count} geosites in this area (filtered)"
+			}
+		}
+	],
+	"explorer_theme_dark": "Switch to dark theme",
+	"explorer_theme_light": "Switch to light theme",
+	"filters_all_feminine": "All",
+	"filters_all_masculine": "All",
+	"filters_clear": "Clear filters",
+	"filters_geopark": "UNESCO Geopark",
+	"filters_no_theme": "No themes",
+	"filters_relevance": "Relevance",
+	"filters_themes": "Themes",
+	"fossils_credits": "Sources: SGB/CPRM — Fossil Occurrences (OGC API); GBIF.org, with data from the publishing institutions. Each record keeps its own licence.",
+	"fossils_error": "Couldn't look up fossil occurrences.",
+	"fossils_intro": "Fossil occurrences recorded within {radiusKm} km of the geosite.",
+	"fossils_none": "No occurrences recorded in the databases searched.",
+	"fossils_show_all": "Show all ({count})",
+	"fossils_source_unavailable": "unavailable",
+	"fossils_sources_down": "{sources} currently offline; the list may be incomplete.",
+	"fossils_top_taxa": "Most frequent taxa",
+	"fossils_view_record": "View record",
+	"geology_at_none": "No mapped unit at this point.",
+	"geology_at_unavailable": "The SGB service is unavailable right now.",
+	"geology_identify_hint": "Tap/click the map to identify the unit.",
+	"geology_layer": "Geological map (SGB, 1:1M)",
+	"geology_layer_short": "Geology",
+	"geology_opacity": "Geological map opacity",
+	"geopark_araripe": "Araripe Geopark (CE)",
+	"geopark_cacapava": "Caçapava Geopark (RS)",
+	"geopark_caminhos_dos_canions_do_sul": "Caminhos dos Cânions do Sul Geopark (SC/RS)",
+	"geopark_none": "Outside the UNESCO Global Geoparks",
+	"geopark_proposal": "Proposed geopark: {name}",
+	"geopark_quarta_colonia": "Quarta Colônia Geopark (RS)",
+	"geopark_serido": "Seridó Geopark (RN)",
+	"geopark_uberaba": "Uberaba Geopark – Land of Giants (MG)",
+	"language_switch_aria": "Ler em português",
+	"language_switch_short": "PT",
+	"list_empty_hint": "Increase the radius or move the map.",
+	"list_empty_title": "No geosites within this radius.",
+	"location_my_position": "My location",
+	"location_radius": "Radius: {radius} km",
+	"location_search": "Search",
+	"map_find_my_location": "Near me",
+	"map_geology_attribution": "Geology: SGB/CPRM, 1:1,000,000",
+	"map_location_not_available": "Location not available",
+	"map_reset_bearing": "Reset bearing to north",
+	"map_zoom_in": "Zoom in",
+	"map_zoom_out": "Zoom out",
+	"not_found_geosite": "Geosite not found",
+	"not_found_title": "Page not found",
+	"provenance_illustrative": "Illustrative example — not from this geosite.",
+	"provenance_locality": "Collected/scanned at this geosite.",
+	"provenance_region": "Specimen from the same basin/region — exact collection site not recorded.",
+	"relevance_geodiversity": "Geodiversity site",
+	"relevance_international": "Geosite of international relevance",
+	"relevance_national": "Geosite of national relevance",
+	"risk_high": "High",
+	"risk_low": "Low",
+	"risk_medium": "Medium",
+	"score_didactic": "Educational potential",
+	"score_scientific": "Scientific value",
+	"score_tourism": "Tourism potential",
+	"score_vulnerability": "Vulnerability",
+	"search_aria": "Search geosites and places",
+	"search_group_geosites": "Geosites",
+	"search_group_places": "Places",
+	"search_nothing_found": "Nothing found",
+	"search_placeholder": "Search geosite, municipality or place…",
+	"search_placeholder_short": "Search…",
+	"share_copy_link": "Copy link",
+	"share_link_copied": "Link copied",
+	"share_share": "Share",
+	"sheet_controls": "Filters and location",
+	"sheet_controls_active": "active",
+	"sheet_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites",
+				"count=*, countPlural=one": "{count} geosite",
+				"count=*, countPlural=other": "{count} geosites"
+			}
+		}
+	],
+	"sheet_filters_badge": "filters",
+	"sheet_open_list_aria": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "Show list: {count} geosites in this area",
+				"count=*, countPlural=one": "Show list: {count} geosite in this area",
+				"count=*, countPlural=other": "Show list: {count} geosites in this area"
+			}
+		}
+	],
+	"sheet_title": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites in this area",
+				"count=*, countPlural=one": "{count} geosite in this area",
+				"count=*, countPlural=other": "{count} geosites in this area"
+			}
+		}
+	],
+	"sheet_title_filtered": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites in this area (filtered)",
+				"count=*, countPlural=one": "{count} geosite in this area (filtered)",
+				"count=*, countPlural=other": "{count} geosites in this area (filtered)"
+			}
+		}
+	],
+	"site_description": "Explore geosites, fossils, strata and caves in Brazil's geoparks and geological heritage.",
+	"site_title": "GeoparqueBR — UNESCO Global Geoparks in Brazil",
+	"strata_barbalha": "Barbalha Fm. — sandstone/mudstone",
+	"strata_basement": "Crystalline basement",
+	"strata_crato": "Crato Fm. — laminated limestone",
+	"strata_exu": "Exu Fm. — sandstone",
+	"strata_ipubi": "Ipubi Fm. — gypsum",
+	"strata_romualdo": "Romualdo Fm. — shale with concretions",
+	"viewer_load_failed": "Couldn't load the 3D model."
 }

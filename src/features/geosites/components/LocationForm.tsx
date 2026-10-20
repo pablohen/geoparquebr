@@ -11,6 +11,7 @@ import {
 import { Crosshair, MagnifyingGlass } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { m } from "~/paraglide/messages.js";
 import { LocationFormSchema, type LocationFormValues } from "../schemas";
 
 type Props = {
@@ -82,7 +83,7 @@ export function LocationForm({ values, onSubmit }: Props) {
 					render={({ field }) => (
 						<div>
 							<Text size="xs" fw={500} mb={4}>
-								Raio: {field.value} km
+								{m.location_radius({ radius: field.value })}
 							</Text>
 							<Slider
 								min={5}
@@ -105,14 +106,14 @@ export function LocationForm({ values, onSubmit }: Props) {
 						loading={locating}
 						onClick={useMyLocation}
 					>
-						Minha posição
+						{m.location_my_position()}
 					</Button>
 					<Button
 						type="submit"
 						size="xs"
 						leftSection={<MagnifyingGlass size={14} />}
 					>
-						Buscar
+						{m.location_search()}
 					</Button>
 				</Group>
 			</Stack>

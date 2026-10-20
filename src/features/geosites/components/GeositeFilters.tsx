@@ -1,15 +1,14 @@
 import { Button, Group, MultiSelect, Select, Stack } from "@mantine/core";
 import { FunnelSimpleX } from "@phosphor-icons/react";
+import { m } from "~/paraglide/messages.js";
+import { categoryLabel, geoparkIdLabel, relevanceLabel } from "../labels";
 import {
 	GEOPARK_IDS,
-	GEOPARK_LABELS,
 	GEOSITE_CATEGORIES,
-	GEOSITE_CATEGORY_LABELS,
 	type GeoparkId,
 	GeoparkIdSchema,
 	type GeositeCategory,
 	GeositeCategorySchema,
-	RELEVANCE_LABELS,
 	type Relevance,
 	RelevanceSchema,
 } from "../schemas";
@@ -25,30 +24,30 @@ type Props = {
 	onChange: (next: FilterValues) => void;
 };
 
-const CATEGORY_OPTIONS = GEOSITE_CATEGORIES.map((c) => ({
-	value: c,
-	label: GEOSITE_CATEGORY_LABELS[c],
-}));
-const RELEVANCE_OPTIONS = RelevanceSchema.options.map((r) => ({
-	value: r,
-	label: RELEVANCE_LABELS[r],
-}));
-const GEOPARK_OPTIONS = GEOPARK_IDS.map((g) => ({
-	value: g,
-	label: GEOPARK_LABELS[g],
-}));
-
 /** Filters live in the URL (`cat`, `rel`, `gp`); empty values are omitted. */
 export function GeositeFilters({ value, onChange }: Props) {
+	// Built per render: labels follow the request's locale.
+	const categoryOptions = GEOSITE_CATEGORIES.map((c) => ({
+		value: c,
+		label: categoryLabel(c),
+	}));
+	const relevanceOptions = RelevanceSchema.options.map((r) => ({
+		value: r,
+		label: relevanceLabel(r),
+	}));
+	const geoparkOptions = GEOPARK_IDS.map((g) => ({
+		value: g,
+		label: geoparkIdLabel(g),
+	}));
 	const active = Boolean(value.cat?.length || value.rel || value.gp);
 
 	return (
 		<Stack gap="xs">
 			<MultiSelect
 				size="xs"
-				label="Temas"
-				placeholder={value.cat?.length ? undefined : "Todos"}
-				data={CATEGORY_OPTIONS}
+				label={m.filters_themes()}
+				placeholder={value.cat?.length ? undefined : m.filters_all_masculine()}
+				data={categoryOptions}
 				value={value.cat ?? []}
 				onChange={(next) => {
 					const cat = next
@@ -58,14 +57,14 @@ export function GeositeFilters({ value, onChange }: Props) {
 				}}
 				clearable
 				searchable
-				nothingFoundMessage="Nenhum tema"
+				nothingFoundMessage={m.filters_no_theme()}
 			/>
 			<Group grow gap="xs" align="flex-end">
 				<Select
 					size="xs"
-					label="Relevância"
-					placeholder="Todas"
-					data={RELEVANCE_OPTIONS}
+					label={m.filters_relevance()}
+					placeholder={m.filters_all_feminine()}
+					data={relevanceOptions}
 					value={value.rel ?? null}
 					onChange={(next) => {
 						const rel = RelevanceSchema.safeParse(next);
@@ -75,9 +74,9 @@ export function GeositeFilters({ value, onChange }: Props) {
 				/>
 				<Select
 					size="xs"
-					label="Geoparque UNESCO"
-					placeholder="Todos"
-					data={GEOPARK_OPTIONS}
+					label={m.filters_geopark()}
+					placeholder={m.filters_all_masculine()}
+					data={geoparkOptions}
 					value={value.gp ?? null}
 					onChange={(next) => {
 						const gp = GeoparkIdSchema.safeParse(next);
@@ -96,7 +95,7 @@ export function GeositeFilters({ value, onChange }: Props) {
 					}
 					style={{ alignSelf: "flex-start" }}
 				>
-					Limpar filtros
+					{m.filters_clear()}
 				</Button>
 			)}
 		</Stack>

@@ -42,5 +42,16 @@
 			</p>
 			<button type="button" onclick="location.reload()">Tentar de novo</button>
 		</main>
+		<script>
+			// Served in place of whatever page was requested: English under /en.
+			if (/^\/en(\/|$)/.test(location.pathname)) {
+				document.documentElement.lang = "en";
+				document.title = "Offline — GeoparqueBR";
+				document.querySelector("h1").textContent = "You're offline";
+				document.querySelector("p").textContent =
+					"This page hasn't been saved on this device yet. Geosites you've opened before are still available offline.";
+				document.querySelector("button").textContent = "Try again";
+			}
+		</script>
 	</body>
 </html>

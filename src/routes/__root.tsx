@@ -17,7 +17,10 @@ import {
 } from "@tanstack/react-router";
 import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
 import { type ReactNode, useEffect } from "react";
-import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "~/lib/site";
+import { ogLocaleTags } from "~/features/geosites/seo";
+import { getLocale } from "~/lib/i18n";
+import { DEFAULT_OG_IMAGE, SITE_NAME } from "~/lib/site";
+import { m } from "~/paraglide/messages.js";
 import { theme } from "~/theme";
 
 /**
@@ -35,8 +38,8 @@ export const Route = createRootRoute({
 		meta: [
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
-			{ title: "GeoparqueBR — Geoparques Mundiais da UNESCO no Brasil" },
-			{ name: "description", content: SITE_DESCRIPTION },
+			{ title: m.site_title() },
+			{ name: "description", content: m.site_description() },
 			{ name: "theme-color", content: "#1f1f22" },
 			{ name: "mobile-web-app-capable", content: "yes" },
 			{ name: "apple-mobile-web-app-title", content: SITE_NAME },
@@ -46,10 +49,10 @@ export const Route = createRootRoute({
 			},
 			// Share-preview defaults; geosite pages override title/description/image/url.
 			{ property: "og:site_name", content: SITE_NAME },
-			{ property: "og:locale", content: "pt_BR" },
+			...ogLocaleTags(),
 			{ property: "og:type", content: "website" },
 			{ property: "og:title", content: SITE_NAME },
-			{ property: "og:description", content: SITE_DESCRIPTION },
+			{ property: "og:description", content: m.site_description() },
 			{ property: "og:image", content: DEFAULT_OG_IMAGE },
 			{ name: "twitter:card", content: "summary_large_image" },
 		],
@@ -83,10 +86,10 @@ function NotFound() {
 		<Center h="100dvh">
 			<Stack align="center" gap="xs">
 				<Title order={1} size="h2">
-					Página não encontrada
+					{m.not_found_title()}
 				</Title>
 				<Anchor component={Link} to="/">
-					Voltar ao mapa
+					{m.back_to_map()}
 				</Anchor>
 			</Stack>
 		</Center>
@@ -104,7 +107,7 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 	return (
-		<html lang="pt-BR" {...mantineHtmlProps}>
+		<html lang={getLocale()} {...mantineHtmlProps}>
 			<head>
 				<ScriptOnce>{COLOR_SCHEME_SCRIPT}</ScriptOnce>
 				<HeadContent />

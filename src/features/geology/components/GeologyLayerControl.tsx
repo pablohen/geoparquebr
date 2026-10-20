@@ -1,5 +1,6 @@
 import { Paper, Slider, Stack, Switch, Text } from "@mantine/core";
 import { Stack as StackIcon } from "@phosphor-icons/react";
+import { m } from "~/paraglide/messages.js";
 
 type Props = {
 	visible: boolean;
@@ -30,15 +31,15 @@ export function GeologyLayerControl({
 			<Stack gap={6}>
 				<Switch
 					size="sm"
-					aria-label="Mapa geológico (SGB, 1:1M)"
+					aria-label={m.geology_layer()}
 					thumbIcon={<StackIcon size={10} />}
 					label={
 						<>
 							<Text span hiddenFrom="sm" size="sm">
-								Geologia
+								{m.geology_layer_short()}
 							</Text>
 							<Text span visibleFrom="sm" size="sm">
-								Mapa geológico (SGB, 1:1M)
+								{m.geology_layer()}
 							</Text>
 						</>
 					}
@@ -55,10 +56,10 @@ export function GeologyLayerControl({
 							value={opacity}
 							onChange={onOpacityChange}
 							label={(v) => `${Math.round(v * 100)}%`}
-							aria-label="Opacidade do mapa geológico"
+							aria-label={m.geology_opacity()}
 						/>
 						<Text size="xs" c="dimmed">
-							Toque/clique no mapa para identificar a unidade.
+							{m.geology_identify_hint()}
 						</Text>
 					</>
 				)}
