@@ -16,7 +16,8 @@
 		"db:seed": "tsx --env-file=.env scripts/seed.ts",
 		"models:fetch": "tsx --env-file=.env scripts/fetch-models.ts",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"brand:images": "tsx scripts/generate-brand-images.ts"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^6.0.0",
