@@ -28,12 +28,11 @@ import {
 	GEOSITE_CATEGORY_LABELS,
 	type Geosite,
 	type GeositeScores,
-	type GeositeWithDistance,
 	type Model3D,
 	type ModelProvenance,
 	RELEVANCE_LABELS,
 } from "../schemas";
-import { CATEGORY_COLORS, formatDistance } from "./categoryStyle";
+import { CATEGORY_COLORS } from "./categoryStyle";
 import { SketchfabEmbed } from "./SketchfabEmbed";
 
 // three.js + R3F (~600 kB) only load when a self-hosted model or the strata fallback is shown.
@@ -43,16 +42,26 @@ const ModelViewer = lazy(() => import("./ModelViewer"));
 type DrawerView = { tab?: DrawerTab; model?: number };
 
 type Props = {
-	geosite: GeositeWithDistance | null;
+	opened: boolean;
+	/** Full record, once loaded. */
+	geosite: Geosite | null;
+	status: "idle" | "pending" | "success" | "error";
 	view: DrawerView;
 	onViewChange: (next: DrawerView) => void;
 	onClose: () => void;
 };
 
-export function GeositeDrawer({ geosite, view, onViewChange, onClose }: Props) {
+export function GeositeDrawer({
+	opened,
+	geosite,
+	status,
+	view,
+	onViewChange,
+	onClose,
+}: Props) {
 	return (
 		<Drawer
-			opened={geosite !== null}
+			opened={opened}
 			onClose={onClose}
 			position="right"
 			size="xl"
@@ -69,12 +78,18 @@ export function GeositeDrawer({ geosite, view, onViewChange, onClose }: Props) {
 				)
 			}
 		>
-			{geosite && (
+			{geosite ? (
 				<GeositeDetail
 					geosite={geosite}
 					view={view}
 					onViewChange={onViewChange}
 				/>
+			) : status === "error" ? (
+				<Text c="dimmed">Geossítio não encontrado.</Text>
+			) : (
+				<Center py="xl">
+					<Loader type="dots" />
+				</Center>
 			)}
 		</Drawer>
 	);
@@ -91,7 +106,7 @@ function GeositeDetail({
 	view,
 	onViewChange,
 }: {
-	geosite: GeositeWithDistance;
+	geosite: Geosite;
 	view: DrawerView;
 	onViewChange: (next: DrawerView) => void;
 }) {
@@ -132,7 +147,7 @@ function GeositeDetail({
 	);
 }
 
-function Overview({ geosite }: { geosite: GeositeWithDistance }) {
+function Overview({ geosite }: { geosite: Geosite }) {
 	const [lng, lat] = geosite.location.coordinates;
 	return (
 		<Stack>
@@ -179,7 +194,6 @@ function Overview({ geosite }: { geosite: GeositeWithDistance }) {
 					{geosite.geologicAge && (
 						<Row label="Idade geológica">{formatAge(geosite.geologicAge)}</Row>
 					)}
-					<Row label="Distância">{formatDistance(geosite.distanceMeters)}</Row>
 					<Row label="Coordenadas">
 						{lat.toFixed(4)}, {lng.toFixed(4)}
 						{geosite.locationIsSensitive && (

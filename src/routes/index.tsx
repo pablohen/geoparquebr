@@ -1,13 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { GeositeExplorer } from "~/features/geosites/components/GeositeExplorer";
-import { getNearbyGeosites } from "~/features/geosites/geosites.functions";
+import { getGeositesInBounds } from "~/features/geosites/geosites.functions";
 import { ExplorerSearchSchema } from "~/features/geosites/schemas";
 
 export const Route = createFileRoute("/")({
 	validateSearch: ExplorerSearchSchema,
-	// `site` only toggles the drawer, so it is deliberately not a loader dep.
-	loaderDeps: ({ search: { lng, lat, radiusKm } }) => ({ lng, lat, radiusKm }),
-	loader: ({ deps }) => getNearbyGeosites({ data: deps }),
+	// Only the viewport and filters change the list; the drawer state
+	// (site/tab/model) is fetched separately and must not re-run this.
+	loaderDeps: ({ search: { bbox, cat, rel, gp } }) => ({ bbox, cat, rel, gp }),
+	loader: ({ deps }) =>
+		getGeositesInBounds({
+			data: {
+				bbox: deps.bbox,
+				categories: deps.cat,
+				relevance: deps.rel,
+				geoparkId: deps.gp,
+			},
+		}),
+	// Keep showing the current list while panning instead of a pending screen.
+	pendingMs: Number.POSITIVE_INFINITY,
 	component: ExplorerPage,
 });
 
@@ -20,8 +31,12 @@ function ExplorerPage() {
 		<GeositeExplorer
 			geosites={geosites}
 			search={search}
-			onSearchChange={(next) =>
-				navigate({ search: (prev) => ({ ...prev, ...next }) })
+			onSearchChange={(next, { replace = false } = {}) =>
+				navigate({
+					search: (prev) => ({ ...prev, ...next }),
+					replace,
+					resetScroll: false,
+				})
 			}
 		/>
 	);

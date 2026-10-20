@@ -5,12 +5,13 @@
 import type { Collection, Filter, ObjectId } from "mongodb";
 import type { z } from "zod";
 import { getDb } from "~/lib/db.server";
+import { bboxCenter, bboxPolygon } from "~/lib/geo";
 import {
 	type Geosite,
 	type GeositeInputSchema,
-	type GeositeWithDistance,
-	type NearbyGeositesQuery,
-	NearbyGeositesQuerySchema,
+	type GeositeSummary,
+	type GeositesInBoundsQuery,
+	GeositesInBoundsQuerySchema,
 } from "./schemas";
 
 /** Shape persisted in Mongo: the DTO minus `id`, plus `_id` and real Dates. */
@@ -128,41 +129,71 @@ function toDto<T extends GeositeDoc>(
 	};
 }
 
+const SUMMARY_FIELDS = {
+	_id: 1,
+	slug: 1,
+	name: 1,
+	municipality: 1,
+	state: 1,
+	categories: 1,
+	relevance: 1,
+	geoparkId: 1,
+	location: 1,
+	locationIsSensitive: 1,
+	distanceMeters: 1,
+} as const;
+
+type SummaryDoc = Pick<
+	GeositeDoc,
+	Exclude<keyof typeof SUMMARY_FIELDS, "distanceMeters">
+> & {
+	distanceMeters: number;
+};
+
 /**
- * Geosites ordered by distance from a point.
+ * Geosites inside a map viewport, nearest to its centre first.
  *
- * Uses `$geoNear` rather than a `find({ location: { $near } })` because the
- * aggregation stage also returns the computed distance, which the UI shows.
- * `$geoNear` must be the first stage and requires the 2dsphere index.
+ * `$geoNear` (first stage, needs the 2dsphere index) gives the distance and
+ * the ordering; its `query` restricts results to the box via `$geoWithin`.
+ * Only summary fields are returned; the drawer fetches the full record.
  */
-export async function findGeositesNear(
-	input: NearbyGeositesQuery,
-): Promise<GeositeWithDistance[]> {
-	const { lng, lat, radiusKm, categories, limit } =
-		NearbyGeositesQuerySchema.parse(input);
+export async function findGeositesInBounds(
+	input: GeositesInBoundsQuery,
+): Promise<GeositeSummary[]> {
+	const { bbox, categories, relevance, geoparkId, limit } =
+		GeositesInBoundsQuerySchema.parse(input);
 	const col = await geositesCollection();
 
-	const query: Filter<GeositeDoc> = categories?.length
-		? { categories: { $in: categories } }
-		: {};
+	const query: Filter<GeositeDoc> = {
+		location: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
+		...(categories?.length && { categories: { $in: categories } }),
+		...(relevance && { relevance }),
+		...(geoparkId && { geoparkId }),
+	};
 
 	const docs = await col
-		.aggregate<GeositeDoc & { distanceMeters: number }>([
+		.aggregate<SummaryDoc>([
 			{
 				$geoNear: {
-					near: { type: "Point", coordinates: [lng, lat] },
+					near: { type: "Point", coordinates: bboxCenter(bbox) },
 					key: "location",
 					spherical: true,
 					distanceField: "distanceMeters",
-					maxDistance: radiusKm * 1_000,
 					query,
 				},
 			},
 			{ $limit: limit },
+			{ $project: SUMMARY_FIELDS },
 		])
 		.toArray();
 
-	return docs.map(toDto);
+	return docs.map(({ _id, location, ...rest }) => ({
+		...rest,
+		id: _id.toHexString(),
+		location: rest.locationIsSensitive
+			? { ...location, coordinates: obfuscate(location.coordinates) }
+			: location,
+	}));
 }
 
 export async function findGeositeBySlug(slug: string): Promise<Geosite | null> {

@@ -1,10 +1,10 @@
 import { Badge, Group, NavLink, Stack, Text } from "@mantine/core";
 import { MapPinSimpleArea } from "@phosphor-icons/react";
-import { GEOSITE_CATEGORY_LABELS, type GeositeWithDistance } from "../schemas";
+import { GEOSITE_CATEGORY_LABELS, type GeositeSummary } from "../schemas";
 import { CATEGORY_COLORS, formatDistance } from "./categoryStyle";
 
 type Props = {
-	geosites: GeositeWithDistance[];
+	geosites: GeositeSummary[];
 	selectedSlug?: string;
 	onSelect: (slug: string) => void;
 };

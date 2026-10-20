@@ -14,7 +14,7 @@ import { Controller, useForm } from "react-hook-form";
 import { LocationFormSchema, type LocationFormValues } from "../schemas";
 
 type Props = {
-	/** Current URL state; the form re-syncs when it changes (e.g. "search this area"). */
+	/** Derived from the map viewport; the form re-syncs whenever the map moves. */
 	values: LocationFormValues;
 	onSubmit: (values: LocationFormValues) => void;
 };

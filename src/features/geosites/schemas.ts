@@ -257,35 +257,67 @@ export const GeositeSchema = GeositeInputSchema.extend({
 });
 export type Geosite = z.infer<typeof GeositeSchema>;
 
-export const GeositeWithDistanceSchema = GeositeSchema.extend({
-	distanceMeters: z.number().nonnegative(),
-});
-export type GeositeWithDistance = z.infer<typeof GeositeWithDistanceSchema>;
-
 // ---------------------------------------------------------------------------
 // Queries
 // ---------------------------------------------------------------------------
 
-export const NearbyGeositesQuerySchema = z.object({
-	lng: LongitudeSchema,
-	lat: LatitudeSchema,
-	radiusKm: z.number().positive().max(1_000).default(250),
-	categories: z.array(GeositeCategorySchema).optional(),
-	limit: z.number().int().min(1).max(200).default(50),
-});
-export type NearbyGeositesQuery = z.input<typeof NearbyGeositesQuerySchema>;
+/** `[west, south, east, north]` in degrees. Brazil never crosses the antimeridian. */
+export const BBoxSchema = z
+	.tuple([LongitudeSchema, LatitudeSchema, LongitudeSchema, LatitudeSchema])
+	.refine(
+		([w, s, e, n]) => w < e && s < n,
+		"expected [west, south, east, north]",
+	);
+export type BBox = z.infer<typeof BBoxSchema>;
 
-/** Default map centre: Chapada do Araripe, Brazil's first UNESCO Global Geopark. */
-export const DEFAULT_CENTER = { lng: -39.6, lat: -7.25 } as const;
+/** Default view: the Chapada do Araripe (Brazil's first UNESCO Global Geopark) and the Rio do Peixe basin. */
+export const DEFAULT_BBOX: BBox = [-40.6, -7.9, -37.9, -6.3];
+
+/** Optional filters shared by the URL, the filter UI and the query. */
+export const GeositeFiltersSchema = z.object({
+	categories: z.array(GeositeCategorySchema).optional(),
+	relevance: RelevanceSchema.optional(),
+	geoparkId: GeoparkIdSchema.optional(),
+});
+export type GeositeFilters = z.infer<typeof GeositeFiltersSchema>;
+
+export const GeositesInBoundsQuerySchema = GeositeFiltersSchema.extend({
+	bbox: BBoxSchema,
+	limit: z.number().int().min(1).max(1_000).default(500),
+});
+export type GeositesInBoundsQuery = z.input<typeof GeositesInBoundsQuerySchema>;
+
+/** Light list/map record; the drawer loads the full geosite by slug. */
+export const GeositeSummarySchema = GeositeSchema.pick({
+	id: true,
+	slug: true,
+	name: true,
+	municipality: true,
+	state: true,
+	categories: true,
+	relevance: true,
+	geoparkId: true,
+	location: true,
+	locationIsSensitive: true,
+}).extend({
+	/** Distance from the centre of the queried bounding box. */
+	distanceMeters: z.number().nonnegative(),
+});
+export type GeositeSummary = z.infer<typeof GeositeSummarySchema>;
 
 export const DrawerTabSchema = z.enum(["overview", "model"]);
 export type DrawerTab = z.infer<typeof DrawerTabSchema>;
 
-/** URL search params for the explorer route (coerced, since URLs are strings). */
+/**
+ * URL search params for the explorer route. Invalid values fall back to
+ * defaults instead of erroring, so stale or hand-edited links still open.
+ */
 export const ExplorerSearchSchema = z.object({
-	lng: z.coerce.number().pipe(LongitudeSchema).catch(DEFAULT_CENTER.lng),
-	lat: z.coerce.number().pipe(LatitudeSchema).catch(DEFAULT_CENTER.lat),
-	radiusKm: z.coerce.number().positive().max(1_000).catch(250),
+	/** Map viewport; written back by the map on every move. */
+	bbox: BBoxSchema.catch(DEFAULT_BBOX),
+	cat: z.array(GeositeCategorySchema).min(1).optional().catch(undefined),
+	rel: RelevanceSchema.optional().catch(undefined),
+	gp: GeoparkIdSchema.optional().catch(undefined),
 	site: SlugSchema.optional().catch(undefined),
 	/** Drawer tab; omitted means "overview". */
 	tab: DrawerTabSchema.optional().catch(undefined),
@@ -294,9 +326,10 @@ export const ExplorerSearchSchema = z.object({
 });
 export type ExplorerSearch = z.infer<typeof ExplorerSearchSchema>;
 
-/** The "search around a point" form in the sidebar. */
-export const LocationFormSchema = NearbyGeositesQuerySchema.pick({
-	lng: true,
-	lat: true,
-}).extend({ radiusKm: z.number().positive().max(1_000) });
+/** "Go to a point" form in the sidebar; the radius sets how much area to show. */
+export const LocationFormSchema = z.object({
+	lng: LongitudeSchema,
+	lat: LatitudeSchema,
+	radiusKm: z.number().positive().max(1_000),
+});
 export type LocationFormValues = z.infer<typeof LocationFormSchema>;

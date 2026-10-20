@@ -6,12 +6,12 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { findGeositeBySlug, findGeositesNear } from "./geosites.server";
-import { NearbyGeositesQuerySchema } from "./schemas";
+import { findGeositeBySlug, findGeositesInBounds } from "./geosites.server";
+import { GeositesInBoundsQuerySchema } from "./schemas";
 
-export const getNearbyGeosites = createServerFn({ method: "GET" })
-	.validator(NearbyGeositesQuerySchema)
-	.handler(({ data }) => findGeositesNear(data));
+export const getGeositesInBounds = createServerFn({ method: "GET" })
+	.validator(GeositesInBoundsQuerySchema)
+	.handler(({ data }) => findGeositesInBounds(data));
 
 export const getGeositeBySlug = createServerFn({ method: "GET" })
 	.validator(z.object({ slug: z.string().min(1) }))

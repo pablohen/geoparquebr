@@ -15,7 +15,14 @@ import { useDisclosure } from "@mantine/hooks";
 import { Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
-import type { ExplorerSearch, GeositeWithDistance } from "../schemas";
+import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
+import { useServerQuery } from "~/lib/use-server-query";
+import { getGeositeBySlug } from "../geosites.functions";
+import type {
+	ExplorerSearch,
+	GeositeSummary,
+	LocationFormValues,
+} from "../schemas";
 import { GeositeDrawer } from "./GeositeDrawer";
 import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
@@ -23,19 +30,41 @@ import { LocationForm } from "./LocationForm";
 // MapLibre touches `window` at import time, so it only loads in the browser.
 const GeositeMap = lazy(() => import("./GeositeMap"));
 
+type SearchChange = (
+	next: Partial<ExplorerSearch>,
+	options?: { replace?: boolean },
+) => void;
+
 type Props = {
-	geosites: GeositeWithDistance[];
+	geosites: GeositeSummary[];
 	search: ExplorerSearch;
-	onSearchChange: (next: Partial<ExplorerSearch>) => void;
+	onSearchChange: SearchChange;
 };
+
+/** Centre and half-height of the viewport, as "go to point" form values. */
+function formValuesFor(bbox: BBox): LocationFormValues {
+	const [lng, lat] = bboxCenter(bbox);
+	const halfHeightKm = ((bbox[3] - bbox[1]) / 2) * 111.32;
+	return {
+		lng: Math.round(lng * 1e4) / 1e4,
+		lat: Math.round(lat * 1e4) / 1e4,
+		radiusKm: Math.min(1_000, Math.max(5, Math.round(halfHeightKm / 5) * 5)),
+	};
+}
 
 export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure();
-	const selected = geosites.find((g) => g.slug === search.site) ?? null;
 
-	const select = (slug: string) => {
+	// The full record is fetched by slug, so a shared link opens the drawer
+	// even when the geosite lies outside the current viewport or filters.
+	const slug = search.site;
+	const detail = useServerQuery(slug ? `geosite:${slug}` : null, () =>
+		getGeositeBySlug({ data: { slug: slug as string } }),
+	);
+
+	const select = (next: string) => {
 		// A different geosite starts on its overview tab.
-		onSearchChange({ site: slug, tab: undefined, model: undefined });
+		onSearchChange({ site: next, tab: undefined, model: undefined });
 		closeNav();
 	};
 
@@ -78,17 +107,17 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 					style={{ borderBottom: "1px solid var(--app-shell-border-color)" }}
 				>
 					<LocationForm
-						values={{
-							lng: search.lng,
-							lat: search.lat,
-							radiusKm: search.radiusKm,
-						}}
-						onSubmit={(values) => onSearchChange(values)}
+						values={formValuesFor(search.bbox)}
+						onSubmit={({ lng, lat, radiusKm }) =>
+							onSearchChange({
+								bbox: roundBBox(bboxAround([lng, lat], radiusKm)),
+							})
+						}
 					/>
 				</AppShell.Section>
 				<AppShell.Section px="md" pt="sm">
 					<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-						{geosites.length} geossítios em {search.radiusKm} km
+						{geosites.length} geossítios nesta área
 					</Text>
 				</AppShell.Section>
 				<AppShell.Section grow component={ScrollArea} p="xs">
@@ -106,10 +135,14 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 						<Suspense fallback={<MapFallback />}>
 							<GeositeMap
 								geosites={geosites}
-								center={{ lng: search.lng, lat: search.lat }}
+								bbox={search.bbox}
 								selectedSlug={search.site}
+								focus={detail.data?.location.coordinates}
 								onSelect={select}
-								onSearchArea={(center) => onSearchChange(center)}
+								// Panning shouldn't flood history; only explicit actions push.
+								onViewportChange={(bbox) =>
+									onSearchChange({ bbox }, { replace: true })
+								}
 							/>
 						</Suspense>
 					</ClientOnly>
@@ -117,7 +150,9 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 			</AppShell.Main>
 
 			<GeositeDrawer
-				geosite={selected}
+				opened={slug !== undefined}
+				geosite={detail.data ?? null}
+				status={detail.status}
 				view={{ tab: search.tab, model: search.model }}
 				onViewChange={(view) => onSearchChange(view)}
 				onClose={() =>
