@@ -21,6 +21,7 @@ Use **pnpm**, never npm or yarn.
 | Run production build | `pnpm start` |
 | Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
 | Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`) |
+| Regenerate share card + app icons | `pnpm brand:images` (commit the PNGs) |
 | Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
 | Local MongoDB | `docker compose up -d` |
 
@@ -75,6 +76,14 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - **3D model provenance must be honest.** Only attach a model where you can justify the link, and set `provenance` (`locality` / `region` / `illustrative`) accordingly. Only CC BY models may be self-hosted; view-only ones use the Sketchfab embed. See [3D models](docs/3d-models.md).
 
 - Upstream geology APIs (SGB OGC API, GBIF) are cached in `api_cache` through `cached()` (`src/lib/cache.server.ts`). Each source must fail independently, returning `status: "unavailable"`. Bump the cache-key version when a mapping changes.
+
+## Pages, sharing and offline
+
+- **Routes.** `/` is the map explorer. `/geossitios/$slug` is the indexable page for one geosite, server-rendered, with Open Graph, Twitter and JSON-LD built in `src/features/geosites/seo.ts`. `/sitemap.xml` is a server route. The public origin is `SITE_URL` in `src/lib/site.ts`.
+- **Share images.** Only use a geosite's photo when `getGeositePage` confirms it loads, since about 2% of GEOSSIT links are dead; otherwise use `/og-default.png`.
+- **Service worker** (`public/sw.js`, registered in production only). Bump `VERSION` whenever its caching rules change. Keep `/assets/*` cache-first (content-hashed), pages and `/_serverFn/*` network-first, and map tiles stale-while-revalidate.
+- **Start URL.** The manifest `start_url` must be the default-viewport URL (`/?bbox=…`); `manifest.test.ts` keeps it in sync with `DEFAULT_BBOX`. A redirect (`/` → `/?bbox=…`) can't be served offline.
+- **Testing offline.** The in-app browser pane doesn't support service workers, and CDP network emulation doesn't apply to service-worker fetches. Test with a production build in real Chrome and actually stop the server.
 
 ## Deployment
 

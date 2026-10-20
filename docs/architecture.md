@@ -66,6 +66,30 @@ sequenceDiagram
 - Panning or zooming the map replaces `bbox` in the URL, which re-runs only the list query. The route sets `pendingMs: Infinity`, so the current list stays on screen meanwhile.
 - The drawer and its tabs use [`useServerQuery`](../src/lib/use-server-query.ts), a tiny keyed promise cache. Opening a geosite or switching tabs therefore never re-runs the list loader, and returning to a site is instant.
 
+## Routes
+
+| Path | What |
+| --- | --- |
+| `/` | map explorer; URL holds `bbox`, filters and drawer state |
+| `/geossitios/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
+| `/sitemap.xml` | server route listing every geosite page |
+| `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
+
+The map drawer and the geosite page render the same `GeositeDetail` and `GeositeActions` (share, "Como chegar", and links between map and page).
+
+## Offline (PWA)
+
+`public/sw.js` registers in production builds only:
+
+| Requests | Strategy | Cache |
+| --- | --- | --- |
+| `/assets/*` (content-hashed) | cache first | `assets-v1` |
+| page navigations | network first; offline: exact URL, any cached copy of the same `/geossitios/…` page, or `/offline.html` | `pages-v1` (60) |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v1` (300) |
+| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v1` (1500) |
+
+**Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen. **Needs a connection:** viewports and geosites you've never loaded. Panning offline shows an empty list instead of the error screen.
+
 ## UI composition
 
 ```

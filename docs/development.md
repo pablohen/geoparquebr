@@ -48,6 +48,7 @@ Server code reads them through `process.env`. Nothing secret should ever use the
 | `pnpm test` | Vitest: unit tests, plus MongoDB integration tests when `MONGODB_URI` is set |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm db:seed` | `tsx --env-file=.env scripts/seed.ts`: indexes, GEOSSIT sync (upsert + prune) and 3D model attachments; safe to re-run |
+| `pnpm brand:images` | renders `public/og-default.png` (1200×630 share card) and the PWA icons from SVG; commit the output |
 | `pnpm models:fetch` | downloads CC BY models from Sketchfab, optimizes them into `public/models/` (`--force` to refresh) |
 
 ## Checks before committing
@@ -60,6 +61,8 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 - **Unit:** geo helpers, taxon parsing, ICS colours, GEOSSIT mapping, model catalog, Photon parsing, and URL/schema fallbacks.
 - **Integration:** viewport query, filters, text search, sensitive rounding, sync/prune, and the TTL cache. These run against `MONGODB_URI` in a throwaway database.
+
+**Service worker.** It only registers in production builds. To test it: `pnpm build`, then run `node .output/server/index.mjs` with `MONGODB_URI` set, open it in real Chrome (the in-app browser pane doesn't support service workers), browse, then stop the server to see the offline behaviour. DevTools' "Offline" checkbox doesn't apply to service-worker fetches.
 
 There are no browser end-to-end tests yet. For UI work, open the page and check:
 
