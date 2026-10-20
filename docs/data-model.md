@@ -88,6 +88,7 @@ Created idempotently by `ensureGeositeIndexes()`, which `pnpm db:seed` calls:
 | `slug_unique` | `{ slug: 1 }`, unique | lookups by slug |
 | `geopark_categories` | `{ geoparkId: 1, categories: 1 }` | filtering per geopark and category |
 | `source_unique` | `{ "source.system": 1, "source.id": 1 }`, unique, partial | sync upsert key |
+| `text_search` | text on `name` (10), `municipality` (5), `description` (1); Portuguese | header search |
 
 The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own TTL index on `expiresAt`, created on first use.
 
@@ -124,6 +125,10 @@ The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own
 
 `findOne({ slug })`, called through `getGeositeBySlug`, which throws TanStack Router's `notFound()` when nothing matches. Because the drawer loads by slug, a shared link opens the right geosite even when it lies outside the viewport or the active filters.
 
+### Search: `searchGeosites`
+
+This runs a `$text` search sorted by `textScore`, which matches whole stemmed words and is diacritic-insensitive. When that returns fewer than `limit` results, they're topped up with a case-insensitive, accent-stripped substring match on name, municipality and abstract, so partial input like "ptero" works. The query is regex-escaped. Place search (Photon/OSM) is a separate server function, so it never slows down geosite results.
+
 ### Exact location: `findGeositeLocation`
 
 This returns the **unrounded** coordinates. It's only for server-side lookups (fossils, strata); never return its result to the client.
@@ -139,6 +144,7 @@ This returns the **unrounded** coordinates. It's only for server-side lookups (f
 | `site` | slug? | `undefined` |
 | `tab` | `overview` \| `model` \| `fossils`? | `undefined` (overview) |
 | `model` | int ≥ 0? | `undefined` (first entry); out-of-range indexes fall back to 0 |
+| `geo` | `true`? | `undefined` (geology layer off) |
 
 - **Map ownership.** The map writes `bbox` back on every move using history *replace*, so panning doesn't fill the back stack. It only re-fits to `bbox` when the value changes from outside (location form, back/forward).
 - **What re-runs the loader.** Only `bbox`, `cat`, `rel` and `gp` are loader deps. `site`, `tab` and `model` are drawer state, fetched separately.
@@ -156,6 +162,7 @@ These are per-geosite queries to public APIs, made by server functions in [`src/
 | `getGeositeFossils` | SGB OGC API `geologia/ocorrencias-fossiliferas` (bbox, then haversine filter) | 5 km | 7 days | "Fósseis" tab |
 | `getGeositeFossils` | GBIF `occurrence/search?geoDistance=…&basisOfRecord=FOSSIL_SPECIMEN` (first 100) | 5 km | 7 days | "Fósseis" tab |
 | `getGeositeStrata` | SGB OGC API `geologia/litoestratigrafia/{25000…1000000}` with `skipGeometry` | ~3 km box | 30 days | 3D tab, "Coluna estratigráfica" |
+| `getGeologyAt` | same API, 1:1,000,000 only (matches the map layer) | ~50 m box at a clicked point | 30 days, per ~100 m | geology layer identify card |
 
 **Fossil records.** Taxa recorded in ALL CAPS are sentence-cased. Comma-separated authorship years ("Dastilbe elongatus Santos, 1947") are kept with their name rather than split into fake taxa. For sensitive geosites, distances are rounded to whole kilometres. GBIF licences vary per record (CC0 / CC-BY / CC-BY-NC), and each card shows its own.
 

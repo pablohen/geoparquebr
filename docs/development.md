@@ -45,16 +45,23 @@ Server code reads them through `process.env`. Nothing secret should ever use the
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | `biome check .` (lint + format + import sorting) |
 | `pnpm format` | `biome check --write .` |
+| `pnpm test` | Vitest: unit tests, plus MongoDB integration tests when `MONGODB_URI` is set |
+| `pnpm test:watch` | Vitest in watch mode |
 | `pnpm db:seed` | `tsx --env-file=.env scripts/seed.ts`: indexes, GEOSSIT sync (upsert + prune) and 3D model attachments; safe to re-run |
 | `pnpm models:fetch` | downloads CC BY models from Sketchfab, optimizes them into `public/models/` (`--force` to refresh) |
 
 ## Checks before committing
 
 ```bash
-pnpm lint && pnpm typecheck && pnpm build
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
-There's no automated test suite yet. For UI work, open the page and check:
+`pnpm test` runs ~80 tests in under a second:
+
+- **Unit:** geo helpers, taxon parsing, ICS colours, GEOSSIT mapping, model catalog, Photon parsing, and URL/schema fallbacks.
+- **Integration:** viewport query, filters, text search, sensitive rounding, sync/prune, and the TTL cache. These run against `MONGODB_URI` in a throwaway database.
+
+There are no browser end-to-end tests yet. For UI work, open the page and check:
 
 - **Map:** pins render and the console shows no MapLibre worker errors.
 - **List:** clicking an item opens the drawer, highlights the item and zooms the map.
@@ -106,4 +113,6 @@ docs/                             these docs
 | `Skipped GEOSSIT <id>: …` | That record failed validation and the rest still imported. Adjust the mapping or limits in `geossit.server.ts` / `schemas.ts` |
 | Geosite photo missing | About 2% of GEOSSIT photo links 404 upstream; the drawer hides them |
 | `SKETCHFAB_TOKEN is not set` | Add an API token from https://sketchfab.com/settings/password to `.env` |
+| Search shows geosites but places arrive late or never | Photon (komoot's public instance) often takes 5–8 s, and its timeout is 12 s. Place search is independent and never blocks geosite results |
+| Geology layer blank below zoom 4 | SGB's tile cache starts at web zoom 4, so zoom in |
 | Biome errors in `routeTree.gen.ts` | It's excluded in `biome.json`; don't remove that entry |

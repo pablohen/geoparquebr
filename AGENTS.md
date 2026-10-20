@@ -18,11 +18,19 @@ Use **pnpm**, never npm or yarn.
 | Lint + format check | `pnpm lint` |
 | Auto-fix lint/format | `pnpm format` |
 | Production build | `pnpm build` |
+| Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
 | Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`) |
 | Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
 | Local MongoDB | `docker compose up -d` |
 
-Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm build`. There is no test suite yet. For UI changes, also load the page and check the browser console.
+Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && pnpm build`. For UI changes, also load the page and check the browser console.
+
+## Tests
+
+- **Vitest**, configured in `vitest.config.ts`, which is separate from the app's Vite config, so tests don't load the TanStack Start plugin. Tests live next to the code as `*.test.ts`.
+- **Integration tests** are `*.integration.test.ts`. They need `MONGODB_URI` and are skipped without it. Each run uses a throwaway `geoparquebr_test_*` database and drops it afterwards.
+- **What to test.** Keep parsing and mapping logic (GEOSSIT, taxa, Photon, schemas) pure and exported, so it can be tested without network access. Don't hit live external APIs in tests; feed them fixtures instead.
+- **Bugs.** Add a regression test with every bug fix.
 
 ## Stack and versions
 
@@ -70,6 +78,8 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm build`. 
 
 - **MapLibre worker:** MapLibre 6 finds its web worker relative to its own module URL, and that breaks under Vite bundling. `GeositeMap.tsx` imports `maplibre-gl/dist/maplibre-gl-worker.mjs?url` and calls `setWorkerUrl` before creating a map. Keep that call if you refactor.
 - **MapLibre 6 has no default export.** Use named imports (`Map`, `NavigationControl`, …).
+- **SGB geology tiles** are an ArcGIS cache whose level 0 is web zoom 4. `GeositeMap` registers an `sgb-geology://` MapLibre protocol that subtracts the offset; a plain `{z}` URL template would request the wrong level, or 404.
+- **Search lookups stay independent.** Photon place search is slow (5–8 s), so geosite and place search are separate server functions. Don't merge them into one `Promise.all` that the UI waits on.
 - **No drei `<Html>`.** Each `<Html>` mounts its own React root, and React 19 logs "synchronously unmount a root" errors. Put overlays (legends, errors, loaders) in plain DOM outside the `<Canvas>`.
 - **Color-scheme script:** don't use Mantine's `<ColorSchemeScript>`, which triggers a React 19 "script tag" warning on hydration. `__root.tsx` injects the same script with TanStack's `<ScriptOnce>`.
 - **Don't gate MapLibre handlers on `map.loaded()`.** It's false whenever tiles are still streaming, i.e. right after most moves. `GeositeMap` keeps its own `ready` flag set in `on("load")`.

@@ -70,13 +70,15 @@ sequenceDiagram
 
 ```
 GeositeExplorer (AppShell)
-├── Header: brand, color-scheme toggle
+├── Header: brand, SearchBox (geosites + places), color-scheme toggle
 ├── Navbar
 │   ├── LocationForm      RHF + zodResolver: jump the viewport to a point + radius
 │   ├── GeositeFilters    themes / relevance / UNESCO geopark → cat, rel, gp
 │   └── GeositeList       summaries in the viewport, nearest to centre first
 ├── Main
-│   └── <ClientOnly> GeositeMap (lazy)   clustered GeoJSON source; owns the viewport
+│   ├── <ClientOnly> GeositeMap (lazy)   clustered GeoJSON + SGB geology raster; owns the viewport
+│   ├── GeologyLayerControl   toggle (?geo=true) + opacity
+│   └── GeologyAtPointCard    unit under a map click (geology layer on)
 └── GeositeDrawer         opened by ?site=, loads the full geosite by slug
     ├── Visão geral       GEOSSIT data, photo, scores, credit
     ├── Modelo 3D ─┬─ SketchfabEmbed                iframe, provider: "sketchfab"
