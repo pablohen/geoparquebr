@@ -1,0 +1,31 @@
+{
+	"name": "GeoparqueBR — Geossítios do Brasil",
+	"short_name": "GeoparqueBR",
+	"description": "Explore geossítios, fósseis, estratos e cavernas dos geoparques e do patrimônio geológico do Brasil.",
+	"lang": "pt-BR",
+	"start_url": "/?bbox=%5B-40.6%2C-7.9%2C-37.9%2C-6.3%5D",
+	"scope": "/",
+	"display": "standalone",
+	"orientation": "any",
+	"background_color": "#1f1f22",
+	"theme_color": "#1f1f22",
+	"categories": ["education", "travel", "navigation"],
+	"icons": [
+		{
+			"src": "/icons/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/maskable-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
+}

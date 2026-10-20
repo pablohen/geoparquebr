@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1f1f22" />
+		<title>Sem conexão — GeoparqueBR</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<style>
+			:root { color-scheme: dark; }
+			body {
+				margin: 0;
+				min-height: 100dvh;
+				display: grid;
+				place-items: center;
+				background: #1f1f22;
+				color: #e9e9ee;
+				font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+			}
+			main { max-width: 26rem; padding: 1.5rem; text-align: center; }
+			h1 { font-size: 1.4rem; margin: 1rem 0 0.5rem; }
+			p { color: #b8b8c0; }
+			button {
+				margin-top: 1rem;
+				padding: 0.6rem 1.2rem;
+				border: 0;
+				border-radius: 999px;
+				background: #ea7a3a;
+				color: #fff;
+				font: inherit;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<img src="/favicon.svg" width="56" height="56" alt="" />
+			<h1>Sem conexão</h1>
+			<p>
+				Esta página ainda não foi salva no aparelho. Os geossítios que você já
+				abriu continuam disponíveis offline.
+			</p>
+			<button type="button" onclick="location.reload()">Tentar de novo</button>
+		</main>
+	</body>
+</html>

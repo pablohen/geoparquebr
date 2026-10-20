@@ -4,6 +4,22 @@ import { getGeositesInBounds } from "~/features/geosites/geosites.functions";
 import { ExplorerSearchSchema } from "~/features/geosites/schemas";
 import { SITE_URL } from "~/lib/site";
 
+/**
+ * Offline (installed app in the field), panning to an uncached viewport has
+ * no data; show an empty list instead of the error screen. Online errors
+ * still surface.
+ */
+async function listGeositesOrEmptyOffline(
+	...args: Parameters<typeof getGeositesInBounds>
+) {
+	try {
+		return await getGeositesInBounds(...args);
+	} catch (err) {
+		if (typeof navigator !== "undefined" && !navigator.onLine) return [];
+		throw err;
+	}
+}
+
 export const Route = createFileRoute("/")({
 	validateSearch: ExplorerSearchSchema,
 	// The map URL carries viewport state; canonicalise to the bare origin.
@@ -19,7 +35,7 @@ export const Route = createFileRoute("/")({
 	// (site/tab/model) is fetched separately and must not re-run this.
 	loaderDeps: ({ search: { bbox, cat, rel, gp } }) => ({ bbox, cat, rel, gp }),
 	loader: ({ deps }) =>
-		getGeositesInBounds({
+		listGeositesOrEmptyOffline({
 			data: {
 				bbox: deps.bbox,
 				categories: deps.cat,

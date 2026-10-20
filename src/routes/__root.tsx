@@ -16,7 +16,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "~/lib/site";
 import { theme } from "~/theme";
 
@@ -38,6 +38,12 @@ export const Route = createRootRoute({
 			{ title: "GeoparqueBR — Geoparques Mundiais da UNESCO no Brasil" },
 			{ name: "description", content: SITE_DESCRIPTION },
 			{ name: "theme-color", content: "#1f1f22" },
+			{ name: "mobile-web-app-capable", content: "yes" },
+			{ name: "apple-mobile-web-app-title", content: SITE_NAME },
+			{
+				name: "apple-mobile-web-app-status-bar-style",
+				content: "black-translucent",
+			},
 			// Share-preview defaults; geosite pages override title/description/image/url.
 			{ property: "og:site_name", content: SITE_NAME },
 			{ property: "og:locale", content: "pt_BR" },
@@ -51,11 +57,26 @@ export const Route = createRootRoute({
 			{ rel: "stylesheet", href: mantineCss },
 			{ rel: "stylesheet", href: maplibreCss },
 			{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+			{ rel: "manifest", href: "/manifest.webmanifest" },
+			{ rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
 		],
 	}),
 	component: RootComponent,
 	notFoundComponent: NotFound,
 });
+
+/**
+ * Registers public/sw.js (install + offline). Production only: in dev it
+ * would cache Vite's unhashed modules and serve stale code.
+ */
+function useServiceWorker() {
+	useEffect(() => {
+		if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+		navigator.serviceWorker.register("/sw.js").catch((err) => {
+			console.warn("service worker registration failed:", err);
+		});
+	}, []);
+}
 
 function NotFound() {
 	return (
@@ -73,6 +94,7 @@ function NotFound() {
 }
 
 function RootComponent() {
+	useServiceWorker();
 	return (
 		<RootDocument>
 			<Outlet />
