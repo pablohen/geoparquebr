@@ -8,7 +8,7 @@ import {
 	Image,
 	Loader,
 	Progress,
-	SegmentedControl,
+	Select,
 	SimpleGrid,
 	Spoiler,
 	Stack,
@@ -30,11 +30,13 @@ import {
 	type GeositeScores,
 	type GeositeWithDistance,
 	type Model3D,
+	type ModelProvenance,
 	RELEVANCE_LABELS,
 } from "../schemas";
 import { CATEGORY_COLORS, formatDistance } from "./categoryStyle";
+import { SketchfabEmbed } from "./SketchfabEmbed";
 
-// three.js + R3F (~600 kB) only load when someone opens the 3D tab.
+// three.js + R3F (~600 kB) only load when a self-hosted model or the strata fallback is shown.
 const ModelViewer = lazy(() => import("./ModelViewer"));
 
 /** Drawer UI state, owned by the route's search params so it survives reloads and links. */
@@ -285,6 +287,13 @@ function formatAge(age: NonNullable<Geosite["geologicAge"]>): string {
 	return [age.period, age.formation].filter(Boolean).join(" — ") + range;
 }
 
+const PROVENANCE_NOTES = {
+	locality: "Coletado/digitalizado neste geossítio.",
+	region:
+		"Exemplar da mesma bacia/região — local exato de coleta não informado.",
+	illustrative: "Exemplo ilustrativo — não provém deste geossítio.",
+} as const satisfies Record<ModelProvenance, string>;
+
 function ModelsPanel({
 	models,
 	index: requested,
@@ -301,10 +310,12 @@ function ModelsPanel({
 	return (
 		<Stack>
 			{models.length > 1 && (
-				<SegmentedControl
+				<Select
+					label="Modelo"
 					value={String(index)}
-					onChange={(v) => onIndexChange(Number(v))}
+					onChange={(v) => v !== null && onIndexChange(Number(v))}
 					data={models.map((m, i) => ({ value: String(i), label: m.title }))}
+					allowDeselect={false}
 				/>
 			)}
 			<Box
@@ -312,20 +323,42 @@ function ModelsPanel({
 				bg="dark.8"
 				style={{ borderRadius: "var(--mantine-radius-md)", overflow: "hidden" }}
 			>
-				<ClientOnly fallback={<ViewerFallback />}>
-					<Suspense fallback={<ViewerFallback />}>
-						<ModelViewer model={model} />
-					</Suspense>
-				</ClientOnly>
+				{model?.provider === "sketchfab" ? (
+					<SketchfabEmbed key={model.uid} uid={model.uid} title={model.title} />
+				) : (
+					<ClientOnly fallback={<ViewerFallback />}>
+						<Suspense fallback={<ViewerFallback />}>
+							<ModelViewer model={model} />
+						</Suspense>
+					</ClientOnly>
+				)}
 			</Box>
 			{model ? (
-				<Text size="xs" c="dimmed">
-					{model.attribution} · {model.license}
-					{model.realWorldSizeM && ` · ${model.realWorldSizeM} m`}{" "}
-					<Anchor href={model.url} size="xs" target="_blank" rel="noreferrer">
-						{model.format.toUpperCase()}
-					</Anchor>
-				</Text>
+				<Stack gap={2}>
+					<Text size="sm" fw={600}>
+						{model.title}
+					</Text>
+					<Text size="xs" c="dimmed">
+						{PROVENANCE_NOTES[model.provenance]}
+					</Text>
+					<Text size="xs" c="dimmed">
+						{model.attribution} · {model.license}
+						{model.realWorldSizeM && ` · ${model.realWorldSizeM} m`}
+						{model.sourceUrl && (
+							<>
+								{" · "}
+								<Anchor
+									href={model.sourceUrl}
+									target="_blank"
+									rel="noreferrer"
+									size="xs"
+								>
+									Fonte <ArrowSquareOut size={12} />
+								</Anchor>
+							</>
+						)}
+					</Text>
+				</Stack>
 			) : (
 				<Text size="xs" c="dimmed">
 					Ainda não há modelo digitalizado para este geossítio — exibindo uma

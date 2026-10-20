@@ -1,8 +1,9 @@
 /**
- * Syncs the geosites collection from GEOSSIT (SGB/CPRM).
+ * Syncs the geosites collection from GEOSSIT (SGB/CPRM) and attaches 3D models.
  * Usage: pnpm db:seed   (reads MONGODB_URI / MONGODB_DB from .env)
  *
  * Idempotent: re-running updates changed records and removes ones GEOSSIT dropped.
+ * Run `pnpm models:fetch` first to self-host CC BY models instead of embedding them.
  */
 import {
 	ensureGeositeIndexes,
@@ -13,6 +14,7 @@ import {
 	fetchGeossitFeatures,
 	mapGeossitFeatures,
 } from "~/features/geosites/geossit.server";
+import { modelsFor } from "~/features/geosites/model-catalog.server";
 
 const col = await geositesCollection();
 await ensureGeositeIndexes(col);
@@ -27,17 +29,19 @@ const raw = await fetchGeossitFeatures();
 const { geosites, skipped } = mapGeossitFeatures(raw);
 for (const s of skipped) console.warn(`Skipped GEOSSIT ${s.id}: ${s.reason}`);
 
-const sourced = geosites.map((g) => ({
+const withModels = geosites.map((g) => ({
 	...g,
 	source: g.source ?? raise(`geosite ${g.slug} has no source`),
+	models: modelsFor({ source: g.source, categories: g.categories }),
 }));
 
-const result = await syncSourcedGeosites(col, "geossit", sourced);
-const inGeoparks = sourced.filter((g) => g.geoparkId).length;
+const result = await syncSourcedGeosites(col, "geossit", withModels);
+const inGeoparks = withModels.filter((g) => g.geoparkId).length;
+const modelCount = withModels.reduce((n, g) => n + g.models.length, 0);
 console.log(
 	`GEOSSIT: ${raw.length} fetched, ${geosites.length} valid, ${skipped.length} skipped → ` +
 		`${result.inserted} inserted, ${result.updated} updated, ${result.deleted} deleted. ` +
-		`${inGeoparks} in UNESCO geoparks.`,
+		`${inGeoparks} in UNESCO geoparks; ${modelCount} 3D model attachments.`,
 );
 process.exit(0);
 

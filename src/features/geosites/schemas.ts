@@ -157,22 +157,54 @@ export const GeologicAgeSchema = z
 // 3D assets
 // ---------------------------------------------------------------------------
 
-export const Model3DSchema = z.object({
+/**
+ * How a model relates to the geosite it's attached to. Be honest here:
+ * a museum specimen from "somewhere in the basin" is not from this outcrop.
+ */
+export const ModelProvenanceSchema = z.enum([
+	"locality", // collected/scanned at this geosite
+	"region", // from the same basin/region; exact site unknown
+	"illustrative", // representative example only
+]);
+export type ModelProvenance = z.infer<typeof ModelProvenanceSchema>;
+
+const Model3DBaseSchema = z.object({
 	kind: z.enum(["fossil", "strata", "cave", "outcrop", "mineral"]),
-	title: z.string().min(1).max(120),
-	format: z.enum(["glb", "gltf"]),
-	url: z.url({ protocol: /^https$/ }),
-	/** Optional Draco/meshopt-compressed variant for low-bandwidth clients. */
-	lodUrl: z.url({ protocol: /^https$/ }).optional(),
-	previewImageUrl: z.url().optional(),
-	/** Real-world size of the longest axis, in metres — lets the viewer show a scale bar. */
+	title: z.string().min(1).max(160),
+	provenance: ModelProvenanceSchema,
+	/** Real-world size of the longest axis, in metres. */
 	realWorldSizeM: z.number().positive().optional(),
-	upAxis: z.enum(["y", "z"]).default("y"),
-	license: z.string().min(1).max(64), // SPDX or "CC-BY-4.0" etc.
+	license: z.string().min(1).max(64), // SPDX id, or "Sketchfab Standard" for view-only
 	attribution: z.string().min(1).max(256),
+	/** Page where the model is published (credit link). */
+	sourceUrl: z.url().optional(),
 	polycount: z.number().int().positive().optional(),
 });
+
+/** Self-hosted under `public/models/`, or any HTTPS host with CORS. */
+const SelfHostedPath = z
+	.string()
+	.regex(/^\/models\/[\w.-]+\.(glb|gltf)$/, "must be /models/<file>.glb");
+
+export const GltfModel3DSchema = Model3DBaseSchema.extend({
+	provider: z.literal("gltf"),
+	format: z.enum(["glb", "gltf"]),
+	url: z.union([z.url({ protocol: /^https$/ }), SelfHostedPath]),
+	upAxis: z.enum(["y", "z"]).default("y"),
+});
+
+/** Rendered with Sketchfab's own embed viewer (for models we may not redistribute). */
+export const SketchfabModel3DSchema = Model3DBaseSchema.extend({
+	provider: z.literal("sketchfab"),
+	uid: z.string().regex(/^[0-9a-f]{32}$/, "Sketchfab model uid"),
+});
+
+export const Model3DSchema = z.discriminatedUnion("provider", [
+	GltfModel3DSchema,
+	SketchfabModel3DSchema,
+]);
 export type Model3D = z.infer<typeof Model3DSchema>;
+export type GltfModel3D = z.infer<typeof GltfModel3DSchema>;
 
 // ---------------------------------------------------------------------------
 // Geosite

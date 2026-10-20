@@ -7,9 +7,9 @@ import {
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Component, type ReactNode, Suspense } from "react";
-import type { Model3D } from "../schemas";
+import type { GltfModel3D } from "../schemas";
 
-type Props = { model?: Model3D };
+type Props = { model?: GltfModel3D };
 
 /**
  * Interactive viewer for fossil/strata/cave scans. Falls back to a procedural
@@ -57,7 +57,7 @@ export default function ModelViewer({ model }: Props) {
 	);
 }
 
-function GltfModel({ model }: { model: Model3D }) {
+function GltfModel({ model }: { model: GltfModel3D }) {
 	const { scene } = useGLTF(model.url);
 	// Many photogrammetry exports are Z-up; three.js is Y-up.
 	return (
