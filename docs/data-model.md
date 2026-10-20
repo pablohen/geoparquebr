@@ -137,7 +137,7 @@ This returns the **unrounded** coordinates. It's only for server-side lookups (f
 | `rel` | relevance? | `undefined` (all) |
 | `gp` | geopark id? | `undefined` (all) |
 | `site` | slug? | `undefined` |
-| `tab` | `overview` \| `fossils` \| `model`? | `undefined` (overview) |
+| `tab` | `overview` \| `model` \| `fossils`? | `undefined` (overview) |
 | `model` | int ≥ 0? | `undefined` (first entry); out-of-range indexes fall back to 0 |
 
 - **Map ownership.** The map writes `bbox` back on every move using history *replace*, so panning doesn't fill the back stack. It only re-fits to `bbox` when the value changes from outside (location form, back/forward).

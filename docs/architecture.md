@@ -79,10 +79,10 @@ GeositeExplorer (AppShell)
 │   └── <ClientOnly> GeositeMap (lazy)   clustered GeoJSON source; owns the viewport
 └── GeositeDrawer         opened by ?site=, loads the full geosite by slug
     ├── Visão geral       GEOSSIT data, photo, scores, credit
-    ├── Fósseis           FossilsPanel: SGB + GBIF occurrences within 5 km
-    └── Modelo 3D ─┬─ SketchfabEmbed                iframe, provider: "sketchfab"
-                   ├─ <ClientOnly> ModelViewer      R3F, provider: "gltf"
-                   └─ <ClientOnly> ModelViewer      mapped strata column (or illustrative)
+    ├── Modelo 3D ─┬─ SketchfabEmbed                iframe, provider: "sketchfab"
+    │              ├─ <ClientOnly> ModelViewer      R3F, provider: "gltf"
+    │              └─ <ClientOnly> ModelViewer      mapped strata column (or illustrative)
+    └── Fósseis           FossilsPanel: SGB + GBIF occurrences within 5 km
 ```
 
 `GeositeExplorer` is presentational. It receives `geosites`, `search` and an `onSearchChange(next, { replace })` callback from the route, so the route stays the only owner of URL state.

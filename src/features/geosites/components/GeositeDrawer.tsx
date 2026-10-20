@@ -137,19 +137,16 @@ function GeositeDetail({
 				<Tabs.Tab value="overview" leftSection={<Info size={16} />}>
 					Visão geral
 				</Tabs.Tab>
-				<Tabs.Tab value="fossils" leftSection={<Bone size={16} />}>
-					Fósseis
-				</Tabs.Tab>
 				<Tabs.Tab value="model" leftSection={<Cube size={16} />}>
 					Modelo 3D {geosite.models.length > 0 && `(${geosite.models.length})`}
+				</Tabs.Tab>
+				<Tabs.Tab value="fossils" leftSection={<Bone size={16} />}>
+					Fósseis
 				</Tabs.Tab>
 			</Tabs.List>
 
 			<Tabs.Panel value="overview">
 				<Overview geosite={geosite} />
-			</Tabs.Panel>
-			<Tabs.Panel value="fossils">
-				<FossilsPanel slug={geosite.slug} />
 			</Tabs.Panel>
 			<Tabs.Panel value="model">
 				<ModelsPanel
@@ -160,6 +157,9 @@ function GeositeDetail({
 						onViewChange({ model: i === 0 ? undefined : i })
 					}
 				/>
+			</Tabs.Panel>
+			<Tabs.Panel value="fossils">
+				<FossilsPanel slug={geosite.slug} />
 			</Tabs.Panel>
 		</Tabs>
 	);
