@@ -1,9 +1,11 @@
 import type { FeatureCollection, Point } from "geojson";
 import {
+	addProtocol,
 	type ExpressionSpecification,
 	type GeoJSONSource,
 	type LngLatBounds,
 	Map as MapLibreMap,
+	Marker,
 	NavigationControl,
 	ScaleControl,
 	setWorkerUrl,
@@ -17,6 +19,33 @@ import type { GeositeSummary } from "../schemas";
 // once Vite pre-bundles/rebundles it. Point it at the emitted asset instead.
 setWorkerUrl(workerUrl);
 
+/**
+ * SGB 1:1M lithostratigraphy, served as ArcGIS cached tiles whose level 0 is
+ * web-mercator zoom 4. MapLibre can't offset `{z}` in a URL template, so a
+ * custom protocol rewrites each request.
+ */
+const GEOLOGY_TILES =
+	"https://geoportal.sgb.gov.br/server/rest/services/geologia/litoestratigrafia_1000000/MapServer/tile";
+const SGB_ZOOM_OFFSET = 4;
+// 1×1 transparent PNG for tiles outside the cache (404s).
+const EMPTY_TILE = Uint8Array.from(
+	atob(
+		"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+	),
+	(c) => c.charCodeAt(0),
+).buffer;
+
+addProtocol("sgb-geology", async ({ url }, abort) => {
+	const [, z, x, y] = url.match(/^sgb-geology:\/\/(\d+)\/(\d+)\/(\d+)/) ?? [];
+	const res = await fetch(
+		`${GEOLOGY_TILES}/${Number(z) - SGB_ZOOM_OFFSET}/${y}/${x}`,
+		{ signal: abort.signal },
+	);
+	if (res.status === 404) return { data: EMPTY_TILE };
+	if (!res.ok) throw new Error(`SGB tile ${z}/${x}/${y}: HTTP ${res.status}`);
+	return { data: await res.arrayBuffer() };
+});
+
 type Props = {
 	geosites: GeositeSummary[];
 	/** Viewport from the URL. The map fits to it unless the map itself produced it. */
@@ -26,6 +55,12 @@ type Props = {
 	focus?: [number, number];
 	onSelect: (slug: string) => void;
 	onViewportChange: (bbox: BBox) => void;
+	/** SGB geology raster layer. */
+	geology: { visible: boolean; opacity: number };
+	/** Click on empty map (not a geosite) while the geology layer is on. */
+	onIdentify: (point: [number, number]) => void;
+	/** Marker for the point being identified. */
+	identifyPoint?: [number, number];
 };
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
@@ -33,6 +68,7 @@ const SOURCE_ID = "geosites";
 const CLUSTERS = "geosites-clusters";
 const CLUSTER_COUNT = "geosites-cluster-count";
 const POINTS = "geosites-points";
+const GEOLOGY = "sgb-geology";
 const COLOR = "#ea7a3a";
 const SELECTED_COLOR = "#a24511";
 
@@ -78,13 +114,30 @@ export default function GeositeMap({
 	focus,
 	onSelect,
 	onViewportChange,
+	geology,
+	onIdentify,
+	identifyPoint,
 }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<MapLibreMap | null>(null);
 	const lastEmitted = useRef<string>("");
 	// Latest props for map event handlers, without re-creating the map.
-	const latest = useRef({ geosites, selectedSlug, onSelect, onViewportChange });
-	latest.current = { geosites, selectedSlug, onSelect, onViewportChange };
+	const latest = useRef({
+		geosites,
+		selectedSlug,
+		onSelect,
+		onViewportChange,
+		geology,
+		onIdentify,
+	});
+	latest.current = {
+		geosites,
+		selectedSlug,
+		onSelect,
+		onViewportChange,
+		geology,
+		onIdentify,
+	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the map is created once; later bbox changes are handled below.
 	useEffect(() => {
@@ -114,6 +167,30 @@ export default function GeositeMap({
 		let ready = false;
 		map.on("load", () => {
 			ready = true;
+			// Geology goes under the basemap's labels; geosites go on top of all.
+			const firstLabel = map
+				.getStyle()
+				.layers.find((layer) => layer.type === "symbol")?.id;
+			map.addSource(GEOLOGY, {
+				type: "raster",
+				tiles: ["sgb-geology://{z}/{x}/{y}"],
+				tileSize: 256,
+				minzoom: SGB_ZOOM_OFFSET,
+				maxzoom: SGB_ZOOM_OFFSET + 9,
+				attribution: "Geologia: SGB/CPRM, 1:1.000.000",
+			});
+			map.addLayer(
+				{
+					id: GEOLOGY,
+					type: "raster",
+					source: GEOLOGY,
+					layout: {
+						visibility: latest.current.geology.visible ? "visible" : "none",
+					},
+					paint: { "raster-opacity": latest.current.geology.opacity },
+				},
+				firstLabel,
+			);
 			map.addSource(SOURCE_ID, {
 				type: "geojson",
 				data: toFeatureCollection(latest.current.geosites),
@@ -175,12 +252,22 @@ export default function GeositeMap({
 					zoom: zoom ?? map.getZoom() + 2,
 				});
 			});
+			map.on("click", (e) => {
+				if (!latest.current.geology.visible) return;
+				const hit = map.queryRenderedFeatures(e.point, {
+					layers: [POINTS, CLUSTERS],
+				});
+				if (hit.length === 0)
+					latest.current.onIdentify([e.lngLat.lng, e.lngLat.lat]);
+			});
 			for (const layer of [POINTS, CLUSTERS]) {
 				map.on("mouseenter", layer, () => {
 					map.getCanvas().style.cursor = "pointer";
 				});
 				map.on("mouseleave", layer, () => {
-					map.getCanvas().style.cursor = "";
+					map.getCanvas().style.cursor = latest.current.geology.visible
+						? "crosshair"
+						: "";
 				});
 			}
 
@@ -216,6 +303,31 @@ export default function GeositeMap({
 		if (map?.getLayer(POINTS))
 			map.setPaintProperty(POINTS, "circle-color", pointColor(selectedSlug));
 	}, [selectedSlug]);
+
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map?.getLayer(GEOLOGY)) return;
+		map.setLayoutProperty(
+			GEOLOGY,
+			"visibility",
+			geology.visible ? "visible" : "none",
+		);
+		map.setPaintProperty(GEOLOGY, "raster-opacity", geology.opacity);
+		map.getCanvas().style.cursor = geology.visible ? "crosshair" : "";
+	}, [geology.visible, geology.opacity]);
+
+	const identifyKey = identifyPoint?.join(",");
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `identifyKey` encodes `identifyPoint`.
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map || !identifyPoint) return;
+		const marker = new Marker({ color: "#1f1f22" })
+			.setLngLat(identifyPoint)
+			.addTo(map);
+		return () => {
+			marker.remove();
+		};
+	}, [identifyKey]);
 
 	// Bring the selected geosite into view, e.g. for a deep link outside the box.
 	const focusKey = focus?.join(",");

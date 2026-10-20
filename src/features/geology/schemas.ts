@@ -92,3 +92,17 @@ export const GeositeStrataSchema = z.discriminatedUnion("status", [
 	z.object({ status: z.literal("unavailable") }),
 ]);
 export type GeositeStrata = z.infer<typeof GeositeStrataSchema>;
+
+/** Units mapped at a clicked point, at the same scale as the map layer. */
+export const GeologyAtPointSchema = z.discriminatedUnion("status", [
+	z.object({
+		status: z.literal("ok"),
+		scale: z.number().int().positive(),
+		units: z.array(StrataUnitSchema),
+	}),
+	z.object({ status: z.literal("unavailable") }),
+]);
+export type GeologyAtPoint = z.infer<typeof GeologyAtPointSchema>;
+
+/** The map layer shows SGB's 1:1,000,000 lithostratigraphy (full coverage of Brazil). */
+export const GEOLOGY_LAYER_SCALE = 1_000_000;

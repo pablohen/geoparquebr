@@ -327,6 +327,8 @@ export const ExplorerSearchSchema = z.object({
 	cat: z.array(GeositeCategorySchema).min(1).optional().catch(undefined),
 	rel: RelevanceSchema.optional().catch(undefined),
 	gp: GeoparkIdSchema.optional().catch(undefined),
+	/** Geology map layer on. */
+	geo: z.literal(true).optional().catch(undefined),
 	site: SlugSchema.optional().catch(undefined),
 	/** Drawer tab; omitted means "overview". */
 	tab: DrawerTabSchema.optional().catch(undefined),

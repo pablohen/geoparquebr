@@ -149,8 +149,9 @@ const STRATA_FIELDS = Object.keys(StrataPropertiesSchema.shape);
  */
 export async function sgbStrataIn(
 	bbox: BBox,
+	scales: readonly number[] = STRATA_SCALES,
 ): Promise<{ scale: number; units: StrataUnit[] }> {
-	for (const scale of STRATA_SCALES) {
+	for (const scale of scales) {
 		const page = await queryCollection(
 			`geologia/litoestratigrafia/${scale}`,
 			z.unknown(),
@@ -186,5 +187,5 @@ export async function sgbStrataIn(
 				),
 			};
 	}
-	return { scale: 1_000_000, units: [] };
+	return { scale: scales.at(-1) ?? 1_000_000, units: [] };
 }

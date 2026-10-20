@@ -21,6 +21,7 @@ describe("ExplorerSearchSchema", () => {
 			site: "pedra-cariri",
 			tab: "fossils",
 			model: 1,
+			geo: true,
 		};
 		expect(ExplorerSearchSchema.parse(search)).toEqual(search);
 	});
@@ -36,6 +37,12 @@ describe("ExplorerSearchSchema", () => {
 			model: -1,
 		});
 		expect(parsed).toEqual({ bbox: DEFAULT_BBOX });
+	});
+
+	it("only accepts `geo: true` for the geology layer", () => {
+		expect(ExplorerSearchSchema.parse({ geo: true }).geo).toBe(true);
+		expect(ExplorerSearchSchema.parse({ geo: false }).geo).toBeUndefined();
+		expect(ExplorerSearchSchema.parse({ geo: "yes" }).geo).toBeUndefined();
 	});
 
 	it("coerces a numeric model index from the query string", () => {

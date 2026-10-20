@@ -14,7 +14,9 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
+import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
+import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
 import { SearchBox } from "~/features/search/components/SearchBox";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
 import { useServerQuery } from "~/lib/use-server-query";
@@ -56,6 +58,9 @@ function formValuesFor(bbox: BBox): LocationFormValues {
 
 export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure();
+	const [geologyOpacity, setGeologyOpacity] = useState(0.7);
+	const [identifyPoint, setIdentifyPoint] = useState<[number, number]>();
+	const geologyVisible = search.geo === true;
 
 	// The full record is fetched by slug, so a shared link opens the drawer
 	// even when the geosite lies outside the current viewport or filters.
@@ -165,9 +170,28 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								onViewportChange={(bbox) =>
 									onSearchChange({ bbox }, { replace: true })
 								}
+								geology={{ visible: geologyVisible, opacity: geologyOpacity }}
+								onIdentify={setIdentifyPoint}
+								identifyPoint={geologyVisible ? identifyPoint : undefined}
 							/>
 						</Suspense>
 					</ClientOnly>
+					<GeologyLayerControl
+						visible={geologyVisible}
+						opacity={geologyOpacity}
+						onVisibleChange={(on) => {
+							onSearchChange({ geo: on ? true : undefined });
+							if (!on) setIdentifyPoint(undefined);
+						}}
+						onOpacityChange={setGeologyOpacity}
+					/>
+					{geologyVisible && identifyPoint && (
+						<GeologyAtPointCard
+							key={identifyPoint.join(",")}
+							point={identifyPoint}
+							onClose={() => setIdentifyPoint(undefined)}
+						/>
+					)}
 				</Box>
 			</AppShell.Main>
 

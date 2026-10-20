@@ -8,10 +8,13 @@ import { z } from "zod";
 import { cached } from "~/lib/cache.server";
 import { bboxAround } from "~/lib/geo";
 import { findGeositeLocation } from "../geosites/geosites.server";
+import { LatitudeSchema, LongitudeSchema } from "../geosites/schemas";
 import { gbifFossilsNear } from "./gbif.server";
 import {
 	FOSSIL_SEARCH_RADIUS_KM,
 	type FossilOccurrence,
+	GEOLOGY_LAYER_SCALE,
+	type GeologyAtPoint,
 	type GeositeFossils,
 	type GeositeStrata,
 	STRATA_SEARCH_RADIUS_KM,
@@ -95,6 +98,30 @@ export const getGeositeStrata = createServerFn({ method: "GET" })
 			return { status: "ok", scale, radiusKm, units };
 		} catch (err) {
 			console.warn("strata lookup failed:", err);
+			return { status: "unavailable" };
+		}
+	});
+
+/**
+ * Units under a map click (public coordinates, unlike the slug lookups).
+ * Rounded to ~100 m so nearby clicks share a cache entry.
+ */
+export const getGeologyAt = createServerFn({ method: "GET" })
+	.validator(z.object({ lng: LongitudeSchema, lat: LatitudeSchema }))
+	.handler(async ({ data }): Promise<GeologyAtPoint> => {
+		const point: [number, number] = [
+			Math.round(data.lng * 1_000) / 1_000,
+			Math.round(data.lat * 1_000) / 1_000,
+		];
+		try {
+			const { scale, units } = await cached(
+				`geology-at:v1:${point.join(",")}`,
+				30 * DAY_MS,
+				() => sgbStrataIn(bboxAround(point, 0.05), [GEOLOGY_LAYER_SCALE]),
+			);
+			return { status: "ok", scale, units };
+		} catch (err) {
+			console.warn("geology lookup failed:", err);
 			return { status: "unavailable" };
 		}
 	});
