@@ -10,12 +10,21 @@ The `geosites` collection is a mirror of **GEOSSIT**, the Geological Survey of B
 https://geoportal.sgb.gov.br/server/rest/services/gestaoterritorial/geossit/FeatureServer/0
 ```
 
-`pnpm db:seed` fetches every feature (about 320), validates each one with Zod, maps it to `GeositeInput`, attaches 3D models from the [model catalog](3d-models.md), and upserts the result. The mapping lives in [`geossit.server.ts`](../src/features/geosites/geossit.server.ts).
+`pnpm db:seed` fetches every feature (about 320), validates each one with Zod, maps it to `GeositeInput`, adds a geological age from SGB's map (below), attaches 3D models from the [model catalog](3d-models.md), and upserts the result. The mapping lives in [`geossit.server.ts`](../src/features/geosites/geossit.server.ts).
 
 - **Read-only.** The layer advertises edit capabilities; never call anything except `query`.
 - **Idempotent.** Records are keyed by `source.{system,id}`. A re-run updates changed records and deletes the ones GEOSSIT dropped.
 - **Validated per record.** An invalid feature is skipped with a reason printed, and the rest still import.
 - **Credit.** Show "GEOSSIT — Serviço Geológico do Brasil (SGB/CPRM)" and link `source.url` wherever GEOSSIT data appears. The drawer does this.
+
+### Geological age (from SGB's map)
+
+GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostratigraphy map ([`geologic-age.server.ts`](../src/features/geosites/geologic-age.server.ts), mapping in [`geologic-age.ts`](../src/features/geosites/geologic-age.ts)):
+
+1. If the geosite's own text names a unit ("…da Formacao Santana…") that the map shows within 5 km, use that unit.
+2. Otherwise use the unit(s) under the point (~50 m box), on the most detailed map SGB has there (1:25k → 1:1M).
+
+`mapScale` records the map's scale, and the UI labels the result "Rocha mapeada no local" with that scale. At 1:1M it is the bedrock at the point, which can differ from what a geosite showcases (Pedra Cariri's point falls on Archean basement). "0–0 Ma" placeholders on some units are ignored. Lookups are cached in `api_cache` for 180 days; if more than 10% fail, the seed stops before writing anything, so a SGB outage can't wipe stored ages.
 
 ### Field mapping
 
@@ -60,7 +69,7 @@ https://geoportal.sgb.gov.br/server/rest/services/gestaoterritorial/geossit/Feat
 | `scores` | object? | `{ scientific, tourism, didactic, vulnerability }`, integers 0–400 |
 | `degradationRisk` | enum? | `low`, `medium`, `high` |
 | `geology` | object? | `{ setting?, province? }` |
-| `geologicAge` | object? | `period`, `formation?`, `minMa?`, `maxMa?`; not provided by GEOSSIT |
+| `geologicAge` | object? | `period`, `formation?`, `minMa?`, `maxMa?`, `mapScale?`; derived from SGB's map at seed time (see above) |
 | `location` | GeoJSON Point | `{ type: "Point", coordinates: [lng, lat] }` |
 | `models` | `Model3D[]` | max 20; see [3D models](3d-models.md) |
 | `coverImageUrl` | url? | |
@@ -109,6 +118,8 @@ The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own
         categories: { $in: categories }, // when filtered
         relevance,                       // when filtered
         geoparkId,                       // when filtered
+        "geologicAge.maxMa": { $gt: young }, // age filter: overlaps
+        "geologicAge.minMa": { $lt: old },   // the chosen periods
       },
     },
   },
@@ -129,6 +140,10 @@ The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own
 
 This runs a `$text` search sorted by `textScore`, which matches whole stemmed words and is diacritic-insensitive. When that returns fewer than `limit` results, they're topped up with a case-insensitive, accent-stripped substring match on name, municipality and abstract, so partial input like "ptero" works. The query is regex-escaped. Place search (Photon/OSM) is a separate server function, so it never slows down geosite results.
 
+### Nearby: `findNearbyGeosites`
+
+`$geoNear` from the geosite's **public** point (rounded if sensitive), up to 300 km, shortlists 20 others. `rankNearby` then re-measures each distance between public points, rounds it to 100 m and keeps six. Distances to or from exact sensitive coordinates would let anyone triangulate a protected site from a few pages, so they never leave the server.
+
 ### Exact location: `findGeositeLocation`
 
 This returns the **unrounded** coordinates. It's only for server-side lookups (fossils, strata); never return its result to the client.
@@ -141,13 +156,14 @@ This returns the **unrounded** coordinates. It's only for server-side lookups (f
 | `cat` | category[] (≥ 1) | `undefined` (all) |
 | `rel` | relevance? | `undefined` (all) |
 | `gp` | geopark id? | `undefined` (all) |
+| `age` | `[youngest, oldest]` period ids, e.g. `["cretaceous","jurassic"]` | `undefined` (all ages) |
 | `site` | slug? | `undefined` |
 | `tab` | `overview` \| `model` \| `fossils`? | `undefined` (overview) |
 | `model` | int ≥ 0? | `undefined` (first entry); out-of-range indexes fall back to 0 |
 | `geo` | `true`? | `undefined` (geology layer off) |
 
 - **Map ownership.** The map writes `bbox` back on every move using history *replace*, so panning doesn't fill the back stack. It only re-fits to `bbox` when the value changes from outside (location form, back/forward).
-- **What re-runs the loader.** Only `bbox`, `cat`, `rel` and `gp` are loader deps. `site`, `tab` and `model` are drawer state, fetched separately.
+- **What re-runs the loader.** Only `bbox`, `cat`, `rel`, `gp` and `age` are loader deps. `site`, `tab` and `model` are drawer state, fetched separately.
 - **Drawer defaults.** Default values are left out of the URL. `tab` and `model` reset when another geosite is selected or the drawer closes.
 - **Model indexes.** `model` indexes the geosite's models, followed by the mapped strata column as the last entry.
 

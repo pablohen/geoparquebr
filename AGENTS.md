@@ -65,6 +65,8 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - `_id` and `Date` never leave the server. Map documents through `toDto` in `geosites.server.ts`, which returns `id: string` and ISO-string dates.
 - Geosites with `locationIsSensitive: true` (fragile caves, fossil beds) get their coordinates rounded to about 1 km in `toDto`. Never add a code path that returns their exact coordinates to the client.
 - The list query is `$geoNear` (first stage, needs `location_2dsphere`) with `$geoWithin` on a densified box polygon in its `query`. Return summaries only; the drawer fetches the full geosite by slug.
+- **Distances to sensitive sites** are measured between public (rounded) points and rounded to 100 m, as in `rankNearby`. Never return a distance measured from or to exact sensitive coordinates: a few of them pin the site down.
+- **Geological ages are map-derived.** `geologicAge` comes from SGB's map at seed time (`mapScale` set), not from GEOSSIT; show it as the rock mapped at the site, with the scale.
 - Per-geosite lookups (fossils, strata) take a **slug** and resolve exact coordinates server-side via `findGeositeLocation`. Never accept coordinates from the client for them, and never return exact coordinates of sensitive sites.
 - **Two languages:** Brazilian Portuguese (default) and English. Enum values stay English slugs; show labels from `labels.ts` (`categoryLabel`, `geoparkLabel`, `relevanceLabel`, …), never raw enum values. Data from GEOSSIT, SGB and GBIF stays as published (Portuguese).
 
