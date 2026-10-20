@@ -53,7 +53,8 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
    - Route loaders are isomorphic: call server functions from them, never the database directly.
 3. **Feature folders.** New domain code goes in `src/features/<feature>/` (`schemas.ts`, `<feature>.server.ts`, `<feature>.functions.ts`, `components/`). Shared infrastructure goes in `src/lib/`.
 4. **URL state.** Anything a user would want to share or bookmark (map center, radius, selected geosite) lives in route search params validated by Zod, not in `useState`.
-5. **Browser-only libraries load lazily.** MapLibre and three.js must sit behind `<ClientOnly>` + `React.lazy`, in a default-exported component, so they stay out of SSR and the initial bundle.
+5. **Mobile first-paint uses CSS.** Lay out phones with Mantine `hiddenFrom`/`visibleFrom` and responsive style props (`h={{ base, sm }}`). Use `useIsMobile()` only for behaviour (drawer position, dropdown width), since it returns `false` until hydration. Check every UI change at 375 px as well as desktop.
+6. **Browser-only libraries load lazily.** MapLibre and three.js must sit behind `<ClientOnly>` + `React.lazy`, in a default-exported component, so they stay out of SSR and the initial bundle.
 
 ## Domain invariants
 

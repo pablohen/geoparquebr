@@ -87,6 +87,12 @@ GeositeExplorer (AppShell)
     └── Fósseis           FossilsPanel: SGB + GBIF occurrences within 5 km
 ```
 
+### Phones (< `sm`, 768 px)
+
+The map is full-screen. The header shows the logo, the search box at full width, and the theme toggle. The sidebar's content (filters, location form, list) moves into `MobileListSheet`, a bottom sheet opened from a floating "N geossítios" button, with filters and location tucked behind a "Filtros e localização" toggle. `GeositeDrawer` becomes a 92% bottom sheet with tabs sharing the width and short labels, and the 3D viewer drops to 320 px. The geology control shrinks to a "Geologia" chip.
+
+Static layout uses Mantine's `hiddenFrom` / `visibleFrom` and responsive style props, which are CSS, so the first paint is correct. `useIsMobile()` (`src/lib/use-is-mobile.ts`) is only for behaviour that CSS can't express, such as drawer position and dropdown width. It returns `false` during SSR.
+
 `GeositeExplorer` is presentational. It receives `geosites`, `search` and an `onSearchChange(next, { replace })` callback from the route, so the route stays the only owner of URL state.
 
 ## Data pipeline
