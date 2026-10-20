@@ -71,7 +71,7 @@ sequenceDiagram
 | Path | What |
 | --- | --- |
 | `/` | map explorer; URL holds `bbox`, filters and drawer state |
-| `/geossitios/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
+| `/geosites/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
 | `/sitemap.xml` | server route listing every geosite page |
 | `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
 
@@ -83,10 +83,10 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 
 | Requests | Strategy | Cache |
 | --- | --- | --- |
-| `/assets/*` (content-hashed) | cache first | `assets-v1` |
-| page navigations | network first; offline: exact URL, any cached copy of the same `/geossitios/…` page, or `/offline.html` | `pages-v1` (60) |
-| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v1` (300) |
-| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v1` (1500) |
+| `/assets/*` (content-hashed) | cache first | `assets-v2` |
+| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…` page, or `/offline.html` | `pages-v2` (60) |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v2` (300) |
+| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v2` (1500) |
 
 **Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen. **Needs a connection:** viewports and geosites you've never loaded. Panning offline shows an empty list instead of the error screen.
 

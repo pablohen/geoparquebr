@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as GeossitiosSlugRouteImport } from './routes/geossitios.$slug'
+import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +23,40 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GeossitiosSlugRoute = GeossitiosSlugRouteImport.update({
-  id: '/geossitios/$slug',
-  path: '/geossitios/$slug',
+const GeositesSlugRoute = GeositesSlugRouteImport.update({
+  id: '/geosites/$slug',
+  path: '/geosites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/geossitios/$slug': typeof GeossitiosSlugRoute
+  '/geosites/$slug': typeof GeositesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/geossitios/$slug': typeof GeossitiosSlugRoute
+  '/geosites/$slug': typeof GeositesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/geossitios/$slug': typeof GeossitiosSlugRoute
+  '/geosites/$slug': typeof GeositesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sitemap.xml' | '/geossitios/$slug'
+  fullPaths: '/' | '/sitemap.xml' | '/geosites/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sitemap.xml' | '/geossitios/$slug'
-  id: '__root__' | '/' | '/sitemap.xml' | '/geossitios/$slug'
+  to: '/' | '/sitemap.xml' | '/geosites/$slug'
+  id: '__root__' | '/' | '/sitemap.xml' | '/geosites/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  GeossitiosSlugRoute: typeof GeossitiosSlugRoute
+  GeositesSlugRoute: typeof GeositesSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +75,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/geossitios/$slug': {
-      id: '/geossitios/$slug'
-      path: '/geossitios/$slug'
-      fullPath: '/geossitios/$slug'
-      preLoaderRoute: typeof GeossitiosSlugRouteImport
+    '/geosites/$slug': {
+      id: '/geosites/$slug'
+      path: '/geosites/$slug'
+      fullPath: '/geosites/$slug'
+      preLoaderRoute: typeof GeositesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  GeossitiosSlugRoute: GeossitiosSlugRoute,
+  GeositesSlugRoute: GeositesSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

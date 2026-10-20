@@ -56,9 +56,7 @@ describe("geositeMeta", () => {
 			m.description.startsWith("Nova Olinda – CE · Geoparque Araripe (CE)."),
 		).toBe(true);
 		expect(m.description.length).toBeLessThanOrEqual(160);
-		expect(m.url).toBe(
-			"https://geoparquebr.vercel.app/geossitios/pedra-cariri",
-		);
+		expect(m.url).toBe("https://geoparquebr.vercel.app/geosites/pedra-cariri");
 		expect(m.image).toBe(base.coverImageUrl);
 	});
 
@@ -90,7 +88,7 @@ describe("geositeMeta", () => {
 			tags.find((t) => "property" in t && t.property === p)?.content;
 		expect(prop("og:image")).toBe(base.coverImageUrl);
 		expect(prop("og:url")).toBe(
-			"https://geoparquebr.vercel.app/geossitios/pedra-cariri",
+			"https://geoparquebr.vercel.app/geosites/pedra-cariri",
 		);
 		expect(tags).toContainEqual({
 			name: "twitter:card",
@@ -151,12 +149,12 @@ describe("sitemapXml", () => {
 			`<loc>https://geoparquebr.vercel.app${geositePath("pedra-cariri")}</loc><lastmod>2026-10-20</lastmod>`,
 		);
 		expect(xml).toContain(
-			"<loc>https://geoparquebr.vercel.app/geossitios/caverna-agua-suja</loc></url>",
+			"<loc>https://geoparquebr.vercel.app/geosites/caverna-agua-suja</loc></url>",
 		);
 		expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
 	});
 
 	it("escapes XML special characters", () => {
-		expect(sitemapXml([{ slug: "a&b" }])).toContain("/geossitios/a&amp;b");
+		expect(sitemapXml([{ slug: "a&b" }])).toContain("/geosites/a&amp;b");
 	});
 });

@@ -67,7 +67,7 @@ export function GeositeActions({ geosite, context }: Props) {
 					renderRoot={(props) => (
 						<Link
 							{...props}
-							to="/geossitios/$slug"
+							to="/geosites/$slug"
 							params={{ slug: geosite.slug }}
 						/>
 					)}

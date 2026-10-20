@@ -9,7 +9,7 @@ import {
 	type Geosite,
 } from "./schemas";
 
-export const geositePath = (slug: string) => `/geossitios/${slug}`;
+export const geositePath = (slug: string) => `/geosites/${slug}`;
 
 /** Trims to `max` characters at a word boundary, adding an ellipsis. */
 export function truncate(text: string, max: number): string {

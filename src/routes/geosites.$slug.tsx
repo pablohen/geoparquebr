@@ -19,7 +19,7 @@ import {
  * Standalone, indexable page for one geosite: server-rendered overview with
  * share previews and structured data. The map view links here and back.
  */
-export const Route = createFileRoute("/geossitios/$slug")({
+export const Route = createFileRoute("/geosites/$slug")({
 	validateSearch: z.object({
 		tab: ExplorerSearchSchema.shape.tab,
 		model: ExplorerSearchSchema.shape.model,
