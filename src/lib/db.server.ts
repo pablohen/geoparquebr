@@ -33,3 +33,10 @@ export async function getDb(): Promise<Db> {
 	const client = await globalForMongo.__mongoClient;
 	return client.db(process.env.MONGODB_DB ?? "geoparquebr");
 }
+
+/** Closes the shared client (tests and one-off scripts). */
+export async function closeDb(): Promise<void> {
+	const pending = globalForMongo.__mongoClient;
+	globalForMongo.__mongoClient = undefined;
+	await (await pending)?.close();
+}
