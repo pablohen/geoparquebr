@@ -3,6 +3,7 @@ import {
 	addProtocol,
 	type ExpressionSpecification,
 	type GeoJSONSource,
+	GeolocateControl,
 	type LngLatBounds,
 	Map as MapLibreMap,
 	Marker,
@@ -147,9 +148,27 @@ export default function GeositeMap({
 			style: STYLE_URL,
 			bounds: bbox,
 			attributionControl: { compact: true },
+			locale: {
+				"NavigationControl.ZoomIn": "Aproximar",
+				"NavigationControl.ZoomOut": "Afastar",
+				"NavigationControl.ResetBearing": "Apontar para o norte",
+				"GeolocateControl.FindMyLocation": "Perto de mim",
+				"GeolocateControl.LocationNotAvailable": "Localização indisponível",
+			},
 		});
 		map.addControl(
 			new NavigationControl({ visualizePitch: true }),
+			"top-right",
+		);
+		// "Perto de mim": centre on the user; the viewport query then lists
+		// the geosites around them, nearest first.
+		map.addControl(
+			new GeolocateControl({
+				positionOptions: { enableHighAccuracy: false, timeout: 10_000 },
+				fitBoundsOptions: { maxZoom: 9 },
+				trackUserLocation: false,
+				showAccuracyCircle: false,
+			}),
 			"top-right",
 		);
 		map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
