@@ -1,0 +1,8 @@
+# Local stand-in for Atlas: MONGODB_URI="mongodb://localhost:27017"
+services:
+  mongo:
+    image: mongo:8
+    ports: ["27017:27017"]
+    volumes: [mongo-data:/data/db]
+volumes:
+  mongo-data:
