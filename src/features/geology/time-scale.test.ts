@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { formatAgeRange, icsColorForAge, midAge, shade } from "./time-scale";
+import {
+	formatAgeRange,
+	icsColorForAge,
+	midAge,
+	periodForAge,
+	periodRangeMa,
+	periodSpanMa,
+	shade,
+} from "./time-scale";
 
 describe("icsColorForAge", () => {
 	it.each([
@@ -40,5 +48,31 @@ describe("formatAgeRange", () => {
 		expect(formatAgeRange(66, 66)).toBe("66 Ma");
 		expect(formatAgeRange(undefined, 2_500)).toBe("2500 Ma");
 		expect(formatAgeRange()).toBeUndefined();
+	});
+});
+
+describe("periods", () => {
+	it("spans a period from its top to its base", () => {
+		expect(periodSpanMa("quaternary")).toEqual([0, 2.58]);
+		expect(periodSpanMa("cretaceous")).toEqual([66, 145]);
+	});
+
+	it("covers a range of periods in either order", () => {
+		expect(periodRangeMa(["cretaceous", "jurassic"])).toEqual([66, 201.4]);
+		expect(periodRangeMa(["jurassic", "cretaceous"])).toEqual([66, 201.4]);
+		expect(periodRangeMa(["neogene", "neogene"])).toEqual([2.58, 23.03]);
+	});
+
+	it("leaves the oldest period open-ended", () => {
+		expect(periodRangeMa(["cambrian", "archean"])).toEqual([
+			485.4,
+			Number.POSITIVE_INFINITY,
+		]);
+	});
+
+	it("finds the period of an age", () => {
+		expect(periodForAge(123)).toBe("cretaceous");
+		expect(periodForAge(588)).toBe("neoproterozoic");
+		expect(periodForAge(5_000)).toBeUndefined();
 	});
 });

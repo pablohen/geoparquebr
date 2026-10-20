@@ -30,6 +30,8 @@
 	"detail_description_language": "Description from GEOSSIT, in Portuguese.",
 	"detail_geological_age": "Geological age",
 	"detail_geological_setting": "Geological setting",
+	"detail_mapped_rock": "Rock mapped on site",
+	"detail_mapped_rock_note": "SGB geological map, scale 1:{scale}. May differ from what the geosite showcases.",
 	"detail_model_select": "Model",
 	"detail_model_source": "Source",
 	"detail_model_strata_option": "Stratigraphic column (SGB map)",

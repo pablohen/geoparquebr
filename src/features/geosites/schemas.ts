@@ -102,6 +102,12 @@ export const GeologicAgeSchema = z
 		formation: z.string().max(128).optional(), // e.g. "Formação Santana"
 		minMa: z.number().nonnegative().optional(),
 		maxMa: z.number().nonnegative().optional(),
+		/**
+		 * Set when the age comes from the unit mapped at the site on SGB's
+		 * geological map at this scale (GEOSSIT has no age). At 1:1M that is
+		 * the bedrock there, which may not be what the geosite showcases.
+		 */
+		mapScale: z.number().int().positive().optional(),
 	})
 	.refine(
 		(a) => a.minMa === undefined || a.maxMa === undefined || a.minMa <= a.maxMa,

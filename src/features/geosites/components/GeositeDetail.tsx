@@ -198,8 +198,23 @@ function Overview({
 						</Row>
 					)}
 					{geosite.geologicAge && (
-						<Row label={m.detail_geological_age()}>
+						<Row
+							label={
+								geosite.geologicAge.mapScale
+									? m.detail_mapped_rock()
+									: m.detail_geological_age()
+							}
+						>
 							{formatAge(geosite.geologicAge)}
+							{geosite.geologicAge.mapScale && (
+								<Text size="xs" c="dimmed" mt={2}>
+									{m.detail_mapped_rock_note({
+										scale: geosite.geologicAge.mapScale.toLocaleString(
+											getLocale(),
+										),
+									})}
+								</Text>
+							)}
 						</Row>
 					)}
 					<Row label={m.detail_coordinates()}>
@@ -300,12 +315,18 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 	);
 }
 
+/** "Grupo Santana — Cretáceo · 101–145 Ma"; the unit leads for map-derived ages. */
 function formatAge(age: NonNullable<Geosite["geologicAge"]>): string {
-	const range =
-		age.minMa !== undefined && age.maxMa !== undefined
-			? ` · ${age.minMa}–${age.maxMa} Ma`
-			: "";
-	return [age.period, age.formation].filter(Boolean).join(" — ") + range;
+	const range = formatAgeRange(age.minMa, age.maxMa);
+	const names = age.mapScale
+		? [age.formation, age.period]
+		: [age.period, age.formation];
+	return [
+		names.filter(Boolean).join(" — "),
+		range !== age.period ? range : undefined,
+	]
+		.filter(Boolean)
+		.join(" · ");
 }
 
 const STRATA_OPTION = "strata";

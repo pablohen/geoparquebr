@@ -30,6 +30,8 @@
 	"detail_description_language": "Descrição do GEOSSIT, em português.",
 	"detail_geological_age": "Idade geológica",
 	"detail_geological_setting": "Contexto geológico",
+	"detail_mapped_rock": "Rocha mapeada no local",
+	"detail_mapped_rock_note": "Mapa geológico do SGB, escala 1:{scale}. Pode diferir do que o geossítio destaca.",
 	"detail_model_select": "Modelo",
 	"detail_model_source": "Fonte",
 	"detail_model_strata_option": "Coluna estratigráfica (mapa do SGB)",
