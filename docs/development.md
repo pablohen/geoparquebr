@@ -41,7 +41,7 @@ Server code reads them through `process.env`. Nothing secret should ever use the
 | --- | --- |
 | `pnpm dev` | Vite dev server with SSR and HMR on port 3000; regenerates `src/routeTree.gen.ts` |
 | `pnpm build` | Production build into `dist/client` and `dist/server` |
-| `pnpm start` | `vite preview` of the production build |
+| `pnpm start` | Runs the Node.js production server from `.output/` (after `pnpm build`); see [deployment](deployment.md) |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | `biome check .` (lint + format + import sorting) |
 | `pnpm format` | `biome check --write .` |

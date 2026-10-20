@@ -22,5 +22,6 @@ pnpm dev                      # http://localhost:3000
 - [Architecture](docs/architecture.md): layers, server/client boundary, request lifecycle, adding a feature
 - [Data model](docs/data-model.md): geosite schema, indexes, geospatial queries, URL params
 - [Development](docs/development.md): setup, env vars, scripts, troubleshooting
+- [Deployment](docs/deployment.md): Vercel (São Paulo, `gru1`) with MongoDB Atlas, or a standalone Node server
 - [3D models](docs/3d-models.md): model metadata, viewer behaviour, preparing assets
 - [AGENTS.md](AGENTS.md): conventions and rules for contributors and AI agents

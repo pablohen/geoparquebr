@@ -4,7 +4,7 @@ Guidance for AI coding agents (and humans) working in this repository.
 
 GeoparqueBR is a TanStack Start app for exploring Brazilian UNESCO Global Geoparks: geosites, strata, fossil beds and karst caves. It shows them in a list, on a MapLibre map and in a React Three Fiber 3D viewer. Data lives in MongoDB with a `2dsphere` index.
 
-Deeper docs: [architecture](docs/architecture.md) · [data model](docs/data-model.md) · [development](docs/development.md) · [3D models](docs/3d-models.md)
+Deeper docs: [architecture](docs/architecture.md) · [data model](docs/data-model.md) · [development](docs/development.md) · [deployment](docs/deployment.md) · [3D models](docs/3d-models.md)
 
 ## Commands
 
@@ -17,7 +17,8 @@ Use **pnpm**, never npm or yarn.
 | Typecheck | `pnpm typecheck` |
 | Lint + format check | `pnpm lint` |
 | Auto-fix lint/format | `pnpm format` |
-| Production build | `pnpm build` |
+| Production build | `pnpm build` (Nitro: `.output/`, or `.vercel/output/` on Vercel) |
+| Run production build | `pnpm start` |
 | Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
 | Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`) |
 | Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
@@ -73,6 +74,12 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - **3D model provenance must be honest.** Only attach a model where you can justify the link, and set `provenance` (`locality` / `region` / `illustrative`) accordingly. Only CC BY models may be self-hosted; view-only ones use the Sketchfab embed. See [3D models](docs/3d-models.md).
 
 - Upstream geology APIs (SGB OGC API, GBIF) are cached in `api_cache` through `cached()` (`src/lib/cache.server.ts`). Each source must fail independently, returning `status: "unavailable"`. Bump the cache-key version when a mapping changes.
+
+## Deployment
+
+- Deployed on **Vercel in São Paulo (`gru1`)**, with MongoDB Atlas in **AWS `sa-east-1`**. Keep new infrastructure in Brazil.
+- The function region and limits live in `vite.config.ts` (`nitro({ vercel: { functions } })`). Keep `maxDuration` above the slowest upstream timeout (Photon: 12 s) and MongoDB's `serverSelectionTimeoutMS` (10 s).
+- Nitro is a pinned **beta** (`3.0.x-beta`). Upgrade deliberately and re-check `NITRO_PRESET=vercel pnpm build`.
 
 ## Known gotchas
 
