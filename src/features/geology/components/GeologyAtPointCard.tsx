@@ -20,7 +20,8 @@ export function GeologyAtPointCard({ point: [lng, lat], onClose }: Props) {
 		<Paper
 			pos="absolute"
 			left={12}
-			bottom={36}
+			// Above the phone list button; near the scale bar on desktop.
+			bottom={{ base: 84, sm: 36 }}
 			p="sm"
 			radius="md"
 			shadow="md"

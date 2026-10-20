@@ -2,7 +2,6 @@ import {
 	ActionIcon,
 	AppShell,
 	Box,
-	Burger,
 	Group,
 	Loader,
 	ScrollArea,
@@ -30,6 +29,7 @@ import { GeositeDrawer } from "./GeositeDrawer";
 import { GeositeFilters } from "./GeositeFilters";
 import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
+import { MobileListSheet } from "./MobileListSheet";
 
 // MapLibre touches `window` at import time, so it only loads in the browser.
 const GeositeMap = lazy(() => import("./GeositeMap"));
@@ -57,7 +57,8 @@ function formValuesFor(bbox: BBox): LocationFormValues {
 }
 
 export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
-	const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure();
+	// Phone list sheet; from `sm` up the AppShell sidebar is always visible.
+	const [sheetOpened, { open: openSheet, close: closeSheet }] = useDisclosure();
 	const [geologyOpacity, setGeologyOpacity] = useState(0.7);
 	const [identifyPoint, setIdentifyPoint] = useState<[number, number]>();
 	const geologyVisible = search.geo === true;
@@ -72,8 +73,34 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	const select = (next: string) => {
 		// A different geosite starts on its overview tab.
 		onSearchChange({ site: next, tab: undefined, model: undefined });
-		closeNav();
+		closeSheet();
 	};
+
+	const filtered = Boolean(search.cat || search.rel || search.gp);
+	const locationForm = (
+		<LocationForm
+			values={formValuesFor(search.bbox)}
+			onSubmit={({ lng, lat, radiusKm }) => {
+				onSearchChange({
+					bbox: roundBBox(bboxAround([lng, lat], radiusKm)),
+				});
+				closeSheet();
+			}}
+		/>
+	);
+	const filters = (
+		<GeositeFilters
+			value={{ cat: search.cat, rel: search.rel, gp: search.gp }}
+			onChange={(next) => onSearchChange(next)}
+		/>
+	);
+	const list = (
+		<GeositeList
+			geosites={geosites}
+			selectedSlug={search.site}
+			onSelect={select}
+		/>
+	);
 
 	return (
 		<AppShell
@@ -81,30 +108,31 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 			navbar={{
 				width: 380,
 				breakpoint: "sm",
-				collapsed: { mobile: !navOpened },
+				// Phones use the bottom sheet instead (MobileListSheet).
+				collapsed: { mobile: true },
 			}}
 			padding={0}
 		>
 			<AppShell.Header>
-				<Group h="100%" px="md" justify="space-between">
-					<Group gap="xs">
-						<Burger
-							opened={navOpened}
-							onClick={toggleNav}
-							hiddenFrom="sm"
-							size="sm"
-							aria-label="Abrir lista"
-						/>
+				<Group h="100%" px={{ base: "xs", sm: "md" }} gap="xs" wrap="nowrap">
+					<Group gap="xs" wrap="nowrap" style={{ flex: "none" }}>
 						<Mountains
 							size={26}
 							weight="duotone"
 							color="var(--mantine-primary-color-filled)"
+							aria-hidden
 						/>
-						<Title order={1} size="h4">
+						<Title order={1} size="h4" visibleFrom="sm">
 							GeoparqueBR
 						</Title>
 					</Group>
-					<Group gap="xs" wrap="nowrap">
+					{/* On phones the search takes all the remaining width. */}
+					<Group
+						gap="xs"
+						wrap="nowrap"
+						justify="flex-end"
+						style={{ flex: 1, minWidth: 0 }}
+					>
 						<SearchBox
 							onSelectGeosite={select}
 							onSelectPlace={(place) =>
@@ -123,36 +151,22 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 					p="md"
 					style={{ borderBottom: "1px solid var(--app-shell-border-color)" }}
 				>
-					<LocationForm
-						values={formValuesFor(search.bbox)}
-						onSubmit={({ lng, lat, radiusKm }) =>
-							onSearchChange({
-								bbox: roundBBox(bboxAround([lng, lat], radiusKm)),
-							})
-						}
-					/>
+					{locationForm}
 				</AppShell.Section>
 				<AppShell.Section
 					p="md"
 					style={{ borderBottom: "1px solid var(--app-shell-border-color)" }}
 				>
-					<GeositeFilters
-						value={{ cat: search.cat, rel: search.rel, gp: search.gp }}
-						onChange={(filters) => onSearchChange(filters)}
-					/>
+					{filters}
 				</AppShell.Section>
 				<AppShell.Section px="md" pt="sm">
 					<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
 						{geosites.length} geossítios nesta área
-						{(search.cat || search.rel || search.gp) && " (filtrados)"}
+						{filtered && " (filtrados)"}
 					</Text>
 				</AppShell.Section>
 				<AppShell.Section grow component={ScrollArea} p="xs">
-					<GeositeList
-						geosites={geosites}
-						selectedSlug={search.site}
-						onSelect={select}
-					/>
+					{list}
 				</AppShell.Section>
 			</AppShell.Navbar>
 
@@ -184,6 +198,20 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							if (!on) setIdentifyPoint(undefined);
 						}}
 						onOpacityChange={setGeologyOpacity}
+					/>
+					<MobileListSheet
+						opened={sheetOpened}
+						onOpen={openSheet}
+						onClose={closeSheet}
+						count={geosites.length}
+						filtered={filtered}
+						controls={
+							<>
+								{filters}
+								{locationForm}
+							</>
+						}
+						list={list}
 					/>
 					{geologyVisible && identifyPoint && (
 						<GeologyAtPointCard

@@ -1,4 +1,5 @@
 import { Paper, Slider, Stack, Switch, Text } from "@mantine/core";
+import { Stack as StackIcon } from "@phosphor-icons/react";
 
 type Props = {
 	visible: boolean;
@@ -19,16 +20,28 @@ export function GeologyLayerControl({
 			pos="absolute"
 			top={12}
 			left={12}
-			p="xs"
+			p={{ base: 6, sm: "xs" }}
 			radius="md"
 			shadow="sm"
-			w={230}
+			// A compact chip on phones; a full panel from `sm` up.
+			w={visible ? { base: 180, sm: 230 } : { base: "auto", sm: 230 }}
 			style={{ zIndex: 2 }}
 		>
 			<Stack gap={6}>
 				<Switch
 					size="sm"
-					label="Mapa geológico (SGB, 1:1M)"
+					aria-label="Mapa geológico (SGB, 1:1M)"
+					thumbIcon={<StackIcon size={10} />}
+					label={
+						<>
+							<Text span hiddenFrom="sm" size="sm">
+								Geologia
+							</Text>
+							<Text span visibleFrom="sm" size="sm">
+								Mapa geológico (SGB, 1:1M)
+							</Text>
+						</>
+					}
 					checked={visible}
 					onChange={(e) => onVisibleChange(e.currentTarget.checked)}
 				/>
@@ -45,7 +58,7 @@ export function GeologyLayerControl({
 							aria-label="Opacidade do mapa geológico"
 						/>
 						<Text size="xs" c="dimmed">
-							Clique no mapa para identificar a unidade.
+							Toque/clique no mapa para identificar a unidade.
 						</Text>
 					</>
 				)}

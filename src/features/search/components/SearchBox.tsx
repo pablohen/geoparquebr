@@ -9,6 +9,7 @@ import {
 import { useDebouncedValue } from "@mantine/hooks";
 import { MagnifyingGlass, MapPin, Mountains } from "@phosphor-icons/react";
 import { useState } from "react";
+import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import type { Place } from "../schemas";
 import { searchGeositesFn, searchPlacesFn } from "../search.functions";
@@ -23,6 +24,7 @@ const GEOSITE = "geosite:";
 const PLACE = "place:";
 
 export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
+	const isMobile = useIsMobile();
 	const [value, setValue] = useState("");
 	const [q] = useDebouncedValue(value.trim(), 250);
 	const enabled = q.length >= 2;
@@ -86,7 +88,9 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 		<Select
 			searchable
 			aria-label="Buscar geossítios e lugares"
-			placeholder="Buscar geossítio, município ou lugar…"
+			placeholder={
+				isMobile ? "Buscar…" : "Buscar geossítio, município ou lugar…"
+			}
 			leftSection={<MagnifyingGlass size={16} />}
 			rightSection={enabled && pending ? <Loader size={14} /> : null}
 			// A command-style search: nothing stays selected after picking.
@@ -100,7 +104,11 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			nothingFoundMessage={enabled && !pending ? "Nada encontrado" : undefined}
 			limit={20}
 			maxDropdownHeight={360}
-			comboboxProps={{ width: 380, position: "bottom-start" }}
+			// On phones the input spans the header, so match its width.
+			comboboxProps={{
+				width: isMobile ? "target" : 380,
+				position: "bottom-start",
+			}}
 			onChange={(selected) => {
 				if (!selected) return;
 				if (selected.startsWith(GEOSITE))
@@ -111,7 +119,8 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 				}
 				setValue("");
 			}}
-			w={{ base: 200, sm: 320 }}
+			w={{ base: "100%", sm: 320 }}
+			maw={{ base: "none", sm: 320 }}
 		/>
 	);
 }

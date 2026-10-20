@@ -29,6 +29,7 @@ import {
 	midAge,
 	shade,
 } from "~/features/geology/time-scale";
+import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import {
 	DEGRADATION_RISK_LABELS,
@@ -70,16 +71,19 @@ export function GeositeDrawer({
 	onViewChange,
 	onClose,
 }: Props) {
+	// A bottom sheet on phones keeps a strip of map in view; a side panel on desktop.
+	const isMobile = useIsMobile();
 	return (
 		<Drawer
 			opened={opened}
 			onClose={onClose}
-			position="right"
-			size="xl"
+			position={isMobile ? "bottom" : "right"}
+			size={isMobile ? "92%" : "xl"}
+			radius={isMobile ? "lg" : 0}
 			title={
 				geosite && (
 					<Stack gap={2}>
-						<Title order={2} size="h3">
+						<Title order={2} size="h3" fz={{ base: "h4", sm: "h3" }}>
 							{geosite.name}
 						</Title>
 						<Text size="sm" c="dimmed">
@@ -106,6 +110,19 @@ export function GeositeDrawer({
 	);
 }
 
+function ShortLabel({ short, full }: { short: string; full: string }) {
+	return (
+		<>
+			<Text span inherit hiddenFrom="sm">
+				{short}
+			</Text>
+			<Text span inherit visibleFrom="sm">
+				{full}
+			</Text>
+		</>
+	);
+}
+
 function geoparkLabel(g: Geosite): string {
 	if (g.geoparkId) return GEOPARK_LABELS[g.geoparkId];
 	if (g.geoparkProposal) return `Proposta de geoparque: ${g.geoparkProposal}`;
@@ -121,6 +138,7 @@ function GeositeDetail({
 	view: DrawerView;
 	onViewChange: (next: DrawerView) => void;
 }) {
+	const isMobile = useIsMobile();
 	const tab = view.tab ?? "overview";
 	// Default values are omitted from the URL to keep links short.
 	const setTab = (value: string | null) => {
@@ -133,12 +151,14 @@ function GeositeDetail({
 
 	return (
 		<Tabs value={tab} onChange={setTab} keepMounted={false}>
-			<Tabs.List mb="md">
+			{/* Tabs share the width on phones, with shorter labels so all three fit. */}
+			<Tabs.List mb="md" grow={isMobile}>
 				<Tabs.Tab value="overview" leftSection={<Info size={16} />}>
-					Visão geral
+					<ShortLabel short="Geral" full="Visão geral" />
 				</Tabs.Tab>
 				<Tabs.Tab value="model" leftSection={<Cube size={16} />}>
-					Modelo 3D {geosite.models.length > 0 && `(${geosite.models.length})`}
+					<ShortLabel short="3D" full="Modelo 3D" />
+					{geosite.models.length > 0 && ` (${geosite.models.length})`}
 				</Tabs.Tab>
 				<Tabs.Tab value="fossils" leftSection={<Bone size={16} />}>
 					Fósseis
@@ -305,7 +325,9 @@ function SourceCredit({ source }: { source: NonNullable<Geosite["source"]> }) {
 function Row({ label, children }: { label: string; children: ReactNode }) {
 	return (
 		<Table.Tr>
-			<Table.Th w={180}>{label}</Table.Th>
+			<Table.Th w="38%" maw={180}>
+				{label}
+			</Table.Th>
 			<Table.Td>{children}</Table.Td>
 		</Table.Tr>
 	);
@@ -370,7 +392,7 @@ function ModelsPanel({
 }
 
 const viewerBox = {
-	h: 440,
+	h: { base: 320, sm: 440 },
 	bg: "dark.8",
 	style: { borderRadius: "var(--mantine-radius-md)", overflow: "hidden" },
 } as const;
