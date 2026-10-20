@@ -14,7 +14,8 @@ Use **pnpm**, never npm or yarn.
 | --- | --- |
 | Install | `pnpm install` |
 | Dev server (http://localhost:3000) | `pnpm dev` |
-| Typecheck | `pnpm typecheck` |
+| Typecheck (compiles messages first) | `pnpm typecheck` |
+| Compile messages into `src/paraglide` | `pnpm i18n` (dev, build and tests also do it) |
 | Lint + format check | `pnpm lint` |
 | Auto-fix lint/format | `pnpm format` |
 | Production build | `pnpm build` (Nitro: `.output/`, or `.vercel/output/` on Vercel) |
@@ -65,7 +66,17 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - Geosites with `locationIsSensitive: true` (fragile caves, fossil beds) get their coordinates rounded to about 1 km in `toDto`. Never add a code path that returns their exact coordinates to the client.
 - The list query is `$geoNear` (first stage, needs `location_2dsphere`) with `$geoWithin` on a densified box polygon in its `query`. Return summaries only; the drawer fetches the full geosite by slug.
 - Per-geosite lookups (fossils, strata) take a **slug** and resolve exact coordinates server-side via `findGeositeLocation`. Never accept coordinates from the client for them, and never return exact coordinates of sensitive sites.
-- User-facing text is **Brazilian Portuguese**. Enum values stay English slugs, with pt-BR label maps (`GEOSITE_CATEGORY_LABELS`, `GEOPARK_LABELS`, `RELEVANCE_LABELS`, `DEGRADATION_RISK_LABELS`). Show labels, never raw enum values.
+- **Two languages:** Brazilian Portuguese (default) and English. Enum values stay English slugs; show labels from `labels.ts` (`categoryLabel`, `geoparkLabel`, `relevanceLabel`, …), never raw enum values. Data from GEOSSIT, SGB and GBIF stays as published (Portuguese).
+
+## Localization
+
+- **Paraglide JS 2.** UI copy lives in `messages/pt-BR.json` (base) and `messages/en.json` and compiles to typed `m.*` functions in `src/paraglide/` (git-ignored; import from `~/paraglide/messages.js`). Never hard-code copy in components: `no-hardcoded-copy.test.ts` fails on it. Add every key to both files (`messages.test.ts` checks keys and placeholders match).
+- **The URL is the locale.** pt-BR at the root (`/`, `/geosites/pedra-cariri`), English under `/en`. Routes are written without a locale: the router's `rewrite` (`router.tsx`) strips `/en` on the way in and adds it back to every link, and `src/server.ts` runs requests in `paraglideMiddleware` so SSR resolves the right locale. Don't add a `$locale` route param.
+- **Call messages at render time**, not at module load: the server renders both languages, so a module-level `const X = m.foo()` would freeze one of them.
+- **Plurals** use the message-format `match` form with `count=0` kept plural (CLDR makes 0 singular in Portuguese); see `sheet_count`.
+- **Server functions** run under `/_serverFn/`, which has no locale prefix, so they always see pt-BR. Return data, never copy.
+- The inlang plugins load from `node_modules` (`project.inlang/settings.json`), not a CDN; the build's `catalogGuard` fails if any message failed to compile.
+- **SEO:** canonical, `og:url` and share links follow the current locale (`absoluteUrl`), pages list hreflang alternates (`alternateLinks`), and the sitemap lists every page in both languages.
 
 ## External data
 
@@ -81,7 +92,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 
 - **Routes.** `/` is the map explorer. `/geosites/$slug` is the indexable page for one geosite, server-rendered, with Open Graph, Twitter and JSON-LD built in `src/features/geosites/seo.ts`. `/sitemap.xml` is a server route. The public origin is `SITE_URL` in `src/lib/site.ts`.
 - **Share images.** Only use a geosite's photo when `getGeositePage` confirms it loads, since about 2% of GEOSSIT links are dead; otherwise use `/og-default.png`.
-- **Service worker** (`public/sw.js`, registered in production only). Bump `VERSION` whenever its caching rules change. Keep `/assets/*` cache-first (content-hashed), pages and `/_serverFn/*` network-first, and map tiles stale-while-revalidate.
+- **Service worker** (`public/sw.js`, registered in production only). Bump `VERSION` whenever its caching rules or page paths change. `/offline.html` switches to English under `/en`. Keep `/assets/*` cache-first (content-hashed), pages and `/_serverFn/*` network-first, and map tiles stale-while-revalidate.
 - **Start URL.** The manifest `start_url` must be the default-viewport URL (`/?bbox=…`); `manifest.test.ts` keeps it in sync with `DEFAULT_BBOX`. A redirect (`/` → `/?bbox=…`) can't be served offline.
 - **Testing offline.** The in-app browser pane doesn't support service workers, and CDP network emulation doesn't apply to service-worker fetches. Test with a production build in real Chrome and actually stop the server.
 

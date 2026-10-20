@@ -42,7 +42,8 @@ Server code reads them through `process.env`. Nothing secret should ever use the
 | `pnpm dev` | Vite dev server with SSR and HMR on port 3000; regenerates `src/routeTree.gen.ts` |
 | `pnpm build` | Production build into `dist/client` and `dist/server` |
 | `pnpm start` | Runs the Node.js production server from `.output/` (after `pnpm build`); see [deployment](deployment.md) |
-| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm i18n` | compiles `messages/*.json` into `src/paraglide/` (typed `m.*` functions); dev, build and tests do this themselves |
+| `pnpm typecheck` | `pnpm i18n`, then `tsc --noEmit` |
 | `pnpm lint` | `biome check .` (lint + format + import sorting) |
 | `pnpm format` | `biome check --write .` |
 | `pnpm test` | Vitest: unit tests, plus MongoDB integration tests when `MONGODB_URI` is set |
@@ -79,22 +80,30 @@ A headless or background browser tab may pause `requestAnimationFrame`. That fre
 ```
 src/
 ├── routes/                       file-based routes (TanStack Router)
-│   ├── __root.tsx                <html>, MantineProvider, global CSS, color-scheme script
-│   └── index.tsx                 explorer route: validateSearch → loader → UI
+│   ├── __root.tsx                <html lang>, MantineProvider, global CSS, color-scheme script
+│   ├── index.tsx                 explorer route: validateSearch → loader → UI
+│   └── geosites.$slug.tsx        standalone geosite page
 ├── features/geosites/
 │   ├── schemas.ts                Zod: single source of truth
+│   ├── labels.ts                 enum values → localized labels
 │   ├── geosites.server.ts        Mongo queries, indexes, DTO mapping, sync (server-only)
 │   ├── geossit.server.ts         GEOSSIT fetch + Zod validation + mapping (server-only)
 │   ├── model-catalog.server.ts   curated 3D models and where they attach (server-only)
 │   ├── geosites.functions.ts     createServerFn RPCs
 │   └── components/               Explorer, List, LocationForm, Map, Drawer, ModelViewer, SketchfabEmbed
+├── features/i18n/components/     LanguageSwitcher
 ├── lib/db.server.ts              pooled MongoClient (cached on globalThis for HMR)
-├── router.tsx                    getRouter() factory
+├── lib/i18n.ts                   locale helpers: localized URLs, hreflang, og:locale
+├── paraglide/                    compiled messages (generated, git-ignored)
+├── router.tsx                    getRouter() factory; /en rewrite
+├── server.ts                     server entry: Paraglide middleware
 ├── routeTree.gen.ts              generated, committed, not linted
 └── theme.ts                      Mantine theme ("laterite" primary color)
 scripts/seed.ts                   indexes + GEOSSIT sync + model attachments
 scripts/fetch-models.ts           Sketchfab download → optimize → public/models/
 scripts/lib/optimize-glb.ts       glTF-Transform pipeline (simplify, WebP, meshopt)
+messages/{pt-BR,en}.json         UI copy (Paraglide / inlang message format)
+project.inlang/                   inlang project settings (plugins from node_modules)
 docs/                             these docs
 ```
 
