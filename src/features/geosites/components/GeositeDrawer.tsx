@@ -17,9 +17,10 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { ArrowSquareOut, Cube, Info } from "@phosphor-icons/react";
+import { ArrowSquareOut, Bone, Cube, Info } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, type ReactNode, Suspense, useState } from "react";
+import { FossilsPanel } from "~/features/geology/components/FossilsPanel";
 import {
 	DEGRADATION_RISK_LABELS,
 	type DrawerTab,
@@ -126,6 +127,9 @@ function GeositeDetail({
 				<Tabs.Tab value="overview" leftSection={<Info size={16} />}>
 					Visão geral
 				</Tabs.Tab>
+				<Tabs.Tab value="fossils" leftSection={<Bone size={16} />}>
+					Fósseis
+				</Tabs.Tab>
 				<Tabs.Tab value="model" leftSection={<Cube size={16} />}>
 					Modelo 3D {geosite.models.length > 0 && `(${geosite.models.length})`}
 				</Tabs.Tab>
@@ -133,6 +137,9 @@ function GeositeDetail({
 
 			<Tabs.Panel value="overview">
 				<Overview geosite={geosite} />
+			</Tabs.Panel>
+			<Tabs.Panel value="fossils">
+				<FossilsPanel slug={geosite.slug} />
 			</Tabs.Panel>
 			<Tabs.Panel value="model">
 				<ModelsPanel

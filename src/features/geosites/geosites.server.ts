@@ -196,6 +196,23 @@ export async function findGeositesInBounds(
 	}));
 }
 
+/**
+ * Exact coordinates for server-side lookups (fossils, strata). Never return
+ * these to the client: sensitive geosites are only exposed rounded.
+ */
+export async function findGeositeLocation(
+	slug: string,
+): Promise<{ point: [number, number]; sensitive: boolean } | null> {
+	const col = await geositesCollection();
+	const doc = await col.findOne(
+		{ slug },
+		{ projection: { location: 1, locationIsSensitive: 1 } },
+	);
+	return doc
+		? { point: doc.location.coordinates, sensitive: doc.locationIsSensitive }
+		: null;
+}
+
 export async function findGeositeBySlug(slug: string): Promise<Geosite | null> {
 	const col = await geositesCollection();
 	const doc = await col.findOne({ slug });

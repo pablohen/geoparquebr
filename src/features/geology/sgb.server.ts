@@ -1,0 +1,143 @@
+/**
+ * Client for the SGB/CPRM OGC API – Features server (pygeoapi).
+ * The service describes itself as experimental, so every call is validated
+ * and callers must handle failures.
+ */
+import { z } from "zod";
+import { type BBox, haversineMeters } from "~/lib/geo";
+import type { FossilOccurrence } from "./schemas";
+
+export const SGB_OGC_API = "https://geoservicos.sgb.gov.br/ogcapi";
+
+const text = z
+	.string()
+	.nullish()
+	.transform((s) => s?.trim() || undefined);
+
+function featureCollection<P extends z.ZodType>(properties: P) {
+	return z.object({
+		numberMatched: z.number().int().optional(),
+		features: z.array(
+			z.object({
+				id: z.union([z.string(), z.number()]).optional(),
+				geometry: z
+					.object({
+						type: z.literal("Point"),
+						coordinates: z.tuple([z.number(), z.number()]),
+					})
+					.nullable(),
+				properties,
+			}),
+		),
+	});
+}
+
+export async function queryCollection<P extends z.ZodType>(
+	collection: string,
+	properties: P,
+	params: {
+		bbox: BBox;
+		limit: number;
+		skipGeometry?: boolean;
+		fields?: string[];
+	},
+) {
+	const url = new URL(`${SGB_OGC_API}/collections/${collection}/items`);
+	url.search = new URLSearchParams({
+		f: "json",
+		bbox: params.bbox.join(","),
+		limit: String(params.limit),
+		...(params.skipGeometry && { skipGeometry: "true" }),
+		...(params.fields && { properties: params.fields.join(",") }),
+	}).toString();
+
+	const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+	if (!res.ok) throw new Error(`SGB ${collection}: HTTP ${res.status}`);
+	return featureCollection(properties).parse(await res.json());
+}
+
+// ---------------------------------------------------------------------------
+// Fossil occurrences (geologia/ocorrencias-fossiliferas)
+// ---------------------------------------------------------------------------
+
+const FossilPropertiesSchema = z.object({
+	identificacao: text,
+	taxon: text,
+	macrofosseis: text,
+	microfosseis: text,
+	unidade_litoestratigrafica: text,
+	unidade_cronoestratigrafica: text,
+	litologia: text,
+	localidade: text,
+	instituicao: text,
+	registro_exemplar: text,
+	status_exemplar: text,
+	referencia_bibliografica: text,
+});
+
+/** Sentence-cases names recorded in ALL CAPS; leaves mixed case alone. */
+function tidyCase(name: string): string {
+	const lower = name.toLowerCase();
+	const base = name === name.toUpperCase() ? lower : name;
+	return base.charAt(0).toUpperCase() + base.slice(1);
+}
+
+/**
+ * "lepidosauria, squamata, tijubina pontei" → ["Lepidosauria", "Squamata", "Tijubina pontei"].
+ * Commas also separate authorship years ("Dastilbe elongatus Santos, 1947"),
+ * so a segment that starts with a year is glued back onto the previous one.
+ */
+export function splitTaxa(...lists: (string | undefined)[]): string[] {
+	const out: string[] = [];
+	for (const raw of lists.flatMap((l) => l?.split(/[,;]/) ?? [])) {
+		const part = raw.trim();
+		if (!part) continue;
+		const last = out.at(-1);
+		if (/^\(?\d{4}/.test(part) && last !== undefined)
+			out[out.length - 1] = `${last}, ${part}`;
+		else out.push(tidyCase(part));
+	}
+	return [...new Set(out)];
+}
+
+/** An occurrence with its exact distance; rounding happens in the server function. */
+export type NearbyFossil = Omit<FossilOccurrence, "distanceKm"> & {
+	distanceM: number;
+};
+
+export async function sgbFossilsNear(
+	point: [number, number],
+	bbox: BBox,
+	radiusKm: number,
+): Promise<{ items: NearbyFossil[]; total: number }> {
+	const page = await queryCollection(
+		"geologia/ocorrencias-fossiliferas",
+		FossilPropertiesSchema,
+		{ bbox, limit: 500 },
+	);
+
+	const items = page.features.flatMap((f, i): NearbyFossil[] => {
+		const p = f.properties;
+		const taxa = splitTaxa(p.taxon, p.macrofosseis, p.microfosseis);
+		if (!f.geometry || taxa.length === 0) return [];
+		const distanceM = haversineMeters(point, f.geometry.coordinates);
+		if (distanceM > radiusKm * 1_000) return [];
+		return [
+			{
+				source: "sgb",
+				id: p.identificacao ?? String(f.id ?? i),
+				taxa,
+				unit: p.unidade_litoestratigrafica,
+				age: p.unidade_cronoestratigrafica,
+				lithology: p.litologia,
+				locality: p.localidade,
+				institution: p.instituicao,
+				specimen: p.registro_exemplar,
+				typeStatus: p.status_exemplar,
+				reference: p.referencia_bibliografica,
+				distanceM,
+			},
+		];
+	});
+	return { items, total: items.length };
+}

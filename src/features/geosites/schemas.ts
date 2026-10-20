@@ -305,7 +305,7 @@ export const GeositeSummarySchema = GeositeSchema.pick({
 });
 export type GeositeSummary = z.infer<typeof GeositeSummarySchema>;
 
-export const DrawerTabSchema = z.enum(["overview", "model"]);
+export const DrawerTabSchema = z.enum(["overview", "fossils", "model"]);
 export type DrawerTab = z.infer<typeof DrawerTabSchema>;
 
 /**
