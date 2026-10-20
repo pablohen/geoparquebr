@@ -24,6 +24,7 @@ import type {
 	LocationFormValues,
 } from "../schemas";
 import { GeositeDrawer } from "./GeositeDrawer";
+import { GeositeFilters } from "./GeositeFilters";
 import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
 
@@ -115,9 +116,19 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 						}
 					/>
 				</AppShell.Section>
+				<AppShell.Section
+					p="md"
+					style={{ borderBottom: "1px solid var(--app-shell-border-color)" }}
+				>
+					<GeositeFilters
+						value={{ cat: search.cat, rel: search.rel, gp: search.gp }}
+						onChange={(filters) => onSearchChange(filters)}
+					/>
+				</AppShell.Section>
 				<AppShell.Section px="md" pt="sm">
 					<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
 						{geosites.length} geossítios nesta área
+						{(search.cat || search.rel || search.gp) && " (filtrados)"}
 					</Text>
 				</AppShell.Section>
 				<AppShell.Section grow component={ScrollArea} p="xs">
