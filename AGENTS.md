@@ -1,0 +1,71 @@
+# AGENTS.md
+
+Guidance for AI coding agents (and humans) working in this repository.
+
+GeoparqueBR is a TanStack Start app for exploring Brazilian UNESCO Global Geoparks: geosites, strata, fossil beds and karst caves. It shows them in a list, on a MapLibre map and in a React Three Fiber 3D viewer. Data lives in MongoDB with a `2dsphere` index.
+
+Deeper docs: [architecture](docs/architecture.md) · [data model](docs/data-model.md) · [development](docs/development.md) · [3D models](docs/3d-models.md)
+
+## Commands
+
+Use **pnpm**, never npm or yarn.
+
+| Task | Command |
+| --- | --- |
+| Install | `pnpm install` |
+| Dev server (http://localhost:3000) | `pnpm dev` |
+| Typecheck | `pnpm typecheck` |
+| Lint + format check | `pnpm lint` |
+| Auto-fix lint/format | `pnpm format` |
+| Production build | `pnpm build` |
+| Create indexes + sample data | `pnpm db:seed` (reads `.env`) |
+| Local MongoDB | `docker compose up -d` |
+
+Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm build`. There is no test suite yet. For UI changes, also load the page and check the browser console.
+
+## Stack and versions
+
+- **TanStack Start 1.x** (Vite 8 plugin). Server-function input validation is `.validator(schema)`. Read the bundled skill docs in `node_modules/@tanstack/react-start/skills/` and `node_modules/@tanstack/start-client-core/skills/` before guessing at APIs: they match the installed version.
+- **Zod 4**: `z.url()`, `z.iso.datetime()` and so on, not the Zod 3 method forms.
+- **Mantine 7** (pinned on purpose; npm `latest` is 9). Use Mantine components and style props before writing custom CSS.
+- **Phosphor icons** (`@phosphor-icons/react`) for every icon.
+- **React Hook Form** + `@hookform/resolvers/zod` for forms.
+- **MapLibre GL 6** for maps; **React Three Fiber 9** + **drei 10** for 3D.
+- **Biome 2**: default formatting (tabs, double quotes). Don't add style overrides.
+- **TypeScript 7** (`tsc` is the native compiler), `strict` + `noUncheckedIndexedAccess`.
+
+## Architecture rules
+
+1. **Zod schemas are the single source of truth.** Domain shapes live in `src/features/<feature>/schemas.ts`, and they feed route `validateSearch`, server-function `.validator()`, form `zodResolver` and seed validation. Derive types with `z.infer`/`z.input`; never hand-write a duplicate interface.
+2. **The server/client boundary is set by file name:**
+   - `*.server.ts` holds server-only code (Mongo driver, secrets, `process.env`). **Never import it from components or routes.**
+   - `*.functions.ts` wraps server-only code in `createServerFn`. It's safe to import anywhere, because the build swaps handlers for RPC stubs on the client.
+   - Route loaders are isomorphic: call server functions from them, never the database directly.
+3. **Feature folders.** New domain code goes in `src/features/<feature>/` (`schemas.ts`, `<feature>.server.ts`, `<feature>.functions.ts`, `components/`). Shared infrastructure goes in `src/lib/`.
+4. **URL state.** Anything a user would want to share or bookmark (map center, radius, selected geosite) lives in route search params validated by Zod, not in `useState`.
+5. **Browser-only libraries load lazily.** MapLibre and three.js must sit behind `<ClientOnly>` + `React.lazy`, in a default-exported component, so they stay out of SSR and the initial bundle.
+
+## Domain invariants
+
+- GeoJSON coordinates are **`[longitude, latitude]`**, the reverse of most map UIs. `PositionSchema` enforces the ranges.
+- Distances are stored and returned in **metres** (`distanceMeters`); radii in the UI and URL are **kilometres** (`radiusKm`).
+- `_id` and `Date` never leave the server. Map documents through `toDto` in `geosites.server.ts`, which returns `id: string` and ISO-string dates.
+- Geosites with `locationIsSensitive: true` (fragile caves, fossil beds) get their coordinates rounded to about 1 km in `toDto`. Never add a code path that returns their exact coordinates to the client.
+- Nearby queries use the `$geoNear` aggregation stage, because it returns the distance. It must be the first pipeline stage and needs the `location_2dsphere` index.
+- User-facing text is **Brazilian Portuguese**. Enum values stay English slugs, with pt-BR label maps (`GEOSITE_CATEGORY_LABELS`, `GEOPARK_LABELS`, `SCIENTIFIC_VALUE_LABELS`). Show labels, never raw enum values.
+
+## Known gotchas
+
+- **MapLibre worker:** MapLibre 6 finds its web worker relative to its own module URL, and that breaks under Vite bundling. `GeositeMap.tsx` imports `maplibre-gl/dist/maplibre-gl-worker.mjs?url` and calls `setWorkerUrl` before creating a map. Keep that call if you refactor.
+- **MapLibre 6 has no default export.** Use named imports (`Map`, `NavigationControl`, …).
+- **No drei `<Html>`.** Each `<Html>` mounts its own React root, and React 19 logs "synchronously unmount a root" errors. Put overlays (legends, errors, loaders) in plain DOM outside the `<Canvas>`.
+- **Color-scheme script:** don't use Mantine's `<ColorSchemeScript>`, which triggers a React 19 "script tag" warning on hydration. `__root.tsx` injects the same script with TanStack's `<ScriptOnce>`.
+- **Map effects that need the style loaded** must also run inside `map.on("load")`. Effects that fire earlier find no layer and return early (deep-linked `?site=` relies on this).
+- **`src/routeTree.gen.ts` is generated** by the TanStack Start plugin on dev and build. It's committed, but excluded from Biome. Don't edit it by hand.
+- Env vars (`MONGODB_URI`, `MONGODB_DB`) are read with `process.env` in `*.server.ts` only. Never prefix secrets with `VITE_`.
+
+## Git
+
+- **Atomic [Conventional Commits](https://www.conventionalcommits.org/):** one logical change per commit, in the form `type(scope): summary` (types `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`; scopes such as `geosites`, `map`, `viewer`, `db`, `app`).
+- Every commit should pass `pnpm lint` and `pnpm typecheck` on its own. Order commits so nothing imports a file added in a later one.
+- Never commit `.env`. Add new variables to `.env.example` with a placeholder value.
