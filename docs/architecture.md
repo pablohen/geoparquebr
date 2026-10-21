@@ -79,6 +79,7 @@ sequenceDiagram
 | `/news`, `/news.xml` | "Novidades": what each weekly GEOSSIT sync added, changed (by field) or removed, from `geosite_changes`; RSS 2.0 in the URL's language |
 | `/my-geosites` | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`) |
 | `/geoparks/$geoparkId/guide`, `/trip/guide` | printable field guides (`src/features/guide/`): each geosite's full description, age, public coordinates, GEOSSIT source and a QR code for its page (SVG made on the server with `qrcode`); print CSS hides the app chrome and forces light colours (`noindex`) |
+| `/embed/geoparks/$geoparkId`, `/embed/geosites/$slug` | embeddable maps for other sites' `<iframe>`s (`src/features/embed/`): public points, a credit bar linking back, cooperative gestures, no app chrome, no service worker, `noindex`; the "Incorporar" button gives the code |
 | `/trip` | this device's trip: suggested order, straight-line legs, Google Maps links and a share link; `?stops=a,b,c` opens a shared trip (`noindex`) |
 | `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
 | `/og/geosites/$slug`, `/og/geoparks/$geoparkId` | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`) |
@@ -120,7 +121,11 @@ Saved tiles share their caches with normal browsing and can eventually be evicte
 
 ### Trips
 
-The trip button (beside the star and tick) adds a geosite to a trip kept in localStorage (`src/features/trip/store.ts`, up to 25 stops); a geopark page can add all of its geosites at once. `/trip` orders the stops on the device (`suggestOrder` in `route.ts`: nearest neighbour, then 2-opt), shows straight-line legs and opens the route in Google Maps (`googleMapsTripUrls`, split into legs of 10 points). "Começar da minha posição" uses the browser's location for the ordering and the links only; it never reaches the server. Stops carry each geosite's public point, so sensitive sites are approximate, as in "Como chegar". A share link (`/trip?stops=a,b,c`) carries slugs only; the server resolves them to public points (`getTripStops`).
+The trip button (beside the star and tick) adds a geosite to a trip kept in localStorage (`src/features/trip/store.ts`, up to 25 stops); a geopark page can add all of its geosites at once. `/trip` orders the stops on the device (`suggestOrder` in `route.ts`: nearest neighbour, then 2-opt), shows straight-line legs and opens the route in Google Maps (`googleMapsTripUrls`, split into legs of 10 points). "Começar da minha posição" uses the browser's location for the ordering and the links only; it never reaches the server. Stops carry each geosite's public point, so sensitive sites are approximate, as in "Como chegar". A share link (`/trip?stops=a,b,c`) carries slugs only; the server resolves them to public points (`getTripStops`). "Roteiro no mapa" (`?trip=true`) draws the trip on the map explorer as a dashed route with numbered stops (`tripFeatures` in `map.ts`); tapping a stop opens its geosite.
+
+### Perto de mim
+
+The map's "Perto de mim" button reads the browser's location once, centres the map there and ranks the listed geosites by straight-line distance from it (`rankFromPoint` in `src/features/geosites/near.ts`, to public points, rounded to 100 m). The position stays in the page's state, shown as a dot; it never reaches the server, and moving the map away from it leaves the mode.
 
 ## UI composition
 
