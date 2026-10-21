@@ -95,14 +95,14 @@ src/
 ├── lib/db.server.ts              pooled MongoClient (cached on globalThis for HMR)
 ├── lib/i18n.ts                   locale helpers: localized URLs, hreflang, og:locale
 ├── paraglide/                    compiled messages (generated, git-ignored)
-├── router.tsx                    getRouter() factory; /en rewrite
+├── router.tsx                    getRouter() factory; /en, /es rewrite
 ├── server.ts                     server entry: Paraglide middleware
 ├── routeTree.gen.ts              generated, committed, not linted
 └── theme.ts                      Mantine theme ("laterite" primary color)
 scripts/seed.ts                   indexes + GEOSSIT sync + model attachments
 scripts/fetch-models.ts           Sketchfab download → optimize → public/models/
 scripts/lib/optimize-glb.ts       glTF-Transform pipeline (simplify, WebP, meshopt)
-messages/{pt-BR,en}.json         UI copy (Paraglide / inlang message format)
+messages/{pt-BR,en,es}.json      UI copy (Paraglide / inlang message format)
 project.inlang/                   inlang project settings (plugins from node_modules)
 docs/                             these docs
 ```

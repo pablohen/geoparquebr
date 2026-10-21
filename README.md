@@ -1,6 +1,6 @@
 # GeoparqueBR
 
-Explore Brazilian UNESCO Global Geoparks and the wider geoheritage inventory: geosites, strata, fossil beds and karst caves, on a map and in 3D. In Portuguese ([geoparquebr.vercel.app](https://geoparquebr.vercel.app)) and English ([/en](https://geoparquebr.vercel.app/en)).
+Explore Brazilian UNESCO Global Geoparks and the wider geoheritage inventory: geosites, strata, fossil beds and karst caves, on a map and in 3D. In Portuguese ([geoparquebr.vercel.app](https://geoparquebr.vercel.app)), English ([/en](https://geoparquebr.vercel.app/en)) and Spanish ([/es](https://geoparquebr.vercel.app/es)).
 
 Geosite data: [GEOSSIT](https://www.sgb.gov.br/geossit/), Serviço Geológico do Brasil (SGB/CPRM). 3D models: [GeoHereditas](https://sketchfab.com/geohereditas), Museu de Geociências IGc-USP.
 

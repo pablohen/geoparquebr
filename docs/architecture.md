@@ -72,10 +72,10 @@ sequenceDiagram
 | --- | --- |
 | `/` | map explorer; URL holds `bbox`, filters and drawer state |
 | `/geosites/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
-| `/sitemap.xml` | server route listing every page in both languages, with hreflang alternates |
+| `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
 | `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
 
-Every path also exists in English under `/en` (`/en/`, `/en/geosites/$slug`). Routes don't declare the prefix: the router's `rewrite` removes it before matching and adds it to links while the page is in English (Paraglide's URL strategy), and `src/server.ts` wraps each request in `paraglideMiddleware` so server rendering uses the same locale.
+Every path also exists in English under `/en` and in Spanish under `/es` (`/en/geosites/$slug`, `/es/geosites/$slug`). Routes don't declare the prefix: the router's `rewrite` removes it before matching and adds it to links in the page's language (Paraglide's URL strategy), and `src/server.ts` wraps each request in `paraglideMiddleware` so server rendering uses the same locale.
 
 The map drawer and the geosite page render the same `GeositeDetail` and `GeositeActions` (share, directions, and links between map and page).
 
@@ -85,10 +85,10 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 
 | Requests | Strategy | Cache |
 | --- | --- | --- |
-| `/assets/*` (content-hashed) | cache first | `assets-v2` |
-| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…` or `/en/geosites/…` page, or `/offline.html` (in English under `/en`) | `pages-v2` (60) |
-| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v2` (300) |
-| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v2` (1500) |
+| `/assets/*` (content-hashed) | cache first | `assets-v3` |
+| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/en/geosites/…` or `/es/geosites/…` page, or `/offline.html` (in the page's language) | `pages-v3` (60) |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v3` (300) |
+| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v3` (1500) |
 
 **Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen. **Needs a connection:** viewports and geosites you've never loaded. Panning offline shows an empty list instead of the error screen.
 
