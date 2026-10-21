@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => ({
 			outdir: "./src/paraglide",
 			strategy: ["url", "baseLocale"],
 			emitTsDeclarations: true,
+			// Same layout and in-place writes as `pnpm i18n` and the dev server,
+			// so compiling from one command never breaks another that is running.
+			outputStructure: "locale-modules",
+			cleanOutdir: false,
 		}),
 		base64Imports(),
 	],

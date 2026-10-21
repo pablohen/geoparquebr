@@ -10,7 +10,7 @@
 		"dev": "vite dev --port 3000",
 		"build": "vite build",
 		"start": "node .output/server/index.mjs",
-		"i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy url baseLocale --emit-ts-declarations",
+		"i18n": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --strategy url baseLocale --emit-ts-declarations --output-structure locale-modules --no-clean-outdir",
 		"typecheck": "pnpm i18n && tsc --noEmit",
 		"lint": "biome check .",
 		"format": "biome check --write .",

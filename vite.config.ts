@@ -21,6 +21,10 @@ export default defineConfig({
 			outdir: "./src/paraglide",
 			strategy: ["url", "baseLocale"],
 			emitTsDeclarations: true,
+			// Same layout and in-place writes as `pnpm i18n` and the dev server,
+			// so compiling from one command never breaks another that is running.
+			outputStructure: "locale-modules",
+			cleanOutdir: false,
 		}),
 		catalogGuard(),
 		// Share-card fonts and resvg's wasm, inlined into the server chunk.
