@@ -147,15 +147,20 @@ const escapeXml = (s: string) =>
 			`&${{ "<": "lt", ">": "gt", "&": "amp", "'": "apos", '"': "quot" }[c]};`,
 	);
 
-/** One `<url>` per page and locale, each listing every language version. */
+/**
+ * One `<url>` per page and locale, each listing every language version:
+ * the home page, any other fixed pages (e.g. geoparks), then every geosite.
+ */
 export function sitemapXml(
 	geosites: { slug: string; updatedAt?: string }[],
+	otherPaths: string[] = [],
 ): string {
 	const pages = [
 		{
 			path: "/",
 			extra: "<changefreq>weekly</changefreq><priority>1.0</priority>",
 		},
+		...otherPaths.map((path) => ({ path, extra: "" })),
 		...geosites.map((g) => ({
 			path: geositePath(g.slug),
 			extra: g.updatedAt

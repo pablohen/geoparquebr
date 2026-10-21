@@ -1,11 +1,10 @@
-import { Anchor, Container, Group, Stack, Text, Title } from "@mantine/core";
-import { Mountains } from "@phosphor-icons/react";
+import { Anchor, Container, Stack, Text, Title } from "@mantine/core";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
+import { GeoparkName } from "~/features/geoparks/components/GeoparkName";
 import { GeositeActions } from "~/features/geosites/components/GeositeActions";
 import { GeositeDetail } from "~/features/geosites/components/GeositeDetail";
 import { getGeositePage } from "~/features/geosites/geosites.functions";
-import { geoparkLabel } from "~/features/geosites/labels";
 import { ExplorerSearchSchema } from "~/features/geosites/schemas";
 import {
 	geositeJsonLd,
@@ -13,9 +12,9 @@ import {
 	geositeMetaTags,
 	geositePath,
 } from "~/features/geosites/seo";
-import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
+import { PageHeader } from "~/features/i18n/components/PageHeader";
 import { alternateLinks } from "~/lib/i18n";
-import { SITE_NAME, SITE_URL } from "~/lib/site";
+import { SITE_URL } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
 
 /**
@@ -70,27 +69,15 @@ function GeositePage() {
 
 	return (
 		<Container size="md" px={{ base: "sm", sm: "md" }} py="md">
-			<Group justify="space-between" mb="lg">
-				<Anchor component={Link} to="/" underline="never" c="inherit">
-					<Group gap={6}>
-						<Mountains
-							size={22}
-							weight="duotone"
-							color="var(--mantine-primary-color-filled)"
-							aria-hidden
-						/>
-						<Text fw={700}>{SITE_NAME}</Text>
-					</Group>
-				</Anchor>
-				<LanguageSwitcher />
-			</Group>
+			<PageHeader />
 
 			<Stack gap={4} mb="md">
 				<Title order={1} size="h2">
 					{geosite.name}
 				</Title>
 				<Text c="dimmed">
-					{geosite.municipality} – {geosite.state} · {geoparkLabel(geosite)}
+					{geosite.municipality} – {geosite.state} ·{" "}
+					<GeoparkName geosite={geosite} />
 				</Text>
 			</Stack>
 			<GeositeActions geosite={geosite} context="page" />

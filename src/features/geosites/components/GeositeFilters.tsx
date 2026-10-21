@@ -1,5 +1,13 @@
-import { Button, Group, MultiSelect, Select, Stack } from "@mantine/core";
+import {
+	Anchor,
+	Button,
+	Group,
+	MultiSelect,
+	Select,
+	Stack,
+} from "@mantine/core";
 import { FunnelSimpleX } from "@phosphor-icons/react";
+import { Link } from "@tanstack/react-router";
 import { m } from "~/paraglide/messages.js";
 import { categoryLabel, geoparkIdLabel, relevanceLabel } from "../labels";
 import {
@@ -90,6 +98,13 @@ export function GeositeFilters({ value, onChange }: Props) {
 					clearable
 				/>
 			</Group>
+			<Anchor
+				size="xs"
+				renderRoot={(props) => <Link {...props} to="/geoparks/" />}
+				style={{ alignSelf: "flex-end" }}
+			>
+				{m.geoparks_link()}
+			</Anchor>
 			<AgeFilter
 				value={value.age}
 				onChange={(age) => onChange({ ...value, age })}

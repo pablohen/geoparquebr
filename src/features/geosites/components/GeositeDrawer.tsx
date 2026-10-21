@@ -1,7 +1,7 @@
 import { Center, Drawer, Loader, Stack, Text, Title } from "@mantine/core";
+import { GeoparkName } from "~/features/geoparks/components/GeoparkName";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { m } from "~/paraglide/messages.js";
-import { geoparkLabel } from "../labels";
 import type { Geosite } from "../schemas";
 import { GeositeActions } from "./GeositeActions";
 import { GeositeDetail, type GeositeView } from "./GeositeDetail";
@@ -49,7 +49,7 @@ export function GeositeDrawer({
 							{geosite.name}
 						</Title>
 						<Text size="sm" c="dimmed">
-							{geoparkLabel(geosite)}
+							<GeoparkName geosite={geosite} />
 						</Text>
 						<GeositeActions geosite={geosite} context="drawer" />
 					</Stack>

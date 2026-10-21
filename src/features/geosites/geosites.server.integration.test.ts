@@ -4,6 +4,10 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { GeologicPeriodId } from "~/features/geology/time-scale";
+import {
+	countGeositesByGeopark,
+	findGeoparkGeosites,
+} from "~/features/geoparks/geoparks.server";
 import { closeDb, getDb } from "~/lib/db.server";
 import { bboxCenter, haversineMeters } from "~/lib/geo";
 import {
@@ -265,5 +269,21 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 			const [summary] = await findGeositesInBounds({ bbox: box });
 			expect(summary).not.toHaveProperty("publicLocation");
 		});
+	});
+
+	it("lists a geopark's geosites with public points, and counts per geopark", async () => {
+		await syncSourcedGeosites(await geositesCollection(), "geossit", [
+			...sites,
+			geosite(5, "caverna-araripe", [-39.4321, -7.2345], {
+				geoparkId: "araripe",
+				locationIsSensitive: true,
+			}),
+		]);
+		const araripe = await findGeoparkGeosites("araripe");
+		expect(araripe.map((g) => g.slug)).toEqual(["caverna-araripe", "leste"]);
+		expect(araripe[0]?.location.coordinates).toEqual([-39.43, -7.23]);
+		expect(araripe[0]).not.toHaveProperty("publicLocation");
+		expect(await findGeoparkGeosites("uberaba")).toEqual([]);
+		expect(await countGeositesByGeopark()).toEqual({ araripe: 2 });
 	});
 });

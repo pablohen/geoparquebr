@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
+import { Route as GeoparksGeoparkIdRouteImport } from './routes/geoparks.$geoparkId'
 import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +25,16 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GeoparksIndexRoute = GeoparksIndexRouteImport.update({
+  id: '/geoparks/',
+  path: '/geoparks/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GeoparksGeoparkIdRoute = GeoparksGeoparkIdRouteImport.update({
+  id: '/geoparks/$geoparkId',
+  path: '/geoparks/$geoparkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GeositesSlugRoute = GeositesSlugRouteImport.update({
   id: '/geosites/$slug',
   path: '/geosites/$slug',
@@ -32,31 +44,55 @@ const GeositesSlugRoute = GeositesSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
+  '/geoparks/': typeof GeoparksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
+  '/geoparks': typeof GeoparksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
+  '/geoparks/': typeof GeoparksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sitemap.xml' | '/geosites/$slug'
+  fullPaths:
+    | '/'
+    | '/sitemap.xml'
+    | '/geoparks/$geoparkId'
+    | '/geosites/$slug'
+    | '/geoparks/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sitemap.xml' | '/geosites/$slug'
-  id: '__root__' | '/' | '/sitemap.xml' | '/geosites/$slug'
+  to:
+    | '/'
+    | '/sitemap.xml'
+    | '/geoparks/$geoparkId'
+    | '/geosites/$slug'
+    | '/geoparks'
+  id:
+    | '__root__'
+    | '/'
+    | '/sitemap.xml'
+    | '/geoparks/$geoparkId'
+    | '/geosites/$slug'
+    | '/geoparks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  GeoparksGeoparkIdRoute: typeof GeoparksGeoparkIdRoute
   GeositesSlugRoute: typeof GeositesSlugRoute
+  GeoparksIndexRoute: typeof GeoparksIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +111,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/geoparks/': {
+      id: '/geoparks/'
+      path: '/geoparks'
+      fullPath: '/geoparks/'
+      preLoaderRoute: typeof GeoparksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/geoparks/$geoparkId': {
+      id: '/geoparks/$geoparkId'
+      path: '/geoparks/$geoparkId'
+      fullPath: '/geoparks/$geoparkId'
+      preLoaderRoute: typeof GeoparksGeoparkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/geosites/$slug': {
       id: '/geosites/$slug'
       path: '/geosites/$slug'
@@ -88,7 +138,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  GeoparksGeoparkIdRoute: GeoparksGeoparkIdRoute,
   GeositesSlugRoute: GeositesSlugRoute,
+  GeoparksIndexRoute: GeoparksIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
