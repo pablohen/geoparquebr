@@ -74,6 +74,7 @@ sequenceDiagram
 | `/geosites/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
 | `/geoparks` | Brazil's UNESCO Global Geoparks, with designation year, description and GEOSSIT geosite count |
 | `/geoparks/$geoparkId` | one geopark: description, its GEOSSIT geosites (matched by municipality), a link that frames its area on the map, JSON-LD `TouristDestination` |
+| `/my-geosites` | this device's favourites, visits and offline geoparks (localStorage, `noindex`) |
 | `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
 | `/og/geosites/$slug`, `/og/geoparks/$geoparkId` | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`) |
 | `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
@@ -88,13 +89,29 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 
 | Requests | Strategy | Cache |
 | --- | --- | --- |
-| `/assets/*` (content-hashed) | cache first | `assets-v4` |
-| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/en/geosites/…` or `/es/geosites/…` page, or `/offline.html` (in the page's language) | `pages-v4` (60) |
-| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v4` (300) |
-| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v4` (1500) |
-| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v4` (600) |
+| `/assets/*` (content-hashed) | cache first | `assets-v5` |
+| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…` or `/my-geosites` path (any language), or `/offline.html` (in the page's language) | `pages-v5` (150) |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v5` (600) |
+| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v5` (4000) |
+| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v5` (2000) |
 
-**Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen. **Needs a connection:** viewports and geosites you've never loaded. Panning offline shows an empty list instead of the error screen.
+**Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen; "Meus geossítios"; and everything in a geopark saved with **Salvar para uso offline**. **Needs a connection:** viewports and geosites you've never loaded and didn't save. Photos are never cached.
+
+### Saving a geopark for offline use
+
+The button on each geopark page (`src/features/offline/`) stores, in about 10–20 s:
+
+- **Pages** (geopark, its geosites, `/geoparks`, `/my-geosites`, the map of its area), through a `cache-pages` message to the service worker, which also stores the hashed scripts and styles each page loads.
+- **Data**: each geosite's record, fossils, strata and nearby list, by calling the same server functions the drawer calls, so the cached requests match.
+- **Map code**: the lazily loaded map chunk and MapLibre's worker.
+- **Tiles**: OpenFreeMap vector tiles at map zooms 6–12 and relief tiles at 7–12 over the geopark's `area` (`tileUrls`), about 100–200 of each.
+- **Geosites, on the device**: the geopark's geosite list goes into localStorage with the save date. Cached list responses only match their exact viewport, so when the map's list request fails (offline, or a connection that drops requests), the explorer lists saved geosites inside the box instead (`savedGeositesInBounds`).
+
+Saved tiles share their caches with normal browsing and can eventually be evicted; "Atualizar dados offline" saves again.
+
+### On this device: favourites and visits
+
+"Meus geossítios" (`/my-geosites`, not indexed) lists favourites, visits (with the date) and saved geoparks. They live in localStorage (`src/features/my-geosites/store.ts`, via `src/lib/local-store.ts`), each with a small snapshot of the geosite so the list works offline. There is no account and nothing is sent to the server.
 
 ## UI composition
 
