@@ -5,6 +5,8 @@ import {
 	NavigationArrow,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { EmbedButton } from "~/features/embed/components/EmbedButton";
+import { geositeEmbedPath } from "~/features/embed/embed";
 import { MyGeositeButtons } from "~/features/my-geosites/components/MyGeositeButtons";
 import { TripButton, TripLink } from "~/features/trip/components/TripButton";
 import { toStop } from "~/features/trip/store";
@@ -51,24 +53,31 @@ export function GeositeActions({ geosite, context }: Props) {
 					: m.actions_directions()}
 			</Button>
 			{context === "page" ? (
-				<Button
-					// renderRoot keeps TanStack Link's typed `search`.
-					renderRoot={(props) => (
-						<Link
-							{...props}
-							to="/"
-							search={{
-								site: geosite.slug,
-								bbox: roundBBox(bboxAround(geosite.location.coordinates, 15)),
-							}}
-						/>
-					)}
-					size="xs"
-					variant="default"
-					leftSection={<MapTrifold size={14} />}
-				>
-					{m.actions_view_on_map()}
-				</Button>
+				<>
+					<Button
+						// renderRoot keeps TanStack Link's typed `search`.
+						renderRoot={(props) => (
+							<Link
+								{...props}
+								to="/"
+								search={{
+									site: geosite.slug,
+									bbox: roundBBox(bboxAround(geosite.location.coordinates, 15)),
+								}}
+							/>
+						)}
+						size="xs"
+						variant="default"
+						leftSection={<MapTrifold size={14} />}
+					>
+						{m.actions_view_on_map()}
+					</Button>
+					<EmbedButton
+						size="xs"
+						path={geositeEmbedPath(geosite.slug)}
+						name={geosite.name}
+					/>
+				</>
 			) : (
 				<Anchor
 					renderRoot={(props) => (

@@ -23,6 +23,8 @@ import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
 import { Route as TripGuideRouteImport } from './routes/trip_.guide'
 import { Route as ApiCronSyncFossilsRouteImport } from './routes/api.cron.sync-fossils'
 import { Route as ApiCronSyncGeositesRouteImport } from './routes/api.cron.sync-geosites'
+import { Route as EmbedGeoparksGeoparkIdRouteImport } from './routes/embed.geoparks.$geoparkId'
+import { Route as EmbedGeositesSlugRouteImport } from './routes/embed.geosites.$slug'
 import { Route as GeoparksGeoparkIdGuideRouteImport } from './routes/geoparks.$geoparkId_.guide'
 import { Route as OgGeoparksGeoparkIdRouteImport } from './routes/og.geoparks.$geoparkId'
 import { Route as OgGeositesSlugRouteImport } from './routes/og.geosites.$slug'
@@ -97,6 +99,16 @@ const ApiCronSyncGeositesRoute = ApiCronSyncGeositesRouteImport.update({
   path: '/api/cron/sync-geosites',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmbedGeoparksGeoparkIdRoute = EmbedGeoparksGeoparkIdRouteImport.update({
+  id: '/embed/geoparks/$geoparkId',
+  path: '/embed/geoparks/$geoparkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedGeositesSlugRoute = EmbedGeositesSlugRouteImport.update({
+  id: '/embed/geosites/$slug',
+  path: '/embed/geosites/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GeoparksGeoparkIdGuideRoute = GeoparksGeoparkIdGuideRouteImport.update({
   id: '/geoparks/$geoparkId_/guide',
   path: '/geoparks/$geoparkId/guide',
@@ -128,6 +140,8 @@ export interface FileRoutesByFullPath {
   '/geoparks/': typeof GeoparksIndexRoute
   '/api/cron/sync-fossils': typeof ApiCronSyncFossilsRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
+  '/embed/geoparks/$geoparkId': typeof EmbedGeoparksGeoparkIdRoute
+  '/embed/geosites/$slug': typeof EmbedGeositesSlugRoute
   '/geoparks/$geoparkId/guide': typeof GeoparksGeoparkIdGuideRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
@@ -147,6 +161,8 @@ export interface FileRoutesByTo {
   '/geoparks': typeof GeoparksIndexRoute
   '/api/cron/sync-fossils': typeof ApiCronSyncFossilsRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
+  '/embed/geoparks/$geoparkId': typeof EmbedGeoparksGeoparkIdRoute
+  '/embed/geosites/$slug': typeof EmbedGeositesSlugRoute
   '/geoparks/$geoparkId/guide': typeof GeoparksGeoparkIdGuideRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
@@ -167,6 +183,8 @@ export interface FileRoutesById {
   '/geoparks/': typeof GeoparksIndexRoute
   '/api/cron/sync-fossils': typeof ApiCronSyncFossilsRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
+  '/embed/geoparks/$geoparkId': typeof EmbedGeoparksGeoparkIdRoute
+  '/embed/geosites/$slug': typeof EmbedGeositesSlugRoute
   '/geoparks/$geoparkId_/guide': typeof GeoparksGeoparkIdGuideRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
@@ -188,6 +206,8 @@ export interface FileRouteTypes {
     | '/geoparks/'
     | '/api/cron/sync-fossils'
     | '/api/cron/sync-geosites'
+    | '/embed/geoparks/$geoparkId'
+    | '/embed/geosites/$slug'
     | '/geoparks/$geoparkId/guide'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
@@ -207,6 +227,8 @@ export interface FileRouteTypes {
     | '/geoparks'
     | '/api/cron/sync-fossils'
     | '/api/cron/sync-geosites'
+    | '/embed/geoparks/$geoparkId'
+    | '/embed/geosites/$slug'
     | '/geoparks/$geoparkId/guide'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
@@ -226,6 +248,8 @@ export interface FileRouteTypes {
     | '/geoparks/'
     | '/api/cron/sync-fossils'
     | '/api/cron/sync-geosites'
+    | '/embed/geoparks/$geoparkId'
+    | '/embed/geosites/$slug'
     | '/geoparks/$geoparkId_/guide'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
@@ -246,6 +270,8 @@ export interface RootRouteChildren {
   GeoparksIndexRoute: typeof GeoparksIndexRoute
   ApiCronSyncFossilsRoute: typeof ApiCronSyncFossilsRoute
   ApiCronSyncGeositesRoute: typeof ApiCronSyncGeositesRoute
+  EmbedGeoparksGeoparkIdRoute: typeof EmbedGeoparksGeoparkIdRoute
+  EmbedGeositesSlugRoute: typeof EmbedGeositesSlugRoute
   GeoparksGeoparkIdGuideRoute: typeof GeoparksGeoparkIdGuideRoute
   OgGeoparksGeoparkIdRoute: typeof OgGeoparksGeoparkIdRoute
   OgGeositesSlugRoute: typeof OgGeositesSlugRoute
@@ -351,6 +377,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronSyncGeositesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/embed/geoparks/$geoparkId': {
+      id: '/embed/geoparks/$geoparkId'
+      path: '/embed/geoparks/$geoparkId'
+      fullPath: '/embed/geoparks/$geoparkId'
+      preLoaderRoute: typeof EmbedGeoparksGeoparkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed/geosites/$slug': {
+      id: '/embed/geosites/$slug'
+      path: '/embed/geosites/$slug'
+      fullPath: '/embed/geosites/$slug'
+      preLoaderRoute: typeof EmbedGeositesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/geoparks/$geoparkId_/guide': {
       id: '/geoparks/$geoparkId_/guide'
       path: '/geoparks/$geoparkId/guide'
@@ -390,6 +430,8 @@ const rootRouteChildren: RootRouteChildren = {
   GeoparksIndexRoute: GeoparksIndexRoute,
   ApiCronSyncFossilsRoute: ApiCronSyncFossilsRoute,
   ApiCronSyncGeositesRoute: ApiCronSyncGeositesRoute,
+  EmbedGeoparksGeoparkIdRoute: EmbedGeoparksGeoparkIdRoute,
+  EmbedGeositesSlugRoute: EmbedGeositesSlugRoute,
   GeoparksGeoparkIdGuideRoute: GeoparksGeoparkIdGuideRoute,
   OgGeoparksGeoparkIdRoute: OgGeoparksGeoparkIdRoute,
   OgGeositesSlugRoute: OgGeositesSlugRoute,

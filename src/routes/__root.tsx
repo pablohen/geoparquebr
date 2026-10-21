@@ -73,6 +73,8 @@ export const Route = createRootRoute({
 function useServiceWorker() {
 	useEffect(() => {
 		if (!import.meta.env.PROD || !("serviceWorker" in navigator)) return;
+		// Maps embedded on other sites don't need the app's offline cache.
+		if (/^(\/(en|es))?\/embed\//.test(location.pathname)) return;
 		navigator.serviceWorker.register("/sw.js").catch((err) => {
 			console.warn("service worker registration failed:", err);
 		});

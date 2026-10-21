@@ -16,6 +16,8 @@ import {
 	Printer,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { EmbedButton } from "~/features/embed/components/EmbedButton";
+import { geoparkEmbedPath } from "~/features/embed/embed";
 import { GenusLinkList } from "~/features/fossils/components/GenusLinks";
 import type { GenusLink } from "~/features/fossils/schemas";
 import { CATEGORY_COLORS } from "~/features/geosites/components/categoryStyle";
@@ -90,6 +92,10 @@ export function GeoparkView({ id, geosites, genera }: Props) {
 						>
 							{m.guide_open()}
 						</Button>
+						<EmbedButton
+							path={geoparkEmbedPath(id)}
+							name={geoparkIdLabel(id)}
+						/>
 					</>
 				)}
 			</Group>
