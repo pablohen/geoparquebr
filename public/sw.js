@@ -8,9 +8,13 @@
  * - map tiles      OpenFreeMap + SGB geology → stale-while-revalidate, capped
  * - relief tiles   AWS Terrain Tiles (hillshade, 3D) → same, own cache
  *
+ * Pages can ask for a list of URLs to be cached ahead of time ("Salvar para
+ * uso offline" on a geopark page): postMessage({ type: "cache-pages", urls })
+ * with a MessageChannel port; the reply is { failed }.
+ *
  * Bump VERSION to drop every cache on the next visit.
  */
-const VERSION = "v4";
+const VERSION = "v5";
 const CACHES = {
 	shell: `shell-${VERSION}`,
 	assets: `assets-${VERSION}`,
@@ -19,8 +23,9 @@ const CACHES = {
 	tiles: `tiles-${VERSION}`,
 	relief: `relief-${VERSION}`,
 };
-// Relief tiles are 40–100 KB each, so they get their own, smaller cap.
-const LIMITS = { pages: 60, data: 300, tiles: 1500, relief: 600 };
+// Room for a few saved geoparks (~200 map + ~200 relief tiles, ~25 pages
+// each) on top of normal browsing. Relief tiles are 40–100 KB each.
+const LIMITS = { pages: 150, data: 600, tiles: 4000, relief: 2000 };
 const SHELL = [
 	"/offline.html",
 	"/favicon.svg",
@@ -83,13 +88,54 @@ self.addEventListener("fetch", (event) => {
 		);
 });
 
+self.addEventListener("message", (event) => {
+	if (event.data?.type !== "cache-pages") return;
+	const port = event.ports[0];
+	event.waitUntil(
+		cachePages(event.data.urls ?? []).then((failed) =>
+			port?.postMessage({ failed }),
+		),
+	);
+});
+
 /**
- * Offline navigation fallback. Geosite pages only vary by ?tab/?model, which
- * the client applies itself, so any cached copy of the same path will do.
+ * Stores same-origin pages plus the hashed scripts and styles they load, so
+ * they open offline even if this device never visited them. Returns how
+ * many pages failed.
+ */
+async function cachePages(urls) {
+	const pages = await caches.open(CACHES.pages);
+	let failed = 0;
+	for (const url of urls) {
+		try {
+			const res = await fetch(url, { credentials: "same-origin" });
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			const html = await res.clone().text();
+			await pages.put(url, res);
+			const assets = new Set(html.match(/\/assets\/[\w.-]+/g) ?? []);
+			await Promise.all(
+				[...assets].map((a) =>
+					cacheFirst(new Request(a), CACHES.assets).catch(() => {}),
+				),
+			);
+		} catch {
+			failed++;
+		}
+	}
+	trim(pages, LIMITS.pages);
+	return failed;
+}
+
+/**
+ * Offline navigation fallback. Geosite, geopark and "my" pages only vary by
+ * search params the client applies itself (?tab, ?model), so any cached
+ * copy of the same path will do.
  * Map URLs carry the viewport and must match exactly (handled above).
  */
 async function offlinePage(url) {
-	if (/^(\/(en|es))?\/geosites\//.test(url.pathname)) {
+	if (
+		/^(\/(en|es))?\/(geosites|geoparks|my-geosites)(\/|$)/.test(url.pathname)
+	) {
 		const cache = await caches.open(CACHES.pages);
 		const copy = await cache.match(url.pathname, { ignoreSearch: true });
 		if (copy) return copy;

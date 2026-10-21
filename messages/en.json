@@ -156,12 +156,55 @@
 	"map_terrain_hint": "Rotate and tilt with two fingers or the right mouse button.",
 	"map_zoom_in": "Zoom in",
 	"map_zoom_out": "Zoom out",
+	"my_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites visited",
+				"count=*, countPlural=one": "{count} geosite visited",
+				"count=*, countPlural=other": "{count} geosites visited"
+			}
+		}
+	],
+	"my_empty_favourites": "Tap a geosite's star to keep it here.",
+	"my_empty_visited": "Mark the geosites you visit to build your passport.",
+	"my_favourite_add": "Add to favourites",
+	"my_favourite_remove": "Remove from favourites",
+	"my_favourites": "Favourites",
+	"my_intro": "Your favourites and visits are saved on this device and work offline.",
+	"my_title": "My geosites",
+	"my_visited": "Visited",
+	"my_visited_add": "Mark as visited",
+	"my_visited_label": "Visited",
+	"my_visited_on": "Visited on {date}",
+	"my_visited_remove": "Unmark visit",
 	"nearby_approximate": "Distances to protected sites are approximate.",
 	"nearby_error": "Couldn't load nearby geosites.",
 	"nearby_none": "No other geosites within 300 km.",
 	"nearby_title": "Nearby",
 	"not_found_geosite": "Geosite not found",
 	"not_found_title": "Page not found",
+	"offline_failed": "Couldn't save. Check your connection and try again.",
+	"offline_partial": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} items couldn't be saved; try updating on a better connection.",
+				"count=*, countPlural=one": "{count} item couldn't be saved; try updating on a better connection.",
+				"count=*, countPlural=other": "{count} items couldn't be saved; try updating on a better connection."
+			}
+		}
+	],
+	"offline_save": "Save for offline use",
+	"offline_saved_detail": "Pages, data, map and relief for the area down to town level. Photos and places outside the geopark need a connection.",
+	"offline_saved_geoparks": "Geoparks saved for offline use",
+	"offline_saved_on": "Saved on {date}",
+	"offline_saving": "Saving… {done} of {total}",
+	"offline_title": "Offline use",
+	"offline_unavailable": "Offline mode becomes available once the app has finished loading. Reload the page and try again.",
+	"offline_update": "Update offline data",
 	"period_archean": "Archean",
 	"period_cambrian": "Cambrian",
 	"period_carboniferous": "Carboniferous",

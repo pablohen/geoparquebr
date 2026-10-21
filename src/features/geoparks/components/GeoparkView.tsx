@@ -13,6 +13,7 @@ import { Link } from "@tanstack/react-router";
 import { CATEGORY_COLORS } from "~/features/geosites/components/categoryStyle";
 import { categoryLabel, geoparkIdLabel } from "~/features/geosites/labels";
 import type { GeoparkId } from "~/features/geosites/schemas";
+import { SaveOfflineButton } from "~/features/offline/components/SaveOfflineButton";
 import { m } from "~/paraglide/messages.js";
 import { GEOPARKS } from "../geoparks";
 import { geoparkAbout } from "../labels";
@@ -55,6 +56,13 @@ export function GeoparkView({ id, geosites }: Props) {
 			>
 				{m.geopark_view_map()}
 			</Button>
+
+			<Stack gap="xs">
+				<Title order={2} size="h4">
+					{m.offline_title()}
+				</Title>
+				<SaveOfflineButton id={id} geosites={geosites} />
+			</Stack>
 
 			<Stack gap="xs">
 				<Group justify="space-between" align="baseline">

@@ -179,7 +179,7 @@ export type GltfModel3D = z.infer<typeof GltfModel3DSchema>;
 // Geosite
 // ---------------------------------------------------------------------------
 
-const SlugSchema = z
+export const SlugSchema = z
 	.string()
 	.min(3)
 	.max(96)

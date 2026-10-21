@@ -156,12 +156,55 @@
 	"map_terrain_hint": "Gire e incline com dois dedos ou com o botão direito do mouse.",
 	"map_zoom_in": "Aproximar",
 	"map_zoom_out": "Afastar",
+	"my_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios visitados",
+				"count=*, countPlural=one": "{count} geossítio visitado",
+				"count=*, countPlural=other": "{count} geossítios visitados"
+			}
+		}
+	],
+	"my_empty_favourites": "Toque na estrela de um geossítio para guardá-lo aqui.",
+	"my_empty_visited": "Marque os geossítios que você visitar para montar seu passaporte.",
+	"my_favourite_add": "Favoritar",
+	"my_favourite_remove": "Remover dos favoritos",
+	"my_favourites": "Favoritos",
+	"my_intro": "Seus favoritos e visitas ficam salvos neste aparelho e funcionam sem internet.",
+	"my_title": "Meus geossítios",
+	"my_visited": "Visitados",
+	"my_visited_add": "Marcar como visitado",
+	"my_visited_label": "Visitado",
+	"my_visited_on": "Visitado em {date}",
+	"my_visited_remove": "Desmarcar visita",
 	"nearby_approximate": "Distâncias aproximadas para sítios protegidos.",
 	"nearby_error": "Não foi possível carregar os geossítios próximos.",
 	"nearby_none": "Nenhum outro geossítio num raio de 300 km.",
 	"nearby_title": "Perto daqui",
 	"not_found_geosite": "Geossítio não encontrado",
 	"not_found_title": "Página não encontrada",
+	"offline_failed": "Não foi possível salvar. Verifique a conexão e tente de novo.",
+	"offline_partial": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} itens não puderam ser salvos; tente atualizar com uma conexão melhor.",
+				"count=*, countPlural=one": "{count} item não pôde ser salvo; tente atualizar com uma conexão melhor.",
+				"count=*, countPlural=other": "{count} itens não puderam ser salvos; tente atualizar com uma conexão melhor."
+			}
+		}
+	],
+	"offline_save": "Salvar para uso offline",
+	"offline_saved_detail": "Páginas, dados, mapa e relevo da região até o zoom de cidade. Fotos e regiões fora do geoparque precisam de internet.",
+	"offline_saved_geoparks": "Geoparques salvos para uso offline",
+	"offline_saved_on": "Salvo em {date}",
+	"offline_saving": "Salvando… {done} de {total}",
+	"offline_title": "Uso offline",
+	"offline_unavailable": "O modo offline fica disponível depois que o app termina de carregar. Recarregue a página e tente de novo.",
+	"offline_update": "Atualizar dados offline",
 	"period_archean": "Arqueano",
 	"period_cambrian": "Cambriano",
 	"period_carboniferous": "Carbonífero",

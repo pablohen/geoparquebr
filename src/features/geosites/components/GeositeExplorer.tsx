@@ -19,6 +19,7 @@ import { lazy, Suspense, useState } from "react";
 import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
 import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
 import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
+import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
 import { SearchBox } from "~/features/search/components/SearchBox";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
 import { SITE_NAME } from "~/lib/site";
@@ -157,6 +158,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								})
 							}
 						/>
+						<MyGeositesLink />
 						<LanguageSwitcher />
 						<ColorSchemeToggle />
 					</Group>

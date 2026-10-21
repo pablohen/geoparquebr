@@ -1,6 +1,7 @@
 import { Anchor, Group, Text } from "@mantine/core";
 import { Mountains } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
 import { SITE_NAME } from "~/lib/site";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
@@ -19,7 +20,10 @@ export function PageHeader() {
 					<Text fw={700}>{SITE_NAME}</Text>
 				</Group>
 			</Anchor>
-			<LanguageSwitcher />
+			<Group gap="xs">
+				<MyGeositesLink />
+				<LanguageSwitcher />
+			</Group>
 		</Group>
 	);
 }

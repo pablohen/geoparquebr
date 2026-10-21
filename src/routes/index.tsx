@@ -3,13 +3,14 @@ import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
 import { GeositeExplorer } from "~/features/geosites/components/GeositeExplorer";
 import { getGeositesInBounds } from "~/features/geosites/geosites.functions";
 import { ExplorerSearchSchema } from "~/features/geosites/schemas";
+import { savedGeoparks, savedGeositesInBounds } from "~/features/offline/store";
 import { alternateLinks } from "~/lib/i18n";
 import { absoluteUrl, SITE_URL } from "~/lib/site";
 
 /**
- * Offline (installed app in the field), panning to an uncached viewport has
- * no data; show an empty list instead of the error screen. Online errors
- * still surface.
+ * Offline (installed app in the field), a viewport that was never loaded has
+ * no cached response: list the geosites of geoparks saved for offline use,
+ * else nothing, instead of the error screen. Online errors still surface.
  */
 async function listGeositesOrEmptyOffline(
 	...args: Parameters<typeof getGeositesInBounds>
@@ -17,7 +18,14 @@ async function listGeositesOrEmptyOffline(
 	try {
 		return await getGeositesInBounds(...args);
 	} catch (err) {
-		if (typeof navigator !== "undefined" && !navigator.onLine) return [];
+		// No connection, or one that drops requests (weak signal in the
+		// field, where the phone still reports "online"): fetch rejects with
+		// a TypeError. Geoparks saved for offline use still list their sites.
+		const unreachable =
+			err instanceof TypeError ||
+			(typeof navigator !== "undefined" && !navigator.onLine);
+		if (unreachable && typeof window !== "undefined")
+			return savedGeositesInBounds(savedGeoparks.read(), args[0].data);
 		throw err;
 	}
 }

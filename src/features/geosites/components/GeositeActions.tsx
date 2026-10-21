@@ -5,6 +5,7 @@ import {
 	NavigationArrow,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { MyGeositeButtons } from "~/features/my-geosites/components/MyGeositeButtons";
 import { bboxAround, roundBBox } from "~/lib/geo";
 import { m } from "~/paraglide/messages.js";
 import type { Geosite } from "../schemas";
@@ -22,6 +23,7 @@ export function GeositeActions({ geosite, context }: Props) {
 	const meta = geositeMeta(geosite);
 	return (
 		<Group gap="xs">
+			<MyGeositeButtons geosite={geosite} />
 			<ShareButton
 				url={meta.url}
 				title={geosite.name}
