@@ -15,11 +15,31 @@ const indexOf = (id: GeologicPeriodId) =>
 	TIMELINE.findIndex((p) => p.id === id);
 const idAt = (i: number): GeologicPeriodId => TIMELINE[i]?.id ?? "archean";
 
-/** The track shows the ICS chart colours, one equal band per period. */
-const TRACK = `linear-gradient(to right, ${TIMELINE.map(
-	(p, i) =>
-		`${p.color} ${(i / TIMELINE.length) * 100}% ${((i + 1) / TIMELINE.length) * 100}%`,
-).join(", ")})`;
+/**
+ * Where period `i`'s colour band starts and ends on the track, in %. Thumbs
+ * sit at i / LAST, so each band is centred there (half bands at the ends).
+ */
+export const bandEdges = (i: number): [number, number] => [
+	Math.max(0, ((i - 0.5) / LAST) * 100),
+	Math.min(100, ((i + 0.5) / LAST) * 100),
+];
+
+/** The ICS chart colours, one band per period. */
+const TRACK = `linear-gradient(to right, ${TIMELINE.map((p, i) => {
+	const [from, to] = bandEdges(i);
+	return `${p.color} ${from}% ${to}%`;
+}).join(", ")})`;
+
+const DIM = "color-mix(in srgb, var(--mantine-color-body) 55%, transparent)";
+
+/** The track with everything outside the selected periods dimmed. */
+export function trackImage([oldest, youngest]: [number, number]): string {
+	const from = bandEdges(oldest)[0];
+	const to = bandEdges(youngest)[1];
+	if (from === 0 && to === 100) return TRACK;
+	const shade = `linear-gradient(to right, ${DIM} 0% ${from}%, transparent ${from}% ${to}%, ${DIM} ${to}% 100%)`;
+	return `${shade}, ${TRACK}`;
+}
 
 type Props = {
 	value?: AgeRange;
@@ -75,11 +95,9 @@ export function AgeFilter({ value, onChange }: Props) {
 				// gradient; paint the track element itself and hide that layer.
 				style={{ "--slider-track-bg": "transparent" } as CSSProperties}
 				styles={{
-					track: { backgroundImage: TRACK, borderRadius: 999 },
-					bar: {
-						background: "transparent",
-						boxShadow: "0 0 0 2px var(--mantine-color-text)",
-					},
+					track: { backgroundImage: trackImage(range), borderRadius: 999 },
+					// The selection shows as the undimmed part of the track.
+					bar: { background: "transparent" },
 				}}
 			/>
 			{!all && (
