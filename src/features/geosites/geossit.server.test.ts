@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { mapGeossitFeatures, normalize } from "./geossit.server";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+	fetchWithRetries,
+	mapGeossitFeatures,
+	normalize,
+} from "./geossit.server";
 
 /** A raw GEOSSIT GeoJSON feature, as served with f=geojson. */
 function feature(
@@ -207,5 +211,38 @@ describe("mapGeossitFeatures", () => {
 		expect(geosites.map((g) => g.source?.id)).toEqual([1997]);
 		expect(skipped.map((s) => s.id)).toEqual([3, 2]);
 		expect(skipped.every((s) => s.reason.length > 0)).toBe(true);
+	});
+});
+
+// Regression: a single HTTP 500 from GEOSSIT aborted the whole seed.
+describe("fetchWithRetries", () => {
+	const url = new URL("https://example.org/query");
+	afterEach(() => vi.unstubAllGlobals());
+
+	const respond = (...statuses: (number | Error)[]) => {
+		const fetchMock = vi.fn();
+		for (const s of statuses)
+			if (s instanceof Error) fetchMock.mockRejectedValueOnce(s);
+			else fetchMock.mockResolvedValueOnce(new Response("", { status: s }));
+		vi.stubGlobal("fetch", fetchMock);
+		return fetchMock;
+	};
+
+	it("retries server errors and network failures until one succeeds", async () => {
+		const fetchMock = respond(500, new Error("ECONNRESET"), 200);
+		const res = await fetchWithRetries(url, { pauseMs: 0 });
+		expect(res.status).toBe(200);
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+	});
+
+	it("gives up after the last attempt", async () => {
+		respond(502, 503, 500);
+		expect((await fetchWithRetries(url, { pauseMs: 0 })).status).toBe(500);
+	});
+
+	it("doesn't retry client errors", async () => {
+		const fetchMock = respond(400);
+		expect((await fetchWithRetries(url, { pauseMs: 0 })).status).toBe(400);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 });

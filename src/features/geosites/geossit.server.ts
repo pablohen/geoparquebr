@@ -72,6 +72,25 @@ const PageSchema = z.object({
 // Fetching
 // ---------------------------------------------------------------------------
 
+/**
+ * GET with retries: GEOSSIT's ArcGIS server answers HTTP 500 now and then.
+ * Retries 5xx and network errors with a growing pause; 4xx fail at once.
+ */
+export async function fetchWithRetries(
+	url: URL,
+	{ attempts = 3, pauseMs = 2_000 } = {},
+): Promise<Response> {
+	for (let attempt = 1; ; attempt++) {
+		try {
+			const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
+			if (res.ok || res.status < 500 || attempt >= attempts) return res;
+		} catch (err) {
+			if (attempt >= attempts) throw err;
+		}
+		await new Promise((r) => setTimeout(r, pauseMs * attempt));
+	}
+}
+
 /** All raw features, paginated. Coordinates are reprojected server-side to WGS 84. */
 export async function fetchGeossitFeatures(): Promise<unknown[]> {
 	const all: unknown[] = [];
@@ -87,7 +106,7 @@ export async function fetchGeossitFeatures(): Promise<unknown[]> {
 			f: "geojson",
 		}).toString();
 
-		const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
+		const res = await fetchWithRetries(url);
 		if (!res.ok) throw new Error(`GEOSSIT query failed: HTTP ${res.status}`);
 		const page = PageSchema.parse(await res.json());
 		all.push(...page.features);
