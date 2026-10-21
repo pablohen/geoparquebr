@@ -13,6 +13,7 @@ import {
 	CaretRight,
 	CheckCircle,
 	MapTrifold,
+	Printer,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { GenusLinkList } from "~/features/fossils/components/GenusLinks";
@@ -74,7 +75,22 @@ export function GeoparkView({ id, geosites, genera }: Props) {
 					{m.geopark_view_map()}
 				</Button>
 				{geosites.length > 0 && (
-					<GeoparkTripButton id={id} geosites={geosites} />
+					<>
+						<GeoparkTripButton id={id} geosites={geosites} />
+						<Button
+							renderRoot={(props) => (
+								<Link
+									{...props}
+									to="/geoparks/$geoparkId/guide"
+									params={{ geoparkId: id }}
+								/>
+							)}
+							variant="default"
+							leftSection={<Printer size={16} />}
+						>
+							{m.guide_open()}
+						</Button>
+					</>
 				)}
 			</Group>
 

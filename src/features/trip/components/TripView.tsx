@@ -18,6 +18,7 @@ import {
 	ArrowUp,
 	Crosshair,
 	ListNumbers,
+	Printer,
 	Trash,
 	X,
 } from "@phosphor-icons/react";
@@ -111,6 +112,14 @@ export function TripView() {
 							onClick={start ? () => setStart(undefined) : locate}
 						>
 							{start ? m.trip_from_here_on() : m.trip_from_here()}
+						</Button>
+						<Button
+							size="xs"
+							variant="default"
+							leftSection={<Printer size={14} />}
+							renderRoot={(props) => <Link {...props} to="/trip/guide" />}
+						>
+							{m.guide_open()}
 						</Button>
 						<ShareButton
 							url={absoluteUrl(
