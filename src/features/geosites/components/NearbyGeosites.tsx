@@ -37,12 +37,12 @@ export function NearbyGeosites({ slug, onSelect }: Props) {
 		);
 	else
 		body = (
-			<Stack gap={2}>
+			<Stack gap={2} mx="-sm">
 				{query.data.map((g) => (
 					<NearbyItem key={g.id} geosite={g} onSelect={onSelect} />
 				))}
 				{query.data.some((g) => g.locationIsSensitive) && (
-					<Text size="xs" c="dimmed" mt={4}>
+					<Text size="xs" c="dimmed" mt={4} px="sm">
 						{m.nearby_approximate()}
 					</Text>
 				)}

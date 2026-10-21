@@ -78,7 +78,7 @@ export function GeoparkView({ id, geosites }: Props) {
 						{m.geopark_no_geosites()}
 					</Text>
 				) : (
-					<Stack gap={2}>
+					<Stack gap={2} mx="-sm">
 						{geosites.map((g) => (
 							<NavLink
 								key={g.id}

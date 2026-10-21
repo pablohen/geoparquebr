@@ -42,6 +42,8 @@ export function GeositeDrawer({
 			}
 			trapFocus={!isMobile}
 			radius={isMobile ? "lg" : 0}
+			// Keep the close button level with the name, not the middle of the block.
+			styles={{ header: { alignItems: "flex-start" } }}
 			title={
 				geosite && (
 					<Stack gap={6}>

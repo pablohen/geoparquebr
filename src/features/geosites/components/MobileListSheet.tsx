@@ -78,12 +78,12 @@ export function MobileListSheet({
 							: m.sheet_title({ count })}
 					</Text>
 				}
-				styles={{ body: { paddingInline: 8 } }}
+				styles={{ body: { paddingInline: 4 } }}
 			>
 				<Stack gap="xs">
 					<UnstyledButton
 						onClick={toggleControls}
-						px="xs"
+						px="sm"
 						py={6}
 						aria-expanded={controlsOpen}
 					>
@@ -100,7 +100,7 @@ export function MobileListSheet({
 						</Group>
 					</UnstyledButton>
 					<Collapse in={controlsOpen}>
-						<Stack gap="md" px="xs" pb="sm">
+						<Stack gap="md" px="sm" pb="sm">
 							{controls}
 						</Stack>
 					</Collapse>

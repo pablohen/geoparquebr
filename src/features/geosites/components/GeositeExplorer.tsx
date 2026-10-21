@@ -185,7 +185,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							: m.explorer_count({ count: geosites.length })}
 					</Text>
 				</AppShell.Section>
-				<AppShell.Section grow component={ScrollArea} p="xs">
+				<AppShell.Section grow component={ScrollArea} px={4} py="xs">
 					{list}
 				</AppShell.Section>
 			</AppShell.Navbar>
@@ -213,8 +213,8 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 					</ClientOnly>
 					<Stack
 						pos="absolute"
-						top={12}
-						left={12}
+						top={10}
+						left={10}
 						gap={8}
 						align="flex-start"
 						style={{ zIndex: 2 }}

@@ -261,6 +261,8 @@ function CoverImage({ src, alt }: { src: string; alt: string }) {
 			h={220}
 			radius="md"
 			fit="cover"
+			// Shows the slot while the photo loads, rather than a blank gap.
+			bg="var(--mantine-color-default-hover)"
 			loading="lazy"
 			// Image's own `flex: 0` lets a flex column's min-height:auto override `h`.
 			style={{ flex: "none" }}

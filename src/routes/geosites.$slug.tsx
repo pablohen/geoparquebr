@@ -49,13 +49,16 @@ export const Route = createFileRoute("/geosites/$slug")({
 			: {},
 	component: GeositePage,
 	notFoundComponent: () => (
-		<Container component="main" size="sm" py="xl">
-			<Title order={1} size="h2">
-				{m.not_found_geosite()}
-			</Title>
-			<Anchor component={Link} to="/">
-				{m.back_to_map()}
-			</Anchor>
+		<Container component="main" size="md" px={{ base: "sm", sm: "md" }} py="md">
+			<PageHeader />
+			<Stack gap={6}>
+				<Title order={1} size="h2">
+					{m.not_found_geosite()}
+				</Title>
+				<Anchor component={Link} to="/">
+					{m.back_to_map()}
+				</Anchor>
+			</Stack>
 		</Container>
 	),
 });
@@ -69,7 +72,7 @@ function GeositePage() {
 		<Container component="main" size="md" px={{ base: "sm", sm: "md" }} py="md">
 			<PageHeader />
 
-			<Stack gap={4} mb="md">
+			<Stack gap={6} mb="md">
 				<Title order={1} size="h2">
 					{geosite.name}
 				</Title>

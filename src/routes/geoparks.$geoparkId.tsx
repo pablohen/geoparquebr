@@ -1,4 +1,4 @@
-import { Anchor, Container, Title } from "@mantine/core";
+import { Anchor, Container, Stack, Title } from "@mantine/core";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { GeoparkView } from "~/features/geoparks/components/GeoparkView";
 import { geoparkPath } from "~/features/geoparks/geoparks";
@@ -40,13 +40,16 @@ export const Route = createFileRoute("/geoparks/$geoparkId")({
 			: {},
 	component: GeoparkPage,
 	notFoundComponent: () => (
-		<Container component="main" size="sm" py="xl">
-			<Title order={1} size="h2">
-				{m.geopark_not_found()}
-			</Title>
-			<Anchor component={Link} to="/geoparks/">
-				{m.geopark_all_geoparks()}
-			</Anchor>
+		<Container component="main" size="md" px={{ base: "sm", sm: "md" }} py="md">
+			<PageHeader />
+			<Stack gap={6}>
+				<Title order={1} size="h2">
+					{m.geopark_not_found()}
+				</Title>
+				<Anchor component={Link} to="/geoparks/">
+					{m.geopark_all_geoparks()}
+				</Anchor>
+			</Stack>
 		</Container>
 	),
 });

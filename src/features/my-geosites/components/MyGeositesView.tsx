@@ -47,7 +47,7 @@ export function MyGeositesView() {
 	const savedIds = Object.keys(offline) as GeoparkId[];
 
 	return (
-		<Stack gap="xl">
+		<Stack gap="lg">
 			<Stack gap={6}>
 				<Title order={1} size="h2">
 					{m.my_title()}
@@ -78,7 +78,7 @@ export function MyGeositesView() {
 					<Title order={2} size="h4">
 						{m.offline_saved_geoparks()}
 					</Title>
-					<Stack gap={2}>
+					<Stack gap={2} mx="-sm">
 						{savedIds.map((id) => (
 							<NavLink
 								key={id}
@@ -89,7 +89,11 @@ export function MyGeositesView() {
 										params={{ geoparkId: id }}
 									/>
 								)}
-								label={<Text fw={600}>{geoparkIdLabel(id)}</Text>}
+								label={
+									<Text fw={600} size="sm">
+										{geoparkIdLabel(id)}
+									</Text>
+								}
 								description={m.offline_saved_on({
 									date: formatDate(offline[id]?.savedAt ?? ""),
 								})}
@@ -139,7 +143,7 @@ function Section({
 					{empty}
 				</Text>
 			) : (
-				<Stack gap={2}>
+				<Stack gap={2} mx="-sm">
 					{items.map((e) => (
 						<NavLink
 							key={e.slug}
@@ -150,7 +154,11 @@ function Section({
 									params={{ slug: e.slug }}
 								/>
 							)}
-							label={<Text fw={600}>{e.name}</Text>}
+							label={
+								<Text fw={600} size="sm">
+									{e.name}
+								</Text>
+							}
 							description={
 								<Group gap={6} mt={2}>
 									<Text size="xs" c="dimmed">
