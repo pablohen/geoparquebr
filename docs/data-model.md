@@ -194,7 +194,7 @@ Cache keys are versioned (`fossils:sgb:v3:<slug>`). Bump the version when the ma
 
 ## Collection: `fossil_genera`
 
-The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. `pnpm db:fossils` (`buildFossilIndex` in [`fossils.server.ts`](../src/features/fossils/fossils.server.ts)) rebuilds it from the same cached lookups as each geosite's "Fósseis" tab:
+The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. It's rebuilt from `fossil_sites` (below), which holds each geosite's records from the same cached lookups as its "Fósseis" tab:
 
 1. For every geosite, the SGB and GBIF fossil records within 5 km.
 2. Each recorded name is cut to genus + epithet (`matchQuery`: "dastilbe elongatus santos, 1947" → "Dastilbe elongatus") and matched with GBIF's [`species/match`](https://techdocs.gbif.org/en/openapi/v1/species) (cached 30 days as `gbif-match:v1:<name>`).
@@ -212,7 +212,14 @@ The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. `pnpm db:
 | `records` | `{ sgb, gbif }` | |
 | `updatedAt` | Date | |
 
-Index: `geosites.slug` (genera near a geosite or geopark). **No coordinates are stored**: a genus page names geosites, never where a specimen was found, so sensitive sites stay as private as on their own page. The build writes nothing when more than 10% of the upstream lookups or name matches fail, so an outage can't prune the index. It isn't part of the weekly cron (about 640 upstream calls on a cold cache, past the function's 60 s); run it after `pnpm db:seed`.
+Index: `geosites.slug` (genera near a geosite or geopark). **No coordinates are stored**: a genus page names geosites, never where a specimen was found, so sensitive sites stay as private as on their own page. 
+### Collection: `fossil_sites`
+
+One document per geosite: `_id` (the geosite slug), `records` (`{ source, match, unit?, age? }[]`, the matched GBIF genus per occurrence), `unmatchedNames` (recorded names with no GBIF genus, for review) and `refreshedAt`. Index: `refreshedAt`.
+
+- `pnpm db:fossils` (`buildFossilIndex` in [`fossils.server.ts`](../src/features/fossils/fossils.server.ts)) refreshes every geosite, then rebuilds `fossil_genera`. It writes no genus pages when more than 10% of the geosites fail.
+- The daily cron (`refreshFossilIndexSlice`) refreshes the geosites refreshed longest ago (never-refreshed first) for ~35 s, then rebuilds. A full refresh is about 640 upstream calls on a cold cache, past the function's 60 s, hence the slices.
+- A geosite whose lookups or name matches fail keeps its previous records. `fossil_genera` is rebuilt only when at least 90% of the geosites have records (`MIN_FOSSIL_COVERAGE`), and records of geosites GEOSSIT dropped are deleted first.
 
 ## Other open data sources (not used yet)
 

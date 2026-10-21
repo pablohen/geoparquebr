@@ -50,7 +50,7 @@ Server code reads them through `process.env`. Nothing secret should ever use the
 | `pnpm test` | Vitest: unit tests, plus MongoDB integration tests when `MONGODB_URI` is set |
 | `pnpm test:watch` | Vitest in watch mode |
 | `pnpm db:seed` | `tsx --env-file=.env scripts/seed.ts`: indexes, GEOSSIT sync (upsert + prune) and 3D model attachments; safe to re-run |
-| `pnpm db:fossils` | `tsx --env-file=.env scripts/fossils.ts`: rebuilds `fossil_genera` for the `/fossils` pages from SGB/GBIF records near each geosite, matched to the GBIF backbone; run after `db:seed`, safe to re-run |
+| `pnpm db:fossils` | `tsx --env-file=.env scripts/fossils.ts`: refreshes every geosite's fossil records (`fossil_sites`) and rebuilds `fossil_genera` for the `/fossils` pages; run after `db:seed`, safe to re-run (production also refreshes daily) |
 | `pnpm brand:images` | renders `public/og-default.png` (1200×630 share card) and the PWA icons from SVG; commit the output |
 | `pnpm models:fetch` | downloads CC BY models from Sketchfab, optimizes them into `public/models/` (`--force` to refresh) |
 

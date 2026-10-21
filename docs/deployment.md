@@ -22,7 +22,7 @@ Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, an
    MONGODB_URI="mongodb+srv://…" MONGODB_DB=geoparquebr pnpm db:seed
    ```
 
-   This creates the indexes (2dsphere, text, unique keys) and imports GEOSSIT. Then build the fossil pages' index (a few minutes; not part of the weekly cron, so re-run it now and then):
+   This creates the indexes (2dsphere, text, unique keys) and imports GEOSSIT. Then build the fossil pages' index once (a few minutes; after that the daily fossil cron keeps it fresh):
 
    ```bash
    MONGODB_URI="mongodb+srv://…" MONGODB_DB=geoparquebr pnpm db:fossils
@@ -55,6 +55,7 @@ The Vercel preset writes these values in `vite.config.ts` (`nitro({ vercel: { fu
 | `regions` | `["gru1"]` | São Paulo |
 | `maxDuration` | `60` s | Place search can take up to 12 s and the weekly sync ~10 s; MongoDB fails after 10 s (`serverSelectionTimeoutMS`) rather than hanging |
 | `crons` | `/api/cron/sync-geosites`, `0 6 * * 1` | weekly GEOSSIT sync, Mondays 06:00 UTC |
+| | `/api/cron/sync-fossils`, `30 6 * * *` | daily fossil refresh, 06:30 UTC |
 | `runtime` | `nodejs24.x` | from `engines` |
 | static `/assets/*` | `cache-control: public, max-age=31536000, immutable` | content-hashed files |
 
@@ -75,6 +76,13 @@ Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in 
 - **Safety.** It writes nothing when GEOSSIT returns fewer than 80% of the stored geosites (a truncated response would otherwise prune the rest) or when more than 10% of the age lookups fail. GEOSSIT pages are retried on server errors.
 - **Run it now:** **Settings → Cron Jobs → Run**, or `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-geosites`.
 - **3D models.** `public/models` isn't on the function's disk, so the cron attaches Sketchfab embeds. Once a CC BY model is self-hosted, teach `modelsFor` about it from a committed list before relying on the cron.
+
+### Daily fossil refresh
+
+Vercel Cron calls `/api/cron/sync-fossils` every day at 06:30 UTC, with the same `CRON_SECRET` auth. It refreshes the fossil records (`fossil_sites`) of the geosites refreshed longest ago, for about 35 s (roughly 80 geosites on a cold cache), then rebuilds the genus pages (`fossil_genera`). So every geosite is refreshed every few days without `pnpm db:fossils`.
+
+- **Safety.** A geosite whose SGB or GBIF lookup or GBIF name match fails keeps its previous records. The genus pages are rebuilt only when at least 90% of the geosites have records, so a fresh database waits for `pnpm db:fossils` (or a few daily runs) instead of publishing a partial index. The JSON response says why a rebuild was skipped.
+- **Run it now:** `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-fossils`.
 
 ### After deploying
 
@@ -100,6 +108,6 @@ PORT=3000 MONGODB_URI=… MONGODB_DB=geoparquebr pnpm start
 | --- | --- |
 | Pages return 500/504 after ~10 s | Atlas is unreachable. Check `MONGODB_URI`, the database user, and that Network Access allows `0.0.0.0/0` |
 | Empty map/list in production | The database wasn't seeded. Run `pnpm db:seed` against the Atlas URI |
-| `/fossils` says no fossils are indexed | Run `pnpm db:fossils` against the Atlas URI |
+| `/fossils` says no fossils are indexed | Run `pnpm db:fossils` against the Atlas URI (the daily cron rebuilds nothing until 90% of geosites have fossil records) |
 | `ERR_PNPM_…` lockfile errors on install | Vercel isn't using the pinned pnpm. Check `packageManager` in `package.json` and that corepack isn't disabled in project settings |
 | Function deployed outside São Paulo | Check `regions` in `.vc-config.json` and the project's Function Region setting |
