@@ -1,10 +1,13 @@
 /**
- * Fossil genera recorded near geosites, built by `pnpm db:fossils` from the
- * same SGB and GBIF lookups as each geosite's fossil tab. Names are resolved
- * against the GBIF backbone, so pages exist only for real genera.
+ * Fossil genera recorded near geosites, from the same SGB and GBIF lookups as
+ * each geosite's fossil tab. Names are resolved against the GBIF backbone, so
+ * pages exist only for real genera. Two collections:
+ * - `fossil_sites`: each geosite's matched records, refreshed by
+ *   `pnpm db:fossils` (all) or the daily cron (the stalest, for ~40 s);
+ * - `fossil_genera`: the genus pages, rebuilt from `fossil_sites`.
  *
- * Coordinates never enter this collection: a genus page lists geosites, not
- * where each specimen was found.
+ * Coordinates never enter either: a genus page lists geosites, not where each
+ * specimen was found.
  */
 import type { Collection } from "mongodb";
 import { fossilLookups } from "~/features/geology/fossils.server";
@@ -20,7 +23,7 @@ import { acceptMatch, matchQuery, type TaxonMatch } from "./taxonomy";
 const GBIF_API = "https://api.gbif.org/v1";
 const MONTH_MS = 30 * 24 * 60 * 60 * 1_000;
 const CONCURRENCY = 4;
-/** Above this share of failed geosite lookups, nothing is written. */
+/** Above this share of failed geosites, `pnpm db:fossils` writes no pages. */
 const MAX_FAILED_SHARE = 0.1;
 
 type FossilGenusDoc = Omit<FossilGenus, "slug" | "updatedAt"> & {
@@ -51,24 +54,164 @@ async function matchTaxon(query: string): Promise<TaxonMatch | null> {
 	});
 }
 
-export type FossilIndexReport = {
+/** One geosite's matched fossil records, kept between refreshes. */
+type SiteRecord = Omit<GenusRecord, "geosite">;
+type FossilSiteDoc = {
+	_id: string;
+	records: SiteRecord[];
+	unmatchedNames: string[];
+	refreshedAt: Date;
+};
+
+export async function fossilSitesCollection(): Promise<
+	Collection<FossilSiteDoc>
+> {
+	return (await getDb()).collection<FossilSiteDoc>("fossil_sites");
+}
+
+export type FossilRefreshReport = {
 	geosites: number;
-	failedLookups: number;
-	failedMatches: number;
-	genera: number;
-	unmatchedNames: number;
-	deleted: number;
+	refreshed: number;
+	failed: number;
+	/** Geosites never refreshed yet (none after a full run). */
+	missing: number;
 };
 
 /**
- * Rebuilds `fossil_genera`. Writes nothing when more than 10% of the
- * geosites' upstream lookups fail, so an outage can't prune the index.
+ * Refreshes `fossil_sites`: the SGB and GBIF records near each geosite,
+ * matched against the GBIF backbone. Geosites with no record yet go first,
+ * then the longest unrefreshed. With `deadline` (epoch ms) it starts no new
+ * batch after that time, so the daily cron can work through them in slices.
+ * A geosite whose lookups or name matches fail keeps its previous records.
  */
-export async function buildFossilIndex({
+export async function refreshFossilSites({
 	log = () => {},
+	deadline = Number.POSITIVE_INFINITY,
 }: {
 	log?: (line: string) => void;
-} = {}): Promise<FossilIndexReport> {
+	deadline?: number;
+} = {}): Promise<FossilRefreshReport> {
+	const geosites = await (await geositesCollection())
+		.find({}, { projection: { slug: 1, location: 1 } })
+		.toArray();
+	if (geosites.length === 0)
+		throw new Error("No geosites stored; run pnpm db:seed first");
+
+	const sites = await fossilSitesCollection();
+	await sites.createIndex({ refreshedAt: 1 }, { name: "refreshed_at" });
+	const refreshedAt = new Map(
+		(await sites.find({}, { projection: { refreshedAt: 1 } }).toArray()).map(
+			(d) => [d._id, d.refreshedAt.getTime()],
+		),
+	);
+	const queue = [...geosites].sort(
+		(a, b) =>
+			(refreshedAt.get(a.slug) ?? -1) - (refreshedAt.get(b.slug) ?? -1) ||
+			a.slug.localeCompare(b.slug),
+	);
+
+	// Many geosites record the same names; match each once per run.
+	const matches = new Map<string, Promise<TaxonMatch | null>>();
+	const match = (query: string) => {
+		let pending = matches.get(query);
+		if (!pending) {
+			pending = matchTaxon(query);
+			// A failed match isn't cached; let a later geosite retry it.
+			pending.catch(() => matches.delete(query));
+			matches.set(query, pending);
+		}
+		return pending;
+	};
+
+	let refreshed = 0;
+	let failed = 0;
+	for (let i = 0; i < queue.length; i += CONCURRENCY) {
+		if (Date.now() > deadline) break;
+		await Promise.all(
+			queue.slice(i, i + CONCURRENCY).map(async (g) => {
+				try {
+					const { records, unmatched } = await siteRecords(
+						g.slug,
+						g.location.coordinates,
+						match,
+					);
+					await sites.replaceOne(
+						{ _id: g.slug },
+						{ records, unmatchedNames: unmatched, refreshedAt: new Date() },
+						{ upsert: true },
+					);
+					refreshedAt.set(g.slug, Date.now());
+					refreshed += 1;
+				} catch (err) {
+					failed += 1;
+					log(`  ${g.slug}: ${String(err)}`);
+				}
+			}),
+		);
+		log(
+			`  ${Math.min(i + CONCURRENCY, queue.length)}/${queue.length} geosites`,
+		);
+	}
+
+	return {
+		geosites: geosites.length,
+		refreshed,
+		failed,
+		missing: geosites.filter((g) => !refreshedAt.has(g.slug)).length,
+	};
+}
+
+/** Throws when any upstream lookup or name match fails. */
+async function siteRecords(
+	slug: string,
+	point: [number, number],
+	match: (query: string) => Promise<TaxonMatch | null>,
+): Promise<{ records: SiteRecord[]; unmatched: string[] }> {
+	const sources = fossilLookups(slug, point);
+	const records: SiteRecord[] = [];
+	const unmatched = new Set<string>();
+	for (const source of Object.keys(sources) as FossilSource[]) {
+		const { items } = await sources[source]();
+		for (const occurrence of items) {
+			// One occurrence counts once per genus, however many names it lists.
+			const seen = new Set<number>();
+			for (const taxon of occurrence.taxa) {
+				const query = matchQuery(taxon);
+				if (!query) continue;
+				const matched = await match(query);
+				if (!matched) {
+					unmatched.add(query);
+					continue;
+				}
+				if (seen.has(matched.genusKey)) continue;
+				seen.add(matched.genusKey);
+				records.push({
+					source,
+					match: matched,
+					unit: occurrence.unit ?? undefined,
+					age: occurrence.age ?? undefined,
+				});
+			}
+		}
+	}
+	return { records, unmatched: [...unmatched] };
+}
+
+/** Below this share of geosites with records, the genus pages are left alone. */
+export const MIN_FOSSIL_COVERAGE = 0.9;
+
+export type FossilRebuildReport = {
+	genera: number;
+	deleted: number;
+	coverage: number;
+};
+
+/**
+ * Rebuilds `fossil_genera` from `fossil_sites`, with each geosite's current
+ * name and geopark. Writes nothing while fewer than 90% of the geosites have
+ * records (a first, partial refresh would otherwise prune most pages).
+ */
+export async function rebuildFossilGenera(): Promise<FossilRebuildReport> {
 	const geosites = await (await geositesCollection())
 		.find(
 			{},
@@ -79,98 +222,35 @@ export async function buildFossilIndex({
 					municipality: 1,
 					state: 1,
 					geoparkId: 1,
-					location: 1,
 				},
 			},
 		)
-		.sort({ slug: 1 })
 		.toArray();
+	const sites = await fossilSitesCollection();
+	// Geosites GEOSSIT dropped take their records with them.
+	await sites.deleteMany({ _id: { $nin: geosites.map((g) => g.slug) } });
+	const bySlug = new Map(
+		(await sites.find({}).toArray()).map((d) => [d._id, d]),
+	);
 
-	if (geosites.length === 0)
-		throw new Error("No geosites stored; run pnpm db:seed first");
-
-	const records: GenusRecord[] = [];
-	const unmatched = new Set<string>();
-	let failedLookups = 0;
-	let lookups = 0;
-	// Many geosites record the same names; match each once per run.
-	const matches = new Map<string, Promise<TaxonMatch | null | "failed">>();
-	const match = (query: string) => {
-		let pending = matches.get(query);
-		if (!pending) {
-			pending = matchTaxon(query).catch((err) => {
-				log(`  match "${query}": ${String(err)}`);
-				return "failed" as const;
-			});
-			matches.set(query, pending);
-		}
-		return pending;
-	};
-
-	for (let i = 0; i < geosites.length; i += CONCURRENCY) {
-		await Promise.all(
-			geosites.slice(i, i + CONCURRENCY).map(async (g) => {
-				const geosite = {
-					slug: g.slug,
-					name: g.name,
-					municipality: g.municipality,
-					state: g.state,
-					...(g.geoparkId && { geoparkId: g.geoparkId as GeoparkId }),
-				};
-				const sources = fossilLookups(g.slug, g.location.coordinates);
-				for (const source of Object.keys(sources) as FossilSource[]) {
-					lookups += 1;
-					let items: Awaited<
-						ReturnType<(typeof sources)[FossilSource]>
-					>["items"];
-					try {
-						({ items } = await sources[source]());
-					} catch (err) {
-						failedLookups += 1;
-						log(`  ${g.slug} (${source}): ${String(err)}`);
-						continue;
-					}
-					for (const occurrence of items) {
-						// One occurrence counts once per genus, however many names it lists.
-						const seen = new Set<number>();
-						for (const taxon of occurrence.taxa) {
-							const query = matchQuery(taxon);
-							if (!query) continue;
-							const matched = await match(query);
-							if (matched === "failed") continue;
-							if (!matched) {
-								unmatched.add(query);
-								continue;
-							}
-							if (seen.has(matched.genusKey)) continue;
-							seen.add(matched.genusKey);
-							records.push({
-								geosite,
-								source,
-								match: matched,
-								unit: occurrence.unit,
-								age: occurrence.age,
-							});
-						}
-					}
-				}
-			}),
-		);
-		log(
-			`  ${Math.min(i + CONCURRENCY, geosites.length)}/${geosites.length} geosites`,
-		);
-	}
-
-	if (failedLookups > lookups * MAX_FAILED_SHARE)
+	const coverage = geosites.length > 0 ? bySlug.size / geosites.length : 0;
+	if (coverage < MIN_FOSSIL_COVERAGE)
 		throw new Error(
-			`${failedLookups} of ${lookups} fossil lookups failed; fossil_genera left unchanged`,
+			`only ${Math.round(coverage * 100)}% of geosites have fossil records; fossil_genera left unchanged`,
 		);
-	const outcomes = await Promise.all(matches.values());
-	const failedMatches = outcomes.filter((o) => o === "failed").length;
-	if (failedMatches > outcomes.length * MAX_FAILED_SHARE)
-		throw new Error(
-			`${failedMatches} of ${outcomes.length} GBIF name matches failed; fossil_genera left unchanged`,
-		);
+
+	const records: GenusRecord[] = geosites.flatMap((g) =>
+		(bySlug.get(g.slug)?.records ?? []).map((r) => ({
+			...r,
+			geosite: {
+				slug: g.slug,
+				name: g.name,
+				municipality: g.municipality,
+				state: g.state,
+				...(g.geoparkId && { geoparkId: g.geoparkId as GeoparkId }),
+			},
+		})),
+	);
 
 	const now = new Date();
 	const genera = aggregateGenera(records, now.toISOString());
@@ -189,15 +269,48 @@ export async function buildFossilIndex({
 	const { deletedCount } = await col.deleteMany({
 		_id: { $nin: genera.map((g) => g.slug) },
 	});
+	return { genera: genera.length, deleted: deletedCount, coverage };
+}
 
-	return {
-		geosites: geosites.length,
-		failedLookups,
-		failedMatches,
-		genera: genera.length,
-		unmatchedNames: unmatched.size,
-		deleted: deletedCount,
-	};
+export type FossilIndexReport = FossilRefreshReport & FossilRebuildReport;
+
+/**
+ * `pnpm db:fossils`: refreshes every geosite, then rebuilds the genus pages.
+ * Writes no genus pages when more than 10% of the geosites failed.
+ */
+export async function buildFossilIndex({
+	log = () => {},
+}: {
+	log?: (line: string) => void;
+} = {}): Promise<FossilIndexReport> {
+	const refresh = await refreshFossilSites({ log });
+	if (refresh.failed > refresh.geosites * MAX_FAILED_SHARE)
+		throw new Error(
+			`fossil lookups failed for ${refresh.failed} of ${refresh.geosites} geosites; fossil_genera left unchanged`,
+		);
+	return { ...refresh, ...(await rebuildFossilGenera()) };
+}
+
+/**
+ * The daily cron's share: refresh the stalest geosites for up to `budgetMs`,
+ * then rebuild. A skipped rebuild (low coverage) is reported, not thrown.
+ */
+export async function refreshFossilIndexSlice({
+	budgetMs,
+	log = () => {},
+}: {
+	budgetMs: number;
+	log?: (line: string) => void;
+}): Promise<FossilRefreshReport & { rebuild: FossilRebuildReport | string }> {
+	const refresh = await refreshFossilSites({
+		log,
+		deadline: Date.now() + budgetMs,
+	});
+	try {
+		return { ...refresh, rebuild: await rebuildFossilGenera() };
+	} catch (err) {
+		return { ...refresh, rebuild: String(err) };
+	}
 }
 
 export async function findFossilGenus(

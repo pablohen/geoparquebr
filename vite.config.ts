@@ -38,7 +38,10 @@ export default defineConfig({
 				// Weekly GEOSSIT sync, Mondays 06:00 UTC (03:00 in Brasília).
 				config: {
 					version: 3,
-					crons: [{ path: "/api/cron/sync-geosites", schedule: "0 6 * * 1" }],
+					crons: [
+						{ path: "/api/cron/sync-geosites", schedule: "0 6 * * 1" },
+						{ path: "/api/cron/sync-fossils", schedule: "30 6 * * *" },
+					],
 				},
 			},
 		}),

@@ -9,9 +9,11 @@ import {
 	buildFossilIndex,
 	findFossilGenus,
 	fossilGeneraCollection,
+	fossilSitesCollection,
 	generaNearGeopark,
 	generaNearGeosites,
 	listFossilGenera,
+	refreshFossilIndexSlice,
 } from "./fossils.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
@@ -97,15 +99,28 @@ describe.skipIf(!enabled)("fossils.server (MongoDB)", () => {
 		await closeDb();
 	});
 
+	it("rebuilds nothing until enough geosites have records", async () => {
+		// A deadline already past refreshes nothing.
+		const report = await refreshFossilIndexSlice({ budgetMs: -1 });
+		expect(report).toMatchObject({ refreshed: 0, missing: 2 });
+		expect(report.rebuild).toMatch(/only 0% of geosites/);
+		expect(await (await fossilGeneraCollection()).countDocuments()).toBe(0);
+	});
+
 	it("builds one entry per genus from the cached lookups", async () => {
 		const report = await buildFossilIndex();
 		expect(report).toMatchObject({
 			geosites: 2,
-			failedLookups: 0,
-			failedMatches: 0,
+			refreshed: 2,
+			failed: 0,
+			missing: 0,
 			genera: 1,
-			unmatchedNames: 1,
+			coverage: 1,
 		});
+		const pedra = await (await fossilSitesCollection()).findOne({
+			_id: "pedra",
+		});
+		expect(pedra?.unmatchedNames).toEqual(["Restos vegetais"]);
 
 		const genus = await findFossilGenus("dastilbe");
 		expect(genus).toMatchObject({
@@ -142,12 +157,35 @@ describe.skipIf(!enabled)("fossils.server (MongoDB)", () => {
 		expect(await generaNearGeopark("serido")).toEqual([]);
 	});
 
-	it("writes nothing when the upstream lookups fail", async () => {
+	it("refreshes the stalest geosites first, a slice at a time", async () => {
+		const sites = await fossilSitesCollection();
+		await sites.updateOne(
+			{ _id: "lajedo" },
+			{ $set: { refreshedAt: new Date(0) } },
+		);
+		const before = (await sites.findOne({ _id: "pedra" }))?.refreshedAt;
+		const report = await refreshFossilIndexSlice({ budgetMs: 10_000 });
+		expect(report).toMatchObject({ refreshed: 2, failed: 0 });
+		expect(typeof report.rebuild).toBe("object");
+		expect(
+			(await sites.findOne({ _id: "lajedo" }))?.refreshedAt.getTime(),
+		).toBeGreaterThan(0);
+		expect(
+			(await sites.findOne({ _id: "pedra" }))?.refreshedAt.getTime(),
+		).toBeGreaterThanOrEqual(before?.getTime() ?? 0);
+	});
+
+	it("keeps previous records and pages when the upstream lookups fail", async () => {
 		await (await getDb())
 			.collection("api_cache")
 			.deleteMany({ _id: /^fossils:/ });
 		vi.stubGlobal("fetch", () => Promise.reject(new TypeError("offline")));
 		await expect(buildFossilIndex()).rejects.toThrow(/left unchanged/);
-		expect(await (await fossilGeneraCollection()).countDocuments()).toBe(1);
+		const slice = await refreshFossilIndexSlice({ budgetMs: 10_000 });
+		expect(slice).toMatchObject({ refreshed: 0, failed: 2, missing: 0 });
+		// The rebuild still runs on the stored records.
+		expect(slice.rebuild).toMatchObject({ genera: 1, deleted: 0 });
+		expect(await (await fossilSitesCollection()).countDocuments()).toBe(2);
+		expect(await findFossilGenus("dastilbe")).not.toBeNull();
 	});
 });

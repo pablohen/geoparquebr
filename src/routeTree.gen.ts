@@ -18,6 +18,7 @@ import { Route as FossilsGenusRouteImport } from './routes/fossils.$genus'
 import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
 import { Route as GeoparksGeoparkIdRouteImport } from './routes/geoparks.$geoparkId'
 import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
+import { Route as ApiCronSyncFossilsRouteImport } from './routes/api.cron.sync-fossils'
 import { Route as ApiCronSyncGeositesRouteImport } from './routes/api.cron.sync-geosites'
 import { Route as OgGeoparksGeoparkIdRouteImport } from './routes/og.geoparks.$geoparkId'
 import { Route as OgGeositesSlugRouteImport } from './routes/og.geosites.$slug'
@@ -67,6 +68,11 @@ const GeositesSlugRoute = GeositesSlugRouteImport.update({
   path: '/geosites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronSyncFossilsRoute = ApiCronSyncFossilsRouteImport.update({
+  id: '/api/cron/sync-fossils',
+  path: '/api/cron/sync-fossils',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronSyncGeositesRoute = ApiCronSyncGeositesRouteImport.update({
   id: '/api/cron/sync-geosites',
   path: '/api/cron/sync-geosites',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/geosites/$slug': typeof GeositesSlugRoute
   '/fossils/': typeof FossilsIndexRoute
   '/geoparks/': typeof GeoparksIndexRoute
+  '/api/cron/sync-fossils': typeof ApiCronSyncFossilsRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/geosites/$slug': typeof GeositesSlugRoute
   '/fossils': typeof FossilsIndexRoute
   '/geoparks': typeof GeoparksIndexRoute
+  '/api/cron/sync-fossils': typeof ApiCronSyncFossilsRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/geosites/$slug': typeof GeositesSlugRoute
   '/fossils/': typeof FossilsIndexRoute
   '/geoparks/': typeof GeoparksIndexRoute
+  '/api/cron/sync-fossils': typeof ApiCronSyncFossilsRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/geosites/$slug'
     | '/fossils/'
     | '/geoparks/'
+    | '/api/cron/sync-fossils'
     | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/geosites/$slug'
     | '/fossils'
     | '/geoparks'
+    | '/api/cron/sync-fossils'
     | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/geosites/$slug'
     | '/fossils/'
     | '/geoparks/'
+    | '/api/cron/sync-fossils'
     | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   GeositesSlugRoute: typeof GeositesSlugRoute
   FossilsIndexRoute: typeof FossilsIndexRoute
   GeoparksIndexRoute: typeof GeoparksIndexRoute
+  ApiCronSyncFossilsRoute: typeof ApiCronSyncFossilsRoute
   ApiCronSyncGeositesRoute: typeof ApiCronSyncGeositesRoute
   OgGeoparksGeoparkIdRoute: typeof OgGeoparksGeoparkIdRoute
   OgGeositesSlugRoute: typeof OgGeositesSlugRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GeositesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/sync-fossils': {
+      id: '/api/cron/sync-fossils'
+      path: '/api/cron/sync-fossils'
+      fullPath: '/api/cron/sync-fossils'
+      preLoaderRoute: typeof ApiCronSyncFossilsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/sync-geosites': {
       id: '/api/cron/sync-geosites'
       path: '/api/cron/sync-geosites'
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   GeositesSlugRoute: GeositesSlugRoute,
   FossilsIndexRoute: FossilsIndexRoute,
   GeoparksIndexRoute: GeoparksIndexRoute,
+  ApiCronSyncFossilsRoute: ApiCronSyncFossilsRoute,
   ApiCronSyncGeositesRoute: ApiCronSyncGeositesRoute,
   OgGeoparksGeoparkIdRoute: OgGeoparksGeoparkIdRoute,
   OgGeositesSlugRoute: OgGeositesSlugRoute,
