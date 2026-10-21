@@ -21,7 +21,7 @@ Use **pnpm**, never npm or yarn.
 | Production build | `pnpm build` (Nitro: `.output/`, or `.vercel/output/` on Vercel) |
 | Run production build | `pnpm start` |
 | Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
-| Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`) |
+| Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`; production also syncs weekly via Vercel Cron) |
 | Regenerate share card + app icons | `pnpm brand:images` (commit the PNGs) |
 | Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
 | Local MongoDB | `docker compose up -d` |
@@ -101,7 +101,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 ## Deployment
 
 - Deployed on **Vercel in São Paulo (`gru1`)**, with MongoDB Atlas in **AWS `sa-east-1`**. Keep new infrastructure in Brazil.
-- The function region and limits live in `vite.config.ts` (`nitro({ vercel: { functions } })`). Keep `maxDuration` above the slowest upstream timeout (Photon: 12 s) and MongoDB's `serverSelectionTimeoutMS` (10 s).
+- The function region, limits and the weekly sync cron live in `vite.config.ts` (`nitro({ vercel: { functions, config } })`). The sync (`sync.server.ts`) is shared by `pnpm db:seed` and `/api/cron/sync-geosites`; keep its guards (truncated GEOSSIT response, failed age lookups) so it stays safe unattended. Keep `maxDuration` above the slowest upstream timeout (Photon: 12 s) and MongoDB's `serverSelectionTimeoutMS` (10 s).
 - Nitro is a pinned **beta** (`3.0.x-beta`). Upgrade deliberately and re-check `NITRO_PRESET=vercel pnpm build`.
 
 ## Known gotchas

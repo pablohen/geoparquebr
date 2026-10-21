@@ -14,6 +14,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
 import { Route as GeoparksGeoparkIdRouteImport } from './routes/geoparks.$geoparkId'
 import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
+import { Route as ApiCronSyncGeositesRouteImport } from './routes/api.cron.sync-geosites'
 import { Route as OgGeoparksGeoparkIdRouteImport } from './routes/og.geoparks.$geoparkId'
 import { Route as OgGeositesSlugRouteImport } from './routes/og.geosites.$slug'
 
@@ -42,6 +43,11 @@ const GeositesSlugRoute = GeositesSlugRouteImport.update({
   path: '/geosites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronSyncGeositesRoute = ApiCronSyncGeositesRouteImport.update({
+  id: '/api/cron/sync-geosites',
+  path: '/api/cron/sync-geosites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OgGeoparksGeoparkIdRoute = OgGeoparksGeoparkIdRouteImport.update({
   id: '/og/geoparks/$geoparkId',
   path: '/og/geoparks/$geoparkId',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/geoparks/': typeof GeoparksIndexRoute
+  '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/geoparks': typeof GeoparksIndexRoute
+  '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/geoparks/': typeof GeoparksIndexRoute
+  '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
     | '/geoparks/'
+    | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
     | '/geoparks'
+    | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
     | '/geoparks/'
+    | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   GeoparksGeoparkIdRoute: typeof GeoparksGeoparkIdRoute
   GeositesSlugRoute: typeof GeositesSlugRoute
   GeoparksIndexRoute: typeof GeoparksIndexRoute
+  ApiCronSyncGeositesRoute: typeof ApiCronSyncGeositesRoute
   OgGeoparksGeoparkIdRoute: typeof OgGeoparksGeoparkIdRoute
   OgGeositesSlugRoute: typeof OgGeositesSlugRoute
 }
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GeositesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/sync-geosites': {
+      id: '/api/cron/sync-geosites'
+      path: '/api/cron/sync-geosites'
+      fullPath: '/api/cron/sync-geosites'
+      preLoaderRoute: typeof ApiCronSyncGeositesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/og/geoparks/$geoparkId': {
       id: '/og/geoparks/$geoparkId'
       path: '/og/geoparks/$geoparkId'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   GeoparksGeoparkIdRoute: GeoparksGeoparkIdRoute,
   GeositesSlugRoute: GeositesSlugRoute,
   GeoparksIndexRoute: GeoparksIndexRoute,
+  ApiCronSyncGeositesRoute: ApiCronSyncGeositesRoute,
   OgGeoparksGeoparkIdRoute: OgGeoparksGeoparkIdRoute,
   OgGeositesSlugRoute: OgGeositesSlugRoute,
 }

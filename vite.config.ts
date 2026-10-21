@@ -32,8 +32,14 @@ export default defineConfig({
 		nitro({
 			vercel: {
 				// São Paulo: next to the users, the SGB/GEOSSIT APIs and an
-				// Atlas cluster in AWS sa-east-1.
-				functions: { regions: ["gru1"], maxDuration: 30 },
+				// Atlas cluster in AWS sa-east-1. 60 s also covers the weekly
+				// GEOSSIT sync (~10 s with warm caches).
+				functions: { regions: ["gru1"], maxDuration: 60 },
+				// Weekly GEOSSIT sync, Mondays 06:00 UTC (03:00 in Brasília).
+				config: {
+					version: 3,
+					crons: [{ path: "/api/cron/sync-geosites", schedule: "0 6 * * 1" }],
+				},
 			},
 		}),
 		viteReact(),

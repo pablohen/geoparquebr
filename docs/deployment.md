@@ -16,7 +16,7 @@ Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, an
 1. Create a cluster in **AWS / São Paulo (`sa-east-1`)**. The free M0 tier is enough: the data is about 320 geosites plus the API cache.
 2. **Database Access:** create a user with `readWrite` on `geoparquebr`.
 3. **Network Access:** allow `0.0.0.0/0`. Vercel functions have no fixed outbound IPs. (Paid plans can use Vercel's Secure Compute or Atlas private endpoints instead.)
-4. Load the data from your machine. Run this once, and again whenever you want fresh GEOSSIT data:
+4. Load the data from your machine once. After that, a weekly cron job keeps it fresh (see [Weekly data refresh](#weekly-data-refresh)); run the seed by hand only when you need changes sooner:
 
    ```bash
    MONGODB_URI="mongodb+srv://…" MONGODB_DB=geoparquebr pnpm db:seed
@@ -34,6 +34,7 @@ Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, an
    | --- | --- |
    | `MONGODB_URI` | the Atlas `mongodb+srv://` connection string |
    | `MONGODB_DB` | `geoparquebr` |
+   | `CRON_SECRET` | a long random string (`openssl rand -hex 32`), **Production** only; see below |
 
    `SKETCHFAB_TOKEN` is only needed locally, for `pnpm models:fetch`.
 4. **Settings → Functions → Function Region:** also set **São Paulo, Brazil (gru1)**, so the project setting matches what the build already writes.
@@ -46,11 +47,12 @@ The Vercel preset writes these values in `vite.config.ts` (`nitro({ vercel: { fu
 | Setting | Value | Why |
 | --- | --- | --- |
 | `regions` | `["gru1"]` | São Paulo |
-| `maxDuration` | `30` s | Place search can take up to 12 s. MongoDB fails after 10 s (`serverSelectionTimeoutMS`) rather than hanging |
+| `maxDuration` | `60` s | Place search can take up to 12 s and the weekly sync ~10 s; MongoDB fails after 10 s (`serverSelectionTimeoutMS`) rather than hanging |
+| `crons` | `/api/cron/sync-geosites`, `0 6 * * 1` | weekly GEOSSIT sync, Mondays 06:00 UTC |
 | `runtime` | `nodejs24.x` | from `engines` |
 | static `/assets/*` | `cache-control: public, max-age=31536000, immutable` | content-hashed files |
 
-The whole app (SSR plus server functions) runs as one function, `__server` (~3.4 MB). Static files are served from Vercel's CDN.
+The whole app (SSR, server functions, share cards and the sync cron) runs as one function, `__server` (~9 MB). Static files are served from Vercel's CDN.
 
 To check the output locally:
 
@@ -58,6 +60,15 @@ To check the output locally:
 NITRO_PRESET=vercel pnpm build
 cat .vercel/output/functions/__server.func/.vc-config.json   # regions: ["gru1"]
 ```
+
+### Weekly data refresh
+
+Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in Brasília). It runs the same sync as `pnpm db:seed` (`src/features/geosites/sync.server.ts`) and logs one summary line under **Logs**.
+
+- **Auth.** Vercel sends `Authorization: Bearer $CRON_SECRET`. Without `CRON_SECRET` the endpoint answers 401 to everyone, so it can't run open.
+- **Safety.** It writes nothing when GEOSSIT returns fewer than 80% of the stored geosites (a truncated response would otherwise prune the rest) or when more than 10% of the age lookups fail. GEOSSIT pages are retried on server errors.
+- **Run it now:** **Settings → Cron Jobs → Run**, or `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-geosites`.
+- **3D models.** `public/models` isn't on the function's disk, so the cron attaches Sketchfab embeds. Once a CC BY model is self-hosted, teach `modelsFor` about it from a committed list before relying on the cron.
 
 ### After deploying
 
