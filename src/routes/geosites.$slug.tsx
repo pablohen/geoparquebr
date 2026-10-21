@@ -64,7 +64,7 @@ export const Route = createFileRoute("/geosites/$slug")({
 });
 
 function GeositePage() {
-	const { geosite } = Route.useLoaderData();
+	const { geosite, coverOk } = Route.useLoaderData();
 	const search = Route.useSearch();
 	const navigate = Route.useNavigate();
 
@@ -86,6 +86,8 @@ function GeositePage() {
 			<Stack mt="lg">
 				<GeositeDetail
 					geosite={geosite}
+					// The loader already checked the photo; skip a dead link outright.
+					coverOk={coverOk}
 					view={{ tab: search.tab, model: search.model }}
 					onViewChange={(view) =>
 						navigate({

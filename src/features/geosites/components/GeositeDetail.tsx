@@ -17,7 +17,14 @@ import {
 } from "@mantine/core";
 import { ArrowSquareOut, Bone, Cube, Info } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, type ReactNode, Suspense, useState } from "react";
+import {
+	lazy,
+	type ReactNode,
+	Suspense,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { FossilsPanel } from "~/features/geology/components/FossilsPanel";
 import { getGeositeStrata } from "~/features/geology/geology.functions";
 import type { StrataUnit } from "~/features/geology/schemas";
@@ -27,6 +34,7 @@ import {
 	midAge,
 	shade,
 } from "~/features/geology/time-scale";
+import { imageFailed } from "~/lib/image";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
@@ -76,10 +84,13 @@ export function GeositeDetail({
 	view,
 	onViewChange,
 	onSelectGeosite,
+	coverOk = true,
 }: {
 	geosite: Geosite;
 	view: GeositeView;
 	onViewChange: (next: GeositeView) => void;
+	/** False when the server found the GEOSSIT photo unreachable: skip it. */
+	coverOk?: boolean;
 	/** Opens another geosite in place (the map drawer); else nearby ones link to their pages. */
 	onSelectGeosite?: (slug: string) => void;
 }) {
@@ -114,7 +125,11 @@ export function GeositeDetail({
 			</Tabs.List>
 
 			<Tabs.Panel value="overview">
-				<Overview geosite={geosite} onSelectGeosite={onSelectGeosite} />
+				<Overview
+					geosite={geosite}
+					onSelectGeosite={onSelectGeosite}
+					coverOk={coverOk}
+				/>
 			</Tabs.Panel>
 			<Tabs.Panel value="model">
 				<ModelsPanel
@@ -136,14 +151,16 @@ export function GeositeDetail({
 function Overview({
 	geosite,
 	onSelectGeosite,
+	coverOk,
 }: {
 	geosite: Geosite;
 	onSelectGeosite?: (slug: string) => void;
+	coverOk: boolean;
 }) {
 	const [lng, lat] = geosite.location.coordinates;
 	return (
 		<Stack>
-			{geosite.coverImageUrl && (
+			{coverOk && geosite.coverImageUrl && (
 				<CoverImage
 					key={geosite.coverImageUrl}
 					src={geosite.coverImageUrl}
@@ -253,9 +270,16 @@ function Overview({
 /** ~2% of GEOSSIT photo links 404; hide those instead of showing a broken image. */
 function CoverImage({ src, alt }: { src: string; alt: string }) {
 	const [failed, setFailed] = useState(false);
+	const ref = useRef<HTMLImageElement>(null);
+	// A server-rendered photo can fail before hydration, when onError isn't
+	// attached yet; catch that on mount.
+	useEffect(() => {
+		if (ref.current && imageFailed(ref.current)) setFailed(true);
+	}, []);
 	if (failed) return null;
 	return (
 		<Image
+			ref={ref}
 			src={src}
 			alt={alt}
 			h={220}
