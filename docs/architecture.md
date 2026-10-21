@@ -75,6 +75,7 @@ sequenceDiagram
 | `/geoparks` | Brazil's UNESCO Global Geoparks, with designation year, description and GEOSSIT geosite count |
 | `/geoparks/$geoparkId` | one geopark: description, its GEOSSIT geosites (matched by municipality), a link that frames its area on the map, JSON-LD `TouristDestination` |
 | `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
+| `/og/geosites/$slug`, `/og/geoparks/$geoparkId` | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`) |
 | `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
 
 Every path also exists in English under `/en` and in Spanish under `/es` (`/en/geosites/$slug`, `/es/geosites/$slug`). Routes don't declare the prefix: the router's `rewrite` removes it before matching and adds it to links in the page's language (Paraglide's URL strategy), and `src/server.ts` wraps each request in `paraglideMiddleware` so server rendering uses the same locale.
