@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { FOSSILS_INDEX_PATH, genusPath } from "~/features/fossils/seo";
 import { GEOPARKS, geoparkPath } from "~/features/geoparks/geoparks";
 import { GEOPARKS_INDEX_PATH } from "~/features/geoparks/seo";
 import type { GeoparkId } from "~/features/geosites/schemas";
@@ -9,15 +10,20 @@ export const Route = createFileRoute("/sitemap.xml")({
 		handlers: {
 			GET: async () => {
 				// Loaded lazily so the Mongo driver stays out of the client graph.
-				const { listGeositeSlugs } = await import(
-					"~/features/geosites/geosites.server"
-				);
+				const [{ listGeositeSlugs }, { listFossilGenusPages }] =
+					await Promise.all([
+						import("~/features/geosites/geosites.server"),
+						import("~/features/fossils/fossils.server"),
+					]);
 				const geoparks = (Object.keys(GEOPARKS) as GeoparkId[]).map(
 					geoparkPath,
 				);
+				const genera = await listFossilGenusPages();
 				const xml = sitemapXml(await listGeositeSlugs(), [
 					GEOPARKS_INDEX_PATH,
 					...geoparks,
+					FOSSILS_INDEX_PATH,
+					...genera.map((g) => genusPath(g.slug)),
 				]);
 				return new Response(xml, {
 					headers: {

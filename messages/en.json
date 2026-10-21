@@ -91,14 +91,78 @@
 	"filters_no_theme": "No themes",
 	"filters_relevance": "Relevance",
 	"filters_themes": "Themes",
+	"fossils_ages_title": "Ages, as recorded",
+	"fossils_all_genera": "All fossils",
+	"fossils_classification": "Classification (GBIF)",
 	"fossils_credits": "Sources: SGB/CPRM — Fossil Occurrences (OGC API); GBIF.org, with data from the publishing institutions. Each record keeps its own licence.",
+	"fossils_empty": "No fossils indexed yet.",
 	"fossils_error": "Couldn't look up fossil occurrences.",
+	"fossils_genera_here": "Genera recorded here",
+	"fossils_genus_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} genera",
+				"count=*, countPlural=one": "{count} genus",
+				"count=*, countPlural=other": "{count} genera"
+			}
+		}
+	],
+	"fossils_genus_description": "{genus}: fossil genus recorded near geosites in Brazil, according to SGB/CPRM and GBIF.",
+	"fossils_genus_label": "Fossil genus",
+	"fossils_geopark_title": "Fossils",
+	"fossils_geosites_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites",
+				"count=*, countPlural=one": "{count} geosite",
+				"count=*, countPlural=other": "{count} geosites"
+			}
+		}
+	],
+	"fossils_geosites_note": "Records within {radiusKm} km of each geosite. Where each specimen was found is not shown.",
+	"fossils_geosites_title": "Geosites with records",
+	"fossils_group_other": "Other",
 	"fossils_intro": "Fossil occurrences recorded within {radiusKm} km of the geosite.",
+	"fossils_link": "Fossils recorded",
 	"fossils_none": "No occurrences recorded in the databases searched.",
+	"fossils_not_found": "Genus not found",
+	"fossils_page_intro": "Fossil genera recorded within {radiusKm} km of a geosite, according to SGB/CPRM and GBIF. Names follow the GBIF taxonomy.",
+	"fossils_records_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} records",
+				"count=*, countPlural=one": "{count} record",
+				"count=*, countPlural=other": "{count} records"
+			}
+		}
+	],
 	"fossils_show_all": "Show all ({count})",
+	"fossils_source_note": "Sources: SGB/CPRM — Fossil Occurrences; GBIF.org, with data from the publishing institutions. Taxonomy: GBIF Backbone Taxonomy.",
 	"fossils_source_unavailable": "unavailable",
 	"fossils_sources_down": "{sources} currently offline; the list may be incomplete.",
+	"fossils_species_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} species",
+				"count=*, countPlural=one": "{count} species",
+				"count=*, countPlural=other": "{count} species"
+			}
+		}
+	],
+	"fossils_species_none": "The records identify the genus only.",
+	"fossils_species_title": "Species recorded",
+	"fossils_title": "Fossils near geosites",
 	"fossils_top_taxa": "Most frequent taxa",
+	"fossils_units_title": "Geological units, as recorded",
+	"fossils_view_gbif": "View the genus on GBIF",
 	"fossils_view_record": "View record",
 	"geology_at_none": "No mapped unit at this point.",
 	"geology_at_unavailable": "The SGB service is unavailable right now.",

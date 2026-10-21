@@ -15,6 +15,7 @@
 		"lint": "biome check .",
 		"format": "biome check --write .",
 		"db:seed": "tsx --env-file=.env scripts/seed.ts",
+		"db:fossils": "tsx --env-file=.env scripts/fossils.ts",
 		"models:fetch": "tsx --env-file=.env scripts/fetch-models.ts",
 		"test": "vitest run",
 		"test:watch": "vitest",

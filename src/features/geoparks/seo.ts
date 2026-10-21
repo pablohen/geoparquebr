@@ -12,8 +12,8 @@ import type { GeoparkGeosite } from "./schemas";
 
 export const GEOPARKS_INDEX_PATH = "/geoparks";
 
-/** `<meta>` tags shared by both pages. */
-function pageTags(
+/** `<meta>` tags for a standalone page; also used by the fossil pages. */
+export function pageMetaTags(
 	title: string,
 	description: string,
 	path: string,
@@ -39,7 +39,7 @@ function pageTags(
 }
 
 export const geoparkMetaTags = (id: GeoparkId) =>
-	pageTags(
+	pageMetaTags(
 		geoparkIdLabel(id),
 		geoparkAbout(id),
 		geoparkPath(id),
@@ -47,7 +47,7 @@ export const geoparkMetaTags = (id: GeoparkId) =>
 	);
 
 export const geoparksIndexMetaTags = () =>
-	pageTags(m.geoparks_title(), m.geoparks_intro(), GEOPARKS_INDEX_PATH);
+	pageMetaTags(m.geoparks_title(), m.geoparks_intro(), GEOPARKS_INDEX_PATH);
 
 /** schema.org structured data: the geopark and the geosites in it. */
 export function geoparkJsonLd(id: GeoparkId, geosites: GeoparkGeosite[]) {

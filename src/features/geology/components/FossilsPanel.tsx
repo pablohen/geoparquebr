@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { ArrowSquareOut, Warning } from "@phosphor-icons/react";
 import { useState } from "react";
+import { GeositeGenera } from "~/features/fossils/components/GenusLinks";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import { getLocale } from "~/paraglide/runtime.js";
@@ -42,10 +43,10 @@ export function FossilsPanel({ slug }: { slug: string }) {
 				{m.fossils_error()}
 			</Alert>
 		);
-	return <FossilsList data={query.data} />;
+	return <FossilsList slug={slug} data={query.data} />;
 }
 
-function FossilsList({ data }: { data: GeositeFossils }) {
+function FossilsList({ slug, data }: { slug: string; data: GeositeFossils }) {
 	const [shown, setShown] = useState(PAGE);
 	const sources = [data.sgb, data.gbif];
 	const items = sources
@@ -82,6 +83,7 @@ function FossilsList({ data }: { data: GeositeFossils }) {
 					})}
 				</Alert>
 			)}
+			<GeositeGenera slug={slug} />
 
 			{items.length === 0 ? (
 				<Text c="dimmed" size="sm">

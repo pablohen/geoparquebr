@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as FossilsIndexRouteImport } from './routes/fossils.index'
+import { Route as FossilsGenusRouteImport } from './routes/fossils.$genus'
 import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
 import { Route as GeoparksGeoparkIdRouteImport } from './routes/geoparks.$geoparkId'
 import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
@@ -32,6 +34,16 @@ const MyGeositesRoute = MyGeositesRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FossilsIndexRoute = FossilsIndexRouteImport.update({
+  id: '/fossils/',
+  path: '/fossils/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FossilsGenusRoute = FossilsGenusRouteImport.update({
+  id: '/fossils/$genus',
+  path: '/fossils/$genus',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GeoparksIndexRoute = GeoparksIndexRouteImport.update({
@@ -69,8 +81,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
+  '/fossils/': typeof FossilsIndexRoute
   '/geoparks/': typeof GeoparksIndexRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
@@ -80,8 +94,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
+  '/fossils': typeof FossilsIndexRoute
   '/geoparks': typeof GeoparksIndexRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
@@ -92,8 +108,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
+  '/fossils/': typeof FossilsIndexRoute
   '/geoparks/': typeof GeoparksIndexRoute
   '/api/cron/sync-geosites': typeof ApiCronSyncGeositesRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
@@ -105,8 +123,10 @@ export interface FileRouteTypes {
     | '/'
     | '/my-geosites'
     | '/sitemap.xml'
+    | '/fossils/$genus'
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
+    | '/fossils/'
     | '/geoparks/'
     | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
@@ -116,8 +136,10 @@ export interface FileRouteTypes {
     | '/'
     | '/my-geosites'
     | '/sitemap.xml'
+    | '/fossils/$genus'
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
+    | '/fossils'
     | '/geoparks'
     | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
@@ -127,8 +149,10 @@ export interface FileRouteTypes {
     | '/'
     | '/my-geosites'
     | '/sitemap.xml'
+    | '/fossils/$genus'
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
+    | '/fossils/'
     | '/geoparks/'
     | '/api/cron/sync-geosites'
     | '/og/geoparks/$geoparkId'
@@ -139,8 +163,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MyGeositesRoute: typeof MyGeositesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  FossilsGenusRoute: typeof FossilsGenusRoute
   GeoparksGeoparkIdRoute: typeof GeoparksGeoparkIdRoute
   GeositesSlugRoute: typeof GeositesSlugRoute
+  FossilsIndexRoute: typeof FossilsIndexRoute
   GeoparksIndexRoute: typeof GeoparksIndexRoute
   ApiCronSyncGeositesRoute: typeof ApiCronSyncGeositesRoute
   OgGeoparksGeoparkIdRoute: typeof OgGeoparksGeoparkIdRoute
@@ -168,6 +194,20 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fossils/': {
+      id: '/fossils/'
+      path: '/fossils'
+      fullPath: '/fossils/'
+      preLoaderRoute: typeof FossilsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fossils/$genus': {
+      id: '/fossils/$genus'
+      path: '/fossils/$genus'
+      fullPath: '/fossils/$genus'
+      preLoaderRoute: typeof FossilsGenusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/geoparks/': {
@@ -219,8 +259,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MyGeositesRoute: MyGeositesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  FossilsGenusRoute: FossilsGenusRoute,
   GeoparksGeoparkIdRoute: GeoparksGeoparkIdRoute,
   GeositesSlugRoute: GeositesSlugRoute,
+  FossilsIndexRoute: FossilsIndexRoute,
   GeoparksIndexRoute: GeoparksIndexRoute,
   ApiCronSyncGeositesRoute: ApiCronSyncGeositesRoute,
   OgGeoparksGeoparkIdRoute: OgGeoparksGeoparkIdRoute,

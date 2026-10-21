@@ -91,14 +91,78 @@
 	"filters_no_theme": "Nenhum tema",
 	"filters_relevance": "Relevância",
 	"filters_themes": "Temas",
+	"fossils_ages_title": "Idades, como registradas",
+	"fossils_all_genera": "Todos os fósseis",
+	"fossils_classification": "Classificação (GBIF)",
 	"fossils_credits": "Fontes: SGB/CPRM — Ocorrências Fossilíferas (OGC API); GBIF.org, com dados das instituições publicadoras. Cada registro mantém sua licença.",
+	"fossils_empty": "Ainda não há fósseis indexados.",
 	"fossils_error": "Não foi possível consultar as ocorrências fósseis.",
+	"fossils_genera_here": "Gêneros registrados aqui",
+	"fossils_genus_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} gêneros",
+				"count=*, countPlural=one": "{count} gênero",
+				"count=*, countPlural=other": "{count} gêneros"
+			}
+		}
+	],
+	"fossils_genus_description": "{genus}: gênero fóssil registrado perto de geossítios do Brasil, segundo o SGB/CPRM e o GBIF.",
+	"fossils_genus_label": "Gênero fóssil",
+	"fossils_geopark_title": "Fósseis",
+	"fossils_geosites_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios",
+				"count=*, countPlural=one": "{count} geossítio",
+				"count=*, countPlural=other": "{count} geossítios"
+			}
+		}
+	],
+	"fossils_geosites_note": "Registros num raio de {radiusKm} km de cada geossítio. A posição dos exemplares não é mostrada.",
+	"fossils_geosites_title": "Geossítios com registros",
+	"fossils_group_other": "Outros",
 	"fossils_intro": "Ocorrências fósseis registradas num raio de {radiusKm} km do geossítio.",
+	"fossils_link": "Fósseis registrados",
 	"fossils_none": "Nenhuma ocorrência registrada nas bases consultadas.",
+	"fossils_not_found": "Gênero não encontrado",
+	"fossils_page_intro": "Gêneros fósseis com registros num raio de {radiusKm} km de algum geossítio, segundo o SGB/CPRM e o GBIF. Os nomes seguem a taxonomia do GBIF.",
+	"fossils_records_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} registros",
+				"count=*, countPlural=one": "{count} registro",
+				"count=*, countPlural=other": "{count} registros"
+			}
+		}
+	],
 	"fossils_show_all": "Mostrar todas ({count})",
+	"fossils_source_note": "Fontes: SGB/CPRM — Ocorrências Fossilíferas; GBIF.org, com dados das instituições publicadoras. Taxonomia: GBIF Backbone Taxonomy.",
 	"fossils_source_unavailable": "indisponível",
 	"fossils_sources_down": "{sources} fora do ar no momento; a lista pode estar incompleta.",
+	"fossils_species_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} espécies",
+				"count=*, countPlural=one": "{count} espécie",
+				"count=*, countPlural=other": "{count} espécies"
+			}
+		}
+	],
+	"fossils_species_none": "Os registros identificam só o gênero.",
+	"fossils_species_title": "Espécies registradas",
+	"fossils_title": "Fósseis perto dos geossítios",
 	"fossils_top_taxa": "Táxons mais frequentes",
+	"fossils_units_title": "Unidades geológicas, como registradas",
+	"fossils_view_gbif": "Ver o gênero no GBIF",
 	"fossils_view_record": "Ver registro",
 	"geology_at_none": "Nenhuma unidade mapeada neste ponto.",
 	"geology_at_unavailable": "Serviço do SGB indisponível no momento.",

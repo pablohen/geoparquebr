@@ -10,6 +10,8 @@ import {
 } from "@mantine/core";
 import { ArrowLeft, CaretRight, MapTrifold } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { GenusLinkList } from "~/features/fossils/components/GenusLinks";
+import type { GenusLink } from "~/features/fossils/schemas";
 import { CATEGORY_COLORS } from "~/features/geosites/components/categoryStyle";
 import { categoryLabel, geoparkIdLabel } from "~/features/geosites/labels";
 import type { GeoparkId } from "~/features/geosites/schemas";
@@ -19,10 +21,14 @@ import { GEOPARKS } from "../geoparks";
 import { geoparkAbout } from "../labels";
 import type { GeoparkGeosite } from "../schemas";
 
-type Props = { id: GeoparkId; geosites: GeoparkGeosite[] };
+type Props = {
+	id: GeoparkId;
+	geosites: GeoparkGeosite[];
+	genera: GenusLink[];
+};
 
 /** One geopark: what it is, its GEOSSIT geosites and a way onto the map. */
-export function GeoparkView({ id, geosites }: Props) {
+export function GeoparkView({ id, geosites, genera }: Props) {
 	const { designated, area } = GEOPARKS[id];
 	return (
 		<Stack gap="lg">
@@ -121,6 +127,15 @@ export function GeoparkView({ id, geosites }: Props) {
 					{m.geopark_source_note()}
 				</Text>
 			</Stack>
+
+			{genera.length > 0 && (
+				<Stack gap="xs">
+					<Title order={2} size="h4">
+						{m.fossils_geopark_title()}
+					</Title>
+					<GenusLinkList genera={genera} />
+				</Stack>
+			)}
 		</Stack>
 	);
 }

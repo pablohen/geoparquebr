@@ -1,5 +1,6 @@
 import { Anchor, Container, Stack, Title } from "@mantine/core";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { getGeoparkGenera } from "~/features/fossils/fossils.functions";
 import { GeoparkView } from "~/features/geoparks/components/GeoparkView";
 import { geoparkPath } from "~/features/geoparks/geoparks";
 import { getGeoparkGeosites } from "~/features/geoparks/geoparks.functions";
@@ -15,10 +16,11 @@ export const Route = createFileRoute("/geoparks/$geoparkId")({
 	loader: async ({ params }) => {
 		const id = GeoparkIdSchema.safeParse(params.geoparkId);
 		if (!id.success) throw notFound();
-		return {
-			id: id.data,
-			geosites: await getGeoparkGeosites({ data: { id: id.data } }),
-		};
+		const [geosites, genera] = await Promise.all([
+			getGeoparkGeosites({ data: { id: id.data } }),
+			getGeoparkGenera({ data: { id: id.data } }),
+		]);
+		return { id: id.data, geosites, genera };
 	},
 	head: ({ loaderData }) =>
 		loaderData
@@ -55,11 +57,11 @@ export const Route = createFileRoute("/geoparks/$geoparkId")({
 });
 
 function GeoparkPage() {
-	const { id, geosites } = Route.useLoaderData();
+	const { id, geosites, genera } = Route.useLoaderData();
 	return (
 		<Container component="main" size="md" px={{ base: "sm", sm: "md" }} py="md">
 			<PageHeader />
-			<GeoparkView id={id} geosites={geosites} />
+			<GeoparkView id={id} geosites={geosites} genera={genera} />
 		</Container>
 	);
 }
