@@ -74,6 +74,7 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 | `models` | `Model3D[]` | max 20; see [3D models](3d-models.md) |
 | `coverImageUrl` | url? | |
 | `locationIsSensitive` | boolean | coordinates rounded to ~1 km in API responses |
+| `publicLocation` | GeoJSON Point | stored only: `location` rounded when sensitive, written by the sync; client-steerable geo queries use it. Never returned |
 | `source` | object? | `{ system: "geossit", id, url, authors?, updatedAt? }` |
 
 ### Document shape (in MongoDB)
@@ -93,7 +94,8 @@ Created idempotently by `ensureGeositeIndexes()`, which `pnpm db:seed` calls:
 
 | Name | Keys | Purpose |
 | --- | --- | --- |
-| `location_2dsphere` | `{ location: "2dsphere" }` | `$geoNear` + `$geoWithin` viewport query |
+| `location_2dsphere` | `{ location: "2dsphere" }` | server-side lookups on exact points |
+| `public_location_2dsphere` | `{ publicLocation: "2dsphere" }` | `$geoNear` + `$geoWithin` viewport and nearby queries |
 | `slug_unique` | `{ slug: 1 }`, unique | lookups by slug |
 | `geopark_categories` | `{ geoparkId: 1, categories: 1 }` | filtering per geopark and category |
 | `source_unique` | `{ "source.system": 1, "source.id": 1 }`, unique, partial | sync upsert key |
@@ -110,11 +112,11 @@ The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own
   {
     $geoNear: {
       near: { type: "Point", coordinates: bboxCenter(bbox) },
-      key: "location",
+      key: "publicLocation",
       spherical: true,
       distanceField: "distanceMeters",
       query: {
-        location: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
+        publicLocation: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
         categories: { $in: categories }, // when filtered
         relevance,                       // when filtered
         geoparkId,                       // when filtered
@@ -128,6 +130,7 @@ The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own
 ]
 ```
 
+- **Public points only.** Matching and distances use `publicLocation`. On exact coordinates, a tiny box (in or out?) or distances from a few chosen centres would locate a sensitive site to the metre; the integration tests check both.
 - `$geoNear` must be the first stage. It provides the nearest-to-centre ordering and the distance; `$geoWithin` inside its `query` restricts results to the viewport.
 - `bboxPolygon` ([`src/lib/geo.ts`](../src/lib/geo.ts)) densifies the box edges every 1°. MongoDB treats polygon edges as geodesics, which would otherwise bow toward the pole on wide boxes.
 - Only summary fields are projected, so a Brazil-wide view (~320 sites) stays small. The map clusters them client-side.
@@ -142,7 +145,7 @@ This runs a `$text` search sorted by `textScore`, which matches whole stemmed wo
 
 ### Nearby: `findNearbyGeosites`
 
-`$geoNear` from the geosite's **public** point (rounded if sensitive), up to 300 km, shortlists 20 others. `rankNearby` then re-measures each distance between public points, rounds it to 100 m and keeps six. Distances to or from exact sensitive coordinates would let anyone triangulate a protected site from a few pages, so they never leave the server.
+`$geoNear` on `publicLocation` from the geosite's public point, up to 300 km, shortlists 20 others. `rankNearby` then rounds each distance to 100 m and keeps six. Distances to or from exact sensitive coordinates would let anyone triangulate a protected site from a few pages, so they never leave the server.
 
 ### Exact location: `findGeositeLocation`
 

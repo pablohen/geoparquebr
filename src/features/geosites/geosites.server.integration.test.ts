@@ -13,6 +13,7 @@ import {
 	findGeositesInBounds,
 	findNearbyGeosites,
 	geositesCollection,
+	publicPoint,
 	searchGeosites,
 	syncSourcedGeosites,
 } from "./geosites.server";
@@ -83,13 +84,13 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 
 	it("returns only geosites inside the viewport, nearest to the centre first", async () => {
 		const result = await findGeositesInBounds({ bbox: box });
-		// Expected order from an independent haversine on the exact coordinates.
+		// Expected order from an independent haversine on the public coordinates.
 		const centre = bboxCenter(box);
 		const expected = sites
 			.filter((s) => s.slug !== "longe")
 			.map((s) => ({
 				slug: s.slug,
-				d: haversineMeters(centre, s.location.coordinates),
+				d: haversineMeters(centre, publicPoint(s)),
 			}))
 			.sort((x, y) => x.d - y.d);
 		expect(result.map((g) => g.slug)).toEqual(expected.map((e) => e.slug));
@@ -210,5 +211,59 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		expect(await slugs(["cretaceous", "cretaceous"])).toEqual(["centro"]);
 		expect(await slugs(["quaternary", "jurassic"])).toEqual(["centro"]);
 		expect(await slugs(["jurassic", "archean"])).toEqual([]);
+	});
+
+	// Regression: the viewport query used to match and measure on exact
+	// coordinates, so tiny boxes or distances from chosen centres located
+	// sensitive sites to the metre.
+	describe("never reveals a sensitive site's exact location", () => {
+		const exact: [number, number] = [-39.123456, -7.654321];
+		const rounded: [number, number] = [-39.12, -7.65];
+
+		it("doesn't match a box around the exact point that misses the rounded one", async () => {
+			const tiny: [number, number, number, number] = [
+				exact[0] - 0.0005,
+				exact[1] - 0.0005,
+				exact[0] + 0.0005,
+				exact[1] + 0.0005,
+			];
+			expect(await findGeositesInBounds({ bbox: tiny })).toEqual([]);
+		});
+
+		it("matches a box around the rounded point instead", async () => {
+			const aroundRounded: [number, number, number, number] = [
+				rounded[0] - 0.0005,
+				rounded[1] - 0.0005,
+				rounded[0] + 0.0005,
+				rounded[1] + 0.0005,
+			];
+			const result = await findGeositesInBounds({ bbox: aroundRounded });
+			expect(result.map((g) => g.slug)).toEqual(["sensivel"]);
+		});
+
+		it("measures distances to the rounded point", async () => {
+			const aroundExact: [number, number, number, number] = [
+				exact[0] - 0.05,
+				exact[1] - 0.05,
+				exact[0] + 0.05,
+				exact[1] + 0.05,
+			];
+			const [g] = await findGeositesInBounds({ bbox: aroundExact });
+			const centre = bboxCenter(aroundExact);
+			expect(g?.slug).toBe("sensivel");
+			expect(g?.distanceMeters).toBeCloseTo(
+				haversineMeters(centre, rounded),
+				-1,
+			);
+			expect(g?.distanceMeters).toBeGreaterThan(400);
+		});
+
+		it("keeps the stored public point out of responses", async () => {
+			expect(await findGeositeBySlug("sensivel")).not.toHaveProperty(
+				"publicLocation",
+			);
+			const [summary] = await findGeositesInBounds({ bbox: box });
+			expect(summary).not.toHaveProperty("publicLocation");
+		});
 	});
 });

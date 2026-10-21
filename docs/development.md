@@ -114,7 +114,7 @@ docs/                             these docs
 | Blank map, console says "Worker failed to load" | `setWorkerUrl(workerUrl)` is missing or runs after a `Map` is created; see `GeositeMap.tsx` |
 | `"default" is not exported by maplibre-gl` | MapLibre 6 has no default export; use named imports |
 | `Missing required env var MONGODB_URI` | `.env` missing, or the command didn't load it (`db:seed` uses `--env-file`) |
-| `$geoNear requires a 2d or 2dsphere index` | Run `pnpm db:seed`, or create `location_2dsphere` in Atlas |
+| `$geoNear requires a 2d or 2dsphere index` | Run `pnpm db:seed`, which creates `public_location_2dsphere` and fills `publicLocation` |
 | `MongoServerSelectionError` against Atlas | IP not in the Atlas network access list, or a wrong user/password |
 | React "Encountered a script tag" warning | Mantine's `ColorSchemeScript` came back; use `ScriptOnce` (see `__root.tsx`) |
 | React "synchronously unmount a root" errors | drei `<Html>` inside the Canvas; move the overlay outside the Canvas |

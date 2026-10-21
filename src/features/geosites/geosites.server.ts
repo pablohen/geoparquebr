@@ -22,6 +22,12 @@ export type GeositeDoc = Omit<Geosite, "id" | "createdAt" | "updatedAt"> & {
 	_id: ObjectId;
 	createdAt: Date;
 	updatedAt: Date;
+	/**
+	 * `location` as clients may see it (rounded for sensitive sites). Every
+	 * query a client can steer (viewport, nearby) runs on this, so neither
+	 * which sites match nor their distances depend on exact coordinates.
+	 */
+	publicLocation: Geosite["location"];
 };
 
 export const GEOSITES_COLLECTION = "geosites";
@@ -35,6 +41,10 @@ export async function geositesCollection(): Promise<Collection<GeositeDoc>> {
 export async function ensureGeositeIndexes(col: Collection<GeositeDoc>) {
 	await col.createIndexes([
 		{ key: { location: "2dsphere" }, name: "location_2dsphere" },
+		{
+			key: { publicLocation: "2dsphere" },
+			name: "public_location_2dsphere",
+		},
 		{ key: { slug: 1 }, name: "slug_unique", unique: true },
 		{ key: { geoparkId: 1, categories: 1 }, name: "geopark_categories" },
 		{
@@ -89,7 +99,11 @@ export async function syncSourcedGeosites(
 				updateOne: {
 					filter: { "source.system": system, "source.id": g.source.id },
 					update: {
-						$set: { ...g, updatedAt: now },
+						$set: {
+							...g,
+							publicLocation: { type: "Point", coordinates: publicPoint(g) },
+							updatedAt: now,
+						},
 						$setOnInsert: { createdAt: now },
 						...(unset.length > 0 && {
 							$unset: Object.fromEntries(unset.map((k) => [k, ""])),
@@ -131,18 +145,15 @@ export function publicPoint(doc: {
 
 function toDto<T extends GeositeDoc>(
 	doc: T,
-): Omit<T, "_id" | "createdAt" | "updatedAt"> & {
+): Omit<T, "_id" | "createdAt" | "updatedAt" | "publicLocation"> & {
 	id: string;
 	createdAt: string;
 	updatedAt: string;
 } {
-	const { _id, createdAt, updatedAt, ...rest } = doc;
-	const location = rest.locationIsSensitive
-		? { ...rest.location, coordinates: obfuscate(rest.location.coordinates) }
-		: rest.location;
+	const { _id, createdAt, updatedAt, publicLocation: _, ...rest } = doc;
 	return {
 		...rest,
-		location,
+		location: { ...rest.location, coordinates: publicPoint(rest) },
 		id: _id.toHexString(),
 		createdAt: createdAt.toISOString(),
 		updatedAt: updatedAt.toISOString(),
@@ -189,6 +200,8 @@ export function ageOverlaps(range: AgeRange): Filter<GeositeDoc> {
  *
  * `$geoNear` (first stage, needs the 2dsphere index) gives the distance and
  * the ordering; its `query` restricts results to the box via `$geoWithin`.
+ * Both use `publicLocation`: on exact coordinates, tiny boxes or distances
+ * from chosen centres would locate a sensitive site to the metre.
  * Only summary fields are returned; the drawer fetches the full record.
  */
 export async function findGeositesInBounds(
@@ -199,7 +212,7 @@ export async function findGeositesInBounds(
 	const col = await geositesCollection();
 
 	const query: Filter<GeositeDoc> = {
-		location: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
+		publicLocation: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
 		...(categories?.length && { categories: { $in: categories } }),
 		...(relevance && { relevance }),
 		...(geoparkId && { geoparkId }),
@@ -211,7 +224,7 @@ export async function findGeositesInBounds(
 			{
 				$geoNear: {
 					near: { type: "Point", coordinates: bboxCenter(bbox) },
-					key: "location",
+					key: "publicLocation",
 					spherical: true,
 					distanceField: "distanceMeters",
 					query,
@@ -222,12 +235,10 @@ export async function findGeositesInBounds(
 		])
 		.toArray();
 
-	return docs.map(({ _id, location, ...rest }) => ({
+	return docs.map(({ _id, ...rest }) => ({
 		...rest,
 		id: _id.toHexString(),
-		location: rest.locationIsSensitive
-			? { ...location, coordinates: obfuscate(location.coordinates) }
-			: location,
+		location: { ...rest.location, coordinates: publicPoint(rest) },
 	}));
 }
 
@@ -355,13 +366,13 @@ export async function findNearbyGeosites(
 	);
 	if (!doc) return null;
 	const origin = publicPoint(doc);
-	// $geoNear only shortlists; rankNearby re-measures on public coordinates.
+	// $geoNear (on public points) shortlists; rankNearby rounds the distances.
 	const candidates = await col
 		.aggregate<SummaryDoc>([
 			{
 				$geoNear: {
 					near: { type: "Point", coordinates: origin },
-					key: "location",
+					key: "publicLocation",
 					spherical: true,
 					distanceField: "distanceMeters",
 					maxDistance: NEARBY_MAX_METERS,
