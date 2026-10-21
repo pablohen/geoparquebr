@@ -67,7 +67,7 @@ export const getGeositeFossils = createServerFn({ method: "GET" })
 		const [sgb, gbif] = await Promise.all([
 			settle(
 				() =>
-					cached(`fossils:sgb:v2:${data.slug}`, WEEK_MS, () =>
+					cached(`fossils:sgb:v3:${data.slug}`, WEEK_MS, () =>
 						sgbFossilsNear(point, bboxAround(point, radiusKm), radiusKm),
 					),
 				sensitive,
