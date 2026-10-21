@@ -45,7 +45,10 @@ function catalogGuard(): Plugin {
 		apply: "build",
 		buildEnd() {
 			const index = readFileSync("src/paraglide/messages/_index.js", "utf8");
-			for (const locale of ["pt-BR", "en"]) {
+			const { locales } = JSON.parse(
+				readFileSync("project.inlang/settings.json", "utf8"),
+			);
+			for (const locale of locales as string[]) {
 				const missing = missingMessages(
 					JSON.parse(readFileSync(`messages/${locale}.json`, "utf8")),
 					index,

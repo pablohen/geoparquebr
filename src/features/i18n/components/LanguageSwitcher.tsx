@@ -1,30 +1,46 @@
-import { Button } from "@mantine/core";
-import { Translate } from "@phosphor-icons/react";
+import { Button, Menu } from "@mantine/core";
+import { Check, Translate } from "@phosphor-icons/react";
 import { useLocation } from "@tanstack/react-router";
+import { LOCALE_CODES, LOCALE_NAMES } from "~/lib/i18n";
 import { m } from "~/paraglide/messages.js";
-import { getLocale, localizeHref } from "~/paraglide/runtime.js";
+import { getLocale, locales, localizeHref } from "~/paraglide/runtime.js";
 
 /**
- * Same page and search params in the other language. A plain link, so the
+ * The same page and search params in another language. Plain links, so the
  * page reloads and every message (including server-rendered ones) switches.
  */
 export function LanguageSwitcher() {
 	// The router's location is the internal, locale-free href.
 	const { href } = useLocation();
-	const other = getLocale() === "en" ? "pt-BR" : "en";
+	const current = getLocale();
 	return (
-		<Button
-			component="a"
-			href={localizeHref(href, { locale: other })}
-			hrefLang={other}
-			variant="default"
-			size="sm"
-			px="xs"
-			leftSection={<Translate size={16} />}
-			aria-label={m.language_switch_aria()}
-			style={{ flex: "none" }}
-		>
-			{m.language_switch_short()}
-		</Button>
+		<Menu position="bottom-end" withinPortal>
+			<Menu.Target>
+				<Button
+					variant="default"
+					size="sm"
+					px="xs"
+					leftSection={<Translate size={16} />}
+					aria-label={m.language_menu_aria()}
+					style={{ flex: "none" }}
+				>
+					{LOCALE_CODES[current]}
+				</Button>
+			</Menu.Target>
+			<Menu.Dropdown>
+				{locales.map((locale) => (
+					<Menu.Item
+						key={locale}
+						component="a"
+						href={localizeHref(href, { locale })}
+						hrefLang={locale}
+						lang={locale}
+						rightSection={locale === current ? <Check size={14} /> : null}
+					>
+						{LOCALE_NAMES[locale]}
+					</Menu.Item>
+				))}
+			</Menu.Dropdown>
+		</Menu>
 	);
 }

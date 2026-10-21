@@ -153,7 +153,9 @@ describe("sitemapXml", () => {
 		expect(xml).toContain(
 			"<loc>https://geoparquebr.vercel.app/en/geosites/caverna-agua-suja</loc><xhtml:link",
 		);
-		expect(xml.match(/<url>/g)).toHaveLength(6);
+		// Three pages × three languages.
+		expect(xml.match(/<url>/g)).toHaveLength(9);
+		expect(xml).toContain("<loc>https://geoparquebr.vercel.app/es/</loc>");
 		expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
 	});
 
@@ -192,6 +194,26 @@ describe("in English", () => {
 		expect(geositeMetaTags(base)).toContainEqual({
 			property: "og:locale",
 			content: "en_US",
+		});
+	});
+});
+
+describe("in Spanish", () => {
+	afterEach(() => overwriteGetLocale(() => baseLocale));
+
+	it("links to the /es page and emits one og:locale", () => {
+		overwriteGetLocale(() => "es");
+		expect(geositeMeta(base).url).toBe(
+			"https://geoparquebr.vercel.app/es/geosites/pedra-cariri",
+		);
+		// TanStack's head keeps one meta per property; repeats would collapse.
+		const locales = geositeMetaTags(base).filter(
+			(t) => "property" in t && t.property?.startsWith("og:locale"),
+		);
+		expect(locales).toEqual([{ property: "og:locale", content: "es_LA" }]);
+		expect(geositeJsonLd(base)).toMatchObject({
+			inLanguage: "es",
+			keywords: "Paleontológico",
 		});
 	});
 });

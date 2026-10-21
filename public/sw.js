@@ -9,7 +9,7 @@
  *
  * Bump VERSION to drop every cache on the next visit.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHES = {
 	shell: `shell-${VERSION}`,
 	assets: `assets-${VERSION}`,
@@ -80,7 +80,7 @@ self.addEventListener("fetch", (event) => {
  * Map URLs carry the viewport and must match exactly (handled above).
  */
 async function offlinePage(url) {
-	if (/^(\/en)?\/geosites\//.test(url.pathname)) {
+	if (/^(\/(en|es))?\/geosites\//.test(url.pathname)) {
 		const cache = await caches.open(CACHES.pages);
 		const copy = await cache.match(url.pathname, { ignoreSearch: true });
 		if (copy) return copy;

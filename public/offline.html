@@ -43,14 +43,20 @@
 			<button type="button" onclick="location.reload()">Tentar de novo</button>
 		</main>
 		<script>
-			// Served in place of whatever page was requested: English under /en.
-			if (/^\/en(\/|$)/.test(location.pathname)) {
-				document.documentElement.lang = "en";
-				document.title = "Offline — GeoparqueBR";
-				document.querySelector("h1").textContent = "You're offline";
-				document.querySelector("p").textContent =
-					"This page hasn't been saved on this device yet. Geosites you've opened before are still available offline.";
-				document.querySelector("button").textContent = "Try again";
+			// Served in place of whatever page was requested: English under /en,
+			// Spanish under /es.
+			const copy = {
+				en: ["Offline", "You're offline", "This page hasn't been saved on this device yet. Geosites you've opened before are still available offline.", "Try again"],
+				es: ["Sin conexión", "Sin conexión", "Esta página todavía no se guardó en el dispositivo. Los geositios que ya abriste siguen disponibles sin conexión.", "Intentar de nuevo"],
+			};
+			const lang = location.pathname.match(/^\/(en|es)(\/|$)/)?.[1];
+			if (lang) {
+				const [title, heading, text, retry] = copy[lang];
+				document.documentElement.lang = lang;
+				document.title = `${title} — GeoparqueBR`;
+				document.querySelector("h1").textContent = heading;
+				document.querySelector("p").textContent = text;
+				document.querySelector("button").textContent = retry;
 			}
 		</script>
 	</body>

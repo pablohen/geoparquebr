@@ -50,18 +50,13 @@ export function geositeMeta(
 	};
 }
 
-/** `og:locale` for the current locale, plus the other one as an alternate. */
+/**
+ * `og:locale` for the current locale. No `og:locale:alternate`: TanStack's
+ * head keeps one meta per property, so repeats would collapse into one, and
+ * the hreflang links already list every language.
+ */
 export function ogLocaleTags() {
-	const current = getLocale();
-	return [
-		{ property: "og:locale", content: OG_LOCALES[current] },
-		...locales
-			.filter((l) => l !== current)
-			.map((l) => ({
-				property: "og:locale:alternate",
-				content: OG_LOCALES[l],
-			})),
-	];
+	return [{ property: "og:locale", content: OG_LOCALES[getLocale()] }];
 }
 
 /** `<meta>` tags for TanStack Router's `head()`. */
