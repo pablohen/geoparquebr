@@ -6,6 +6,7 @@ import {
 	Center,
 	Group,
 	Loader,
+	Menu,
 	Paper,
 	Stack,
 	Text,
@@ -17,6 +18,7 @@ import {
 	ArrowSquareOut,
 	ArrowUp,
 	Crosshair,
+	DownloadSimple,
 	ListNumbers,
 	Printer,
 	Trash,
@@ -29,6 +31,7 @@ import { ShareButton } from "~/features/geosites/components/ShareButton";
 import { geoparkIdLabel } from "~/features/geosites/labels";
 import { absoluteUrl } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
+import { downloadFile, type ExportStop, tripGpx, tripKml } from "../export";
 import {
 	googleMapsTripUrls,
 	legMeters,
@@ -121,6 +124,7 @@ export function TripView() {
 						>
 							{m.guide_open()}
 						</Button>
+						<ExportMenu trip={trip} />
 						<ShareButton
 							url={absoluteUrl(
 								`/trip?stops=${trip.map((s) => s.slug).join(",")}`,
@@ -193,6 +197,49 @@ export function TripView() {
 				</>
 			)}
 		</Stack>
+	);
+}
+
+/** "Baixar para GPS": the trip as a GPX or KML file, built on the device. */
+function ExportMenu({ trip }: { trip: TripStop[] }) {
+	const save = (format: "gpx" | "kml") => {
+		const stops: ExportStop[] = trip.map((s) => ({
+			name: s.name,
+			point: s.point,
+			description: [
+				`${s.municipality} – ${s.state}`,
+				s.approximate ? m.trip_export_approximate() : undefined,
+			]
+				.filter(Boolean)
+				.join(". "),
+			url: absoluteUrl(`/geosites/${s.slug}`),
+		}));
+		const title = m.trip_title();
+		if (format === "gpx")
+			downloadFile("roteiro.gpx", "application/gpx+xml", tripGpx(title, stops));
+		else
+			downloadFile(
+				"roteiro.kml",
+				"application/vnd.google-earth.kml+xml",
+				tripKml(title, stops),
+			);
+	};
+	return (
+		<Menu position="bottom-start" withinPortal>
+			<Menu.Target>
+				<Button
+					size="xs"
+					variant="default"
+					leftSection={<DownloadSimple size={14} />}
+				>
+					{m.trip_export()}
+				</Button>
+			</Menu.Target>
+			<Menu.Dropdown>
+				<Menu.Item onClick={() => save("gpx")}>{m.trip_export_gpx()}</Menu.Item>
+				<Menu.Item onClick={() => save("kml")}>{m.trip_export_kml()}</Menu.Item>
+			</Menu.Dropdown>
+		</Menu>
 	);
 }
 
