@@ -213,6 +213,19 @@ The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. It's rebu
 | `updatedAt` | Date | |
 
 Index: `geosites.slug` (genera near a geosite or geopark). **No coordinates are stored**: a genus page names geosites, never where a specimen was found, so sensitive sites stay as private as on their own page. 
+## Collection: `geosite_changes`
+
+What each GEOSSIT sync changed, for "Novidades" (`/news`) and its RSS feed. `syncGeosites` reads the stored geosites before writing and compares them with the import (`diffGeosites` in [`src/features/news/changes.ts`](../src/features/news/changes.ts)), matched by GEOSSIT id:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `at` | Date | when the sync ran |
+| `added` | `{ slug, name }[]` | new in GEOSSIT |
+| `changed` | `{ slug, name, fields }[]` | `fields` from `CHANGE_FIELDS`: name, description, location, municipality, categories, relevance, scores, degradationRisk, geology, geologicAge, geopark, photo |
+| `removed` | `{ name }[]` | gone from GEOSSIT (no page any more) |
+
+Only syncs with changes are stored, and the latest 52 are kept. A first import into an empty database isn't recorded. Fields are compared as canonical JSON (sorted keys, no empty values; categories as a set), so a reordered record isn't a change. Internal fields (models, `updatedAt`) are ignored. A location change is listed without coordinates. Index: `at`.
+
 ### Collection: `fossil_sites`
 
 One document per geosite: `_id` (the geosite slug), `records` (`{ source, match, unit?, age? }[]`, the matched GBIF genus per occurrence), `unmatchedNames` (recorded names with no GBIF genus, for review) and `refreshedAt`. Index: `refreshedAt`.

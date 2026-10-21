@@ -70,7 +70,7 @@ cat .vercel/output/functions/__server.func/.vc-config.json   # regions: ["gru1"]
 
 ### Weekly data refresh
 
-Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in Brasília). It runs the same sync as `pnpm db:seed` (`src/features/geosites/sync.server.ts`) and logs one summary line under **Logs**.
+Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in Brasília). It runs the same sync as `pnpm db:seed` (`src/features/geosites/sync.server.ts`) and logs one summary line under **Logs**. What it added, changed or removed is recorded for the "Novidades" page (`/news`, RSS at `/news.xml`).
 
 - **Auth.** Vercel sends `Authorization: Bearer $CRON_SECRET`. Without `CRON_SECRET` the endpoint answers 401 to everyone, so it can't run open.
 - **Safety.** It writes nothing when GEOSSIT returns fewer than 80% of the stored geosites (a truncated response would otherwise prune the rest) or when more than 10% of the age lookups fail. GEOSSIT pages are retried on server errors.
