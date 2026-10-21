@@ -92,7 +92,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 
 ## Pages, sharing and offline
 
-- **Routes.** `/` is the map explorer. `/geosites/$slug` is the indexable page for one geosite, server-rendered, with Open Graph, Twitter and JSON-LD built in `src/features/geosites/seo.ts`. `/sitemap.xml` is a server route. The public origin is `SITE_URL` in `src/lib/site.ts`.
+- **Routes.** `/` is the map explorer. `/geoparks` and `/geoparks/$geoparkId` are the geopark pages (`src/features/geoparks/`); designation years and map areas live in `geoparks.ts`, descriptions in messages. `/geosites/$slug` is the indexable page for one geosite, server-rendered, with Open Graph, Twitter and JSON-LD built in `src/features/geosites/seo.ts`. `/sitemap.xml` is a server route. The public origin is `SITE_URL` in `src/lib/site.ts`.
 - **Share images.** Only use a geosite's photo when `getGeositePage` confirms it loads, since about 2% of GEOSSIT links are dead; otherwise use `/og-default.png`.
 - **Service worker** (`public/sw.js`, registered in production only). Bump `VERSION` whenever its caching rules or page paths change. `/offline.html` switches language under `/en` and `/es`. Keep `/assets/*` cache-first (content-hashed), pages and `/_serverFn/*` network-first, and map tiles stale-while-revalidate.
 - **Start URL.** The manifest `start_url` must be the default-viewport URL (`/?bbox=…`); `manifest.test.ts` keeps it in sync with `DEFAULT_BBOX`. A redirect (`/` → `/?bbox=…`) can't be served offline.

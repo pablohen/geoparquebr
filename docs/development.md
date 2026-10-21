@@ -91,7 +91,8 @@ src/
 │   ├── model-catalog.server.ts   curated 3D models and where they attach (server-only)
 │   ├── geosites.functions.ts     createServerFn RPCs
 │   └── components/               Explorer, List, LocationForm, Map, Drawer, ModelViewer, SketchfabEmbed
-├── features/i18n/components/     LanguageSwitcher
+├── features/geoparks/           geopark facts (geoparks.ts), queries, pages
+├── features/i18n/components/     LanguageSwitcher, PageHeader
 ├── lib/db.server.ts              pooled MongoClient (cached on globalThis for HMR)
 ├── lib/i18n.ts                   locale helpers: localized URLs, hreflang, og:locale
 ├── paraglide/                    compiled messages (generated, git-ignored)
