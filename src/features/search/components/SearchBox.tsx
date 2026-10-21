@@ -7,8 +7,17 @@ import {
 	Text,
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
-import { MagnifyingGlass, MapPin, Mountains } from "@phosphor-icons/react";
+import {
+	MagnifyingGlass,
+	MapPin,
+	MapTrifold,
+	Mountains,
+} from "@phosphor-icons/react";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { GEOPARKS } from "~/features/geoparks/geoparks";
+import { matchGeoparks } from "~/features/geoparks/search";
+import { geoparkIdLabel } from "~/features/geosites/labels";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
@@ -20,12 +29,14 @@ type Props = {
 	onSelectPlace: (place: Place) => void;
 };
 
-/** Option values are prefixed so one list can carry both kinds. */
+/** Option values are prefixed so one list can carry every kind. */
+const GEOPARK = "geopark:";
 const GEOSITE = "geosite:";
 const PLACE = "place:";
 
 export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	const isMobile = useIsMobile();
+	const navigate = useNavigate();
 	const [value, setValue] = useState("");
 	const [q] = useDebouncedValue(value.trim(), 250);
 	const enabled = q.length >= 2;
@@ -41,7 +52,16 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 
 	const geosites = geositeResults.data ?? [];
 	const places = placeResults.data ?? [];
+	// Matched locally, so they show before the server answers.
+	const geoparks = enabled ? matchGeoparks(q) : [];
 	const data = [
+		{
+			group: m.search_group_geoparks(),
+			items: geoparks.map((id) => ({
+				value: `${GEOPARK}${id}`,
+				label: geoparkIdLabel(id),
+			})),
+		},
 		{
 			group: m.search_group_geosites(),
 			items: geosites.map((g) => ({
@@ -56,6 +76,10 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	].filter((g) => g.items.length > 0);
 
 	const subtitle = new Map<string, string>([
+		...geoparks.map((id): [string, string] => [
+			`${GEOPARK}${id}`,
+			m.geopark_designated({ year: GEOPARKS[id].designated }),
+		]),
 		...geosites.map((g): [string, string] => [
 			`${GEOSITE}${g.slug}`,
 			`${g.municipality} – ${g.state}`,
@@ -67,14 +91,16 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	]);
 
 	const renderOption: SelectProps["renderOption"] = ({ option }) => {
-		const isGeosite = option.value.startsWith(GEOSITE);
+		const icon = option.value.startsWith(GEOPARK) ? (
+			<MapTrifold size={16} weight="duotone" />
+		) : option.value.startsWith(GEOSITE) ? (
+			<Mountains size={16} weight="duotone" />
+		) : (
+			<MapPin size={16} />
+		);
 		return (
 			<Group gap="xs" wrap="nowrap">
-				{isGeosite ? (
-					<Mountains size={16} weight="duotone" />
-				) : (
-					<MapPin size={16} />
-				)}
+				{icon}
 				<Stack gap={0}>
 					<Text size="sm">{option.label}</Text>
 					<Text size="xs" c="dimmed">
@@ -114,7 +140,12 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			}}
 			onChange={(selected) => {
 				if (!selected) return;
-				if (selected.startsWith(GEOSITE))
+				if (selected.startsWith(GEOPARK))
+					navigate({
+						to: "/geoparks/$geoparkId",
+						params: { geoparkId: selected.slice(GEOPARK.length) },
+					});
+				else if (selected.startsWith(GEOSITE))
 					onSelectGeosite(selected.slice(GEOSITE.length));
 				else {
 					const place = places.find((p) => `${PLACE}${p.id}` === selected);
