@@ -215,6 +215,20 @@ function Overview({
 									})}
 								</Text>
 							)}
+							{geosite.geologicAge.reference && (
+								<Text size="xs" c="dimmed" mt={2}>
+									{m.detail_age_reference()}{" "}
+									<Anchor
+										href={geosite.geologicAge.reference.url}
+										target="_blank"
+										rel="noreferrer"
+										size="xs"
+									>
+										{geosite.geologicAge.reference.label}{" "}
+										<ArrowSquareOut size={12} />
+									</Anchor>
+								</Text>
+							)}
 						</Row>
 					)}
 					<Row label={m.detail_coordinates()}>

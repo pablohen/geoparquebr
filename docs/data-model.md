@@ -24,7 +24,9 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 1. If the geosite's own text names a unit ("…da Formacao Santana…") that the map shows within 5 km, use that unit.
 2. Otherwise use the unit(s) under the point (~50 m box), on the most detailed map SGB has there (1:25k → 1:1M).
 
-`mapScale` records the map's scale, and the UI labels the result "Rocha mapeada no local" with that scale. At 1:1M it is the bedrock at the point, which can differ from what a geosite showcases (Pedra Cariri's point falls on Archean basement). "0–0 Ma" placeholders on some units are ignored. Lookups are cached in `api_cache` for 180 days; if more than 10% fail, the seed stops before writing anything, so a SGB outage can't wipe stored ages.
+`mapScale` records the map's scale, and the UI labels the result "Rocha mapeada no local" with that scale. At 1:1M it is the bedrock at the point, which can differ from what a geosite showcases (Pedra Cariri's point falls on Archean basement).
+
+3. A **curated age** in [`age-catalog.server.ts`](../src/features/geosites/age-catalog.server.ts) replaces both. Entries are keyed by GEOSSIT id, carry a published `reference` (shown as the source in the overview) and no `mapScale`. Add one only with a source that dates the unit the geosite showcases; Pedra Cariri is the first. "0–0 Ma" placeholders on some units are ignored. Lookups are cached in `api_cache` for 180 days; if more than 10% fail, the seed stops before writing anything, so a SGB outage can't wipe stored ages.
 
 ### Field mapping
 
@@ -69,7 +71,7 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 | `scores` | object? | `{ scientific, tourism, didactic, vulnerability }`, integers 0–400 |
 | `degradationRisk` | enum? | `low`, `medium`, `high` |
 | `geology` | object? | `{ setting?, province? }` |
-| `geologicAge` | object? | `period`, `formation?`, `minMa?`, `maxMa?`, `mapScale?`; derived from SGB's map at seed time (see above) |
+| `geologicAge` | object? | `period`, `formation?`, `minMa?`, `maxMa?`, `mapScale?`, `reference?`; derived from SGB's map at seed time, or curated with a source (see above) |
 | `location` | GeoJSON Point | `{ type: "Point", coordinates: [lng, lat] }` |
 | `models` | `Model3D[]` | max 20; see [3D models](3d-models.md) |
 | `coverImageUrl` | url? | |

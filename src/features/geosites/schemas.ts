@@ -109,6 +109,10 @@ export const GeologicAgeSchema = z
 		 * the bedrock there, which may not be what the geosite showcases.
 		 */
 		mapScale: z.number().int().positive().optional(),
+		/** Set for curated ages (`age-catalog.server.ts`): the published source. */
+		reference: z
+			.object({ label: z.string().min(1).max(300), url: z.url() })
+			.optional(),
 	})
 	.refine(
 		(a) => a.minMa === undefined || a.maxMa === undefined || a.minMa <= a.maxMa,

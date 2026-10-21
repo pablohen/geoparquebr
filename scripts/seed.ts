@@ -7,6 +7,7 @@
  * Run `pnpm models:fetch` first to self-host CC BY models instead of embedding them.
  */
 
+import { curatedAge } from "~/features/geosites/age-catalog.server";
 import { withGeologicAges } from "~/features/geosites/geologic-age.server";
 import {
 	ensureGeositeIndexes,
@@ -44,6 +45,8 @@ if (aged.failed > geosites.length * 0.1)
 const withModels = aged.geosites.map((g) => ({
 	...g,
 	source: g.source ?? raise(`geosite ${g.slug} has no source`),
+	// A curated, sourced age beats the one read off the map at the point.
+	geologicAge: (g.source && curatedAge(g.source)) ?? g.geologicAge,
 	models: modelsFor({ source: g.source, categories: g.categories }),
 }));
 
