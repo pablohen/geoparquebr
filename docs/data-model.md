@@ -101,7 +101,7 @@ Created idempotently by `ensureGeositeIndexes()`, which `pnpm db:seed` calls:
 | `slug_unique` | `{ slug: 1 }`, unique | lookups by slug |
 | `geopark_categories` | `{ geoparkId: 1, categories: 1 }` | filtering per geopark and category |
 | `source_unique` | `{ "source.system": 1, "source.id": 1 }`, unique, partial | sync upsert key |
-| `text_search` | text on `name` (10), `municipality` (5), `description` (1); Portuguese | header search |
+| `text_search` | text on `name` (10), `municipality` (5), `description` (1); `default_language: "none"` (no stemming: the Portuguese stemmer turned "serido" into "ser"); `ensureGeositeIndexes` rebuilds an index built with another language | header search |
 
 The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own TTL index on `expiresAt`, created on first use.
 
@@ -143,7 +143,7 @@ The `api_cache` collection (see [geology lookups](#geology-lookups)) has its own
 
 ### Search: `searchGeosites`
 
-This runs a `$text` search sorted by `textScore`, which matches whole stemmed words and is diacritic-insensitive. When that returns fewer than `limit` results, they're topped up with a case-insensitive, accent-stripped substring match on name, municipality and abstract, so partial input like "ptero" works. The query is regex-escaped. Place search (Photon/OSM) is a separate server function, so it never slows down geosite results.
+This runs a `$text` search sorted by `textScore`, which matches whole, unstemmed words and is diacritic-insensitive. When that returns fewer than `limit` results, they're topped up with a case-insensitive, accent-stripped substring match on name, municipality and abstract, so partial input like "ptero" works. The query is regex-escaped. Place search (Photon/OSM) is a separate server function, so it never slows down geosite results.
 
 ### Nearby: `findNearbyGeosites`
 

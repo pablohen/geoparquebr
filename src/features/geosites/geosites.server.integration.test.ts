@@ -152,7 +152,45 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		);
 	});
 
-	it("searches by whole words (stemmed) and by partial input", async () => {
+	// Regression: the Portuguese stemmer turned "serido" into "ser" ("to be"),
+	// so every description with the verb outranked the Seridó geosites.
+	it("doesn't stem queries into unrelated common words", async () => {
+		await syncSourcedGeosites(await geositesCollection(), "geossit", [
+			...sites,
+			geosite(6, "canion-dos-apertados", [-36.5, -6.3], {
+				name: "Canion dos Apertados",
+				description: "Um dos geossitios do Geoparque Serido.",
+			}),
+			geosite(7, "caverna-qualquer", [-36.6, -6.4], {
+				name: "Caverna Qualquer",
+				description: "Atributos da natureza que podem ser vistos aqui.",
+			}),
+		]);
+		expect((await searchGeosites("serido")).map((g) => g.slug)).toEqual([
+			"canion-dos-apertados",
+		]);
+		expect((await searchGeosites("Seridó")).map((g) => g.slug)).toEqual([
+			"canion-dos-apertados",
+		]);
+		// Back to the shared fixture for the tests that follow.
+		await syncSourcedGeosites(await geositesCollection(), "geossit", sites);
+	});
+
+	it("replaces an existing stemmed text index", async () => {
+		const col = await geositesCollection();
+		await col.dropIndex("text_search");
+		await col.createIndex(
+			{ name: "text", municipality: "text", description: "text" },
+			{ name: "text_search", default_language: "portuguese" },
+		);
+		await ensureGeositeIndexes(col);
+		const index = (await col.listIndexes().toArray()).find(
+			(i) => i.name === "text_search",
+		);
+		expect(index?.default_language).toBe("none");
+	});
+
+	it("searches by whole words and by partial input", async () => {
 		expect((await searchGeosites("pterossauro")).map((g) => g.slug)).toEqual([
 			"centro",
 		]);

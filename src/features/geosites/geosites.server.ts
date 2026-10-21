@@ -37,8 +37,31 @@ export async function geositesCollection(): Promise<Collection<GeositeDoc>> {
 	return db.collection<GeositeDoc>(GEOSITES_COLLECTION);
 }
 
+/**
+ * The search box's text index. No stemming (`default_language: "none"`):
+ * MongoDB's Portuguese stemmer cut "serido" down to "ser" ("to be"), which
+ * matches nearly every description. Partial and plural input is covered by
+ * the substring top-up in `searchGeosites`. Diacritic-insensitive (v3).
+ */
+const TEXT_INDEX = {
+	key: { name: "text", municipality: "text", description: "text" },
+	name: "text_search",
+	weights: { name: 10, municipality: 5, description: 1 },
+	default_language: "none",
+} as const;
+
 /** Idempotent; run from `scripts/seed.ts` or a deploy hook, not per request. */
 export async function ensureGeositeIndexes(col: Collection<GeositeDoc>) {
+	// An index can't change options in place: drop a text index built with
+	// another language (the old stemmed one) so it's rebuilt below.
+	// listIndexes fails while the collection doesn't exist yet (a first seed).
+	const indexes = await col
+		.listIndexes()
+		.toArray()
+		.catch(() => []);
+	const existing = indexes.find((i) => i.name === TEXT_INDEX.name);
+	if (existing && existing.default_language !== TEXT_INDEX.default_language)
+		await col.dropIndex(TEXT_INDEX.name);
 	await col.createIndexes([
 		{ key: { location: "2dsphere" }, name: "location_2dsphere" },
 		{
@@ -53,13 +76,7 @@ export async function ensureGeositeIndexes(col: Collection<GeositeDoc>) {
 			unique: true,
 			partialFilterExpression: { "source.id": { $exists: true } },
 		},
-		{
-			// One text index per collection; diacritic-insensitive (v3).
-			key: { name: "text", municipality: "text", description: "text" },
-			name: "text_search",
-			weights: { name: 10, municipality: 5, description: 1 },
-			default_language: "portuguese",
-		},
+		{ ...TEXT_INDEX },
 	]);
 }
 
@@ -247,8 +264,8 @@ const stripAccents = (s: string) =>
 	s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
 
 /**
- * Free-text search for the search box. MongoDB text search matches whole
- * (stemmed) words only, so a case-insensitive substring match on name,
+ * Free-text search for the search box. MongoDB text search matches whole,
+ * unstemmed words only, so a case-insensitive substring match on name,
  * municipality and abstract tops it up for partial input like "ptero".
  * GEOSSIT text is mostly unaccented, hence the accent stripping.
  */
