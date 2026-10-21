@@ -6,37 +6,39 @@ import {
 	type GeologicPeriodId,
 } from "~/features/geology/time-scale";
 import { m } from "~/paraglide/messages.js";
+import { getLocale } from "~/paraglide/runtime.js";
 import type { AgeRange } from "../schemas";
 
 /** Oldest → youngest, left to right, like a timeline. */
 const TIMELINE = [...GEOLOGIC_PERIODS].reverse();
-const LAST = TIMELINE.length - 1;
+/** Periods on the track; also the number of the last boundary. */
+const N = TIMELINE.length;
 const indexOf = (id: GeologicPeriodId) =>
 	TIMELINE.findIndex((p) => p.id === id);
 const idAt = (i: number): GeologicPeriodId => TIMELINE[i]?.id ?? "archean";
 
 /**
- * Where period `i`'s colour band starts and ends on the track, in %. Thumbs
- * sit at i / LAST, so each band is centred there (half bands at the ends).
+ * The thumbs sit on boundaries between periods (0…N), not on periods: the
+ * left one where the oldest selected period's colour starts, the right one
+ * where the youngest one's ends. A range [a, b] selects periods a…b-1.
  */
-export const bandEdges = (i: number): [number, number] => [
-	Math.max(0, ((i - 0.5) / LAST) * 100),
-	Math.min(100, ((i + 0.5) / LAST) * 100),
-];
+export const boundaryPercent = (k: number) => (k / N) * 100;
 
-/** The ICS chart colours, one band per period. */
-const TRACK = `linear-gradient(to right, ${TIMELINE.map((p, i) => {
-	const [from, to] = bandEdges(i);
-	return `${p.color} ${from}% ${to}%`;
-}).join(", ")})`;
+/** Age at boundary `k`: the start of period k, or today at the right end. */
+const boundaryMa = (k: number) => TIMELINE[k]?.maxMa ?? 0;
+
+/** The ICS chart colours, one equal band per period. */
+const TRACK = `linear-gradient(to right, ${TIMELINE.map(
+	(p, i) => `${p.color} ${boundaryPercent(i)}% ${boundaryPercent(i + 1)}%`,
+).join(", ")})`;
 
 const DIM = "color-mix(in srgb, var(--mantine-color-body) 55%, transparent)";
 
-/** The track with everything outside the selected periods dimmed. */
-export function trackImage([oldest, youngest]: [number, number]): string {
-	const from = bandEdges(oldest)[0];
-	const to = bandEdges(youngest)[1];
-	if (from === 0 && to === 100) return TRACK;
+/** The track with everything outside the selected periods [a, b) dimmed. */
+export function trackImage([a, b]: [number, number]): string {
+	if (a === 0 && b === N) return TRACK;
+	const from = boundaryPercent(a);
+	const to = boundaryPercent(b);
 	const shade = `linear-gradient(to right, ${DIM} 0% ${from}%, transparent ${from}% ${to}%, ${DIM} ${to}% 100%)`;
 	return `${shade}, ${TRACK}`;
 }
@@ -48,17 +50,19 @@ type Props = {
 
 /** Range of geological periods; the full range means "no filter". */
 export function AgeFilter({ value, onChange }: Props) {
+	// URL value: [youngest, oldest] period → boundaries [oldest, youngest + 1].
 	const fromUrl: [number, number] = value
-		? [indexOf(value[1]), indexOf(value[0])]
-		: [0, LAST];
+		? [indexOf(value[1]), indexOf(value[0]) + 1]
+		: [0, N];
 	// Dragging updates the label live; the URL (and the query) on release.
 	const [range, setRange] = useState(fromUrl);
 	const urlKey = fromUrl.join(",");
 	// biome-ignore lint/correctness/useExhaustiveDependencies: re-sync only when the URL value changes.
 	useEffect(() => setRange(fromUrl), [urlKey]);
 
-	const [oldest, youngest] = range;
-	const all = oldest === 0 && youngest === LAST;
+	const oldest = range[0];
+	const youngest = range[1] - 1;
+	const all = range[0] === 0 && range[1] === N;
 
 	return (
 		<Stack gap={6}>
@@ -80,15 +84,16 @@ export function AgeFilter({ value, onChange }: Props) {
 			<RangeSlider
 				size="sm"
 				min={0}
-				max={LAST}
+				max={N}
 				step={1}
-				minRange={0}
+				// At least one period stays selected.
+				minRange={1}
 				value={range}
 				onChange={setRange}
-				onChangeEnd={([o, y]) =>
-					onChange(o === 0 && y === LAST ? undefined : [idAt(y), idAt(o)])
+				onChangeEnd={([a, b]) =>
+					onChange(a === 0 && b === N ? undefined : [idAt(b - 1), idAt(a)])
 				}
-				label={(i) => periodLabel(idAt(i))}
+				label={(k) => `${boundaryMa(k).toLocaleString(getLocale())} Ma`}
 				thumbFromLabel={m.filters_age_aria_from()}
 				thumbToLabel={m.filters_age_aria_to()}
 				// Mantine paints the track with a background-color, which can't be a
