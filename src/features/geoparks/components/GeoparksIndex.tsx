@@ -1,4 +1,13 @@
-import { Card, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import {
+	Anchor,
+	Card,
+	Group,
+	SimpleGrid,
+	Stack,
+	Text,
+	Title,
+} from "@mantine/core";
+import { ChartBar } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { geoparkIdLabel } from "~/features/geosites/labels";
 import type { GeoparkId } from "~/features/geosites/schemas";
@@ -18,6 +27,16 @@ export function GeoparksIndex({ counts }: Props) {
 					{m.geoparks_title()}
 				</Title>
 				<Text c="dimmed">{m.geoparks_intro()}</Text>
+				<Anchor
+					size="sm"
+					style={{ alignSelf: "flex-start" }}
+					renderRoot={(props) => <Link {...props} to="/geoparks/compare" />}
+				>
+					<Group gap={4}>
+						<ChartBar size={14} aria-hidden />
+						{m.compare_link()}
+					</Group>
+				</Anchor>
 			</Stack>
 			<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
 				{ids.map((id) => (

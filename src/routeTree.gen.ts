@@ -14,11 +14,14 @@ import { Route as MyGeositesRouteImport } from './routes/my-geosites'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as NewsDotxmlRouteImport } from './routes/news[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StatsRouteImport } from './routes/stats'
+import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as TripRouteImport } from './routes/trip'
 import { Route as FossilsIndexRouteImport } from './routes/fossils.index'
 import { Route as FossilsGenusRouteImport } from './routes/fossils.$genus'
 import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
 import { Route as GeoparksGeoparkIdRouteImport } from './routes/geoparks.$geoparkId'
+import { Route as GeoparksCompareRouteImport } from './routes/geoparks.compare'
 import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
 import { Route as TripGuideRouteImport } from './routes/trip_.guide'
 import { Route as ApiCronSyncFossilsRouteImport } from './routes/api.cron.sync-fossils'
@@ -54,6 +57,16 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimelineRoute = TimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TripRoute = TripRouteImport.update({
   id: '/trip',
   path: '/trip',
@@ -77,6 +90,11 @@ const GeoparksIndexRoute = GeoparksIndexRouteImport.update({
 const GeoparksGeoparkIdRoute = GeoparksGeoparkIdRouteImport.update({
   id: '/geoparks/$geoparkId',
   path: '/geoparks/$geoparkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GeoparksCompareRoute = GeoparksCompareRouteImport.update({
+  id: '/geoparks/compare',
+  path: '/geoparks/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GeositesSlugRoute = GeositesSlugRouteImport.update({
@@ -131,9 +149,12 @@ export interface FileRoutesByFullPath {
   '/news': typeof NewsRoute
   '/news.xml': typeof NewsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats': typeof StatsRoute
+  '/timeline': typeof TimelineRoute
   '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
+  '/geoparks/compare': typeof GeoparksCompareRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/trip/guide': typeof TripGuideRoute
   '/fossils/': typeof FossilsIndexRoute
@@ -152,9 +173,12 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRoute
   '/news.xml': typeof NewsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats': typeof StatsRoute
+  '/timeline': typeof TimelineRoute
   '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
+  '/geoparks/compare': typeof GeoparksCompareRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/trip/guide': typeof TripGuideRoute
   '/fossils': typeof FossilsIndexRoute
@@ -174,9 +198,12 @@ export interface FileRoutesById {
   '/news': typeof NewsRoute
   '/news.xml': typeof NewsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/stats': typeof StatsRoute
+  '/timeline': typeof TimelineRoute
   '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
+  '/geoparks/compare': typeof GeoparksCompareRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/trip_/guide': typeof TripGuideRoute
   '/fossils/': typeof FossilsIndexRoute
@@ -197,9 +224,12 @@ export interface FileRouteTypes {
     | '/news'
     | '/news.xml'
     | '/sitemap.xml'
+    | '/stats'
+    | '/timeline'
     | '/trip'
     | '/fossils/$genus'
     | '/geoparks/$geoparkId'
+    | '/geoparks/compare'
     | '/geosites/$slug'
     | '/trip/guide'
     | '/fossils/'
@@ -218,9 +248,12 @@ export interface FileRouteTypes {
     | '/news'
     | '/news.xml'
     | '/sitemap.xml'
+    | '/stats'
+    | '/timeline'
     | '/trip'
     | '/fossils/$genus'
     | '/geoparks/$geoparkId'
+    | '/geoparks/compare'
     | '/geosites/$slug'
     | '/trip/guide'
     | '/fossils'
@@ -239,9 +272,12 @@ export interface FileRouteTypes {
     | '/news'
     | '/news.xml'
     | '/sitemap.xml'
+    | '/stats'
+    | '/timeline'
     | '/trip'
     | '/fossils/$genus'
     | '/geoparks/$geoparkId'
+    | '/geoparks/compare'
     | '/geosites/$slug'
     | '/trip_/guide'
     | '/fossils/'
@@ -261,9 +297,12 @@ export interface RootRouteChildren {
   NewsRoute: typeof NewsRoute
   NewsDotxmlRoute: typeof NewsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StatsRoute: typeof StatsRoute
+  TimelineRoute: typeof TimelineRoute
   TripRoute: typeof TripRoute
   FossilsGenusRoute: typeof FossilsGenusRoute
   GeoparksGeoparkIdRoute: typeof GeoparksGeoparkIdRoute
+  GeoparksCompareRoute: typeof GeoparksCompareRoute
   GeositesSlugRoute: typeof GeositesSlugRoute
   TripGuideRoute: typeof TripGuideRoute
   FossilsIndexRoute: typeof FossilsIndexRoute
@@ -314,6 +353,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timeline': {
+      id: '/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trip': {
       id: '/trip'
       path: '/trip'
@@ -347,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/geoparks/$geoparkId'
       fullPath: '/geoparks/$geoparkId'
       preLoaderRoute: typeof GeoparksGeoparkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/geoparks/compare': {
+      id: '/geoparks/compare'
+      path: '/geoparks/compare'
+      fullPath: '/geoparks/compare'
+      preLoaderRoute: typeof GeoparksCompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/geosites/$slug': {
@@ -421,9 +481,12 @@ const rootRouteChildren: RootRouteChildren = {
   NewsRoute: NewsRoute,
   NewsDotxmlRoute: NewsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StatsRoute: StatsRoute,
+  TimelineRoute: TimelineRoute,
   TripRoute: TripRoute,
   FossilsGenusRoute: FossilsGenusRoute,
   GeoparksGeoparkIdRoute: GeoparksGeoparkIdRoute,
+  GeoparksCompareRoute: GeoparksCompareRoute,
   GeositesSlugRoute: GeositesSlugRoute,
   TripGuideRoute: TripGuideRoute,
   FossilsIndexRoute: FossilsIndexRoute,

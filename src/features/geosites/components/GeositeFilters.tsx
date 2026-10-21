@@ -98,7 +98,7 @@ export function GeositeFilters({ value, onChange }: Props) {
 					clearable
 				/>
 			</Group>
-			<Group gap="md" justify="flex-end">
+			<Group gap="md" justify="flex-end" style={{ rowGap: 4 }}>
 				<Anchor
 					size="xs"
 					renderRoot={(props) => <Link {...props} to="/geoparks/" />}
@@ -116,6 +116,18 @@ export function GeositeFilters({ value, onChange }: Props) {
 					renderRoot={(props) => <Link {...props} to="/news" />}
 				>
 					{m.news_link()}
+				</Anchor>
+				<Anchor
+					size="xs"
+					renderRoot={(props) => <Link {...props} to="/timeline" />}
+				>
+					{m.timeline_link()}
+				</Anchor>
+				<Anchor
+					size="xs"
+					renderRoot={(props) => <Link {...props} to="/stats" />}
+				>
+					{m.stats_link()}
 				</Anchor>
 			</Group>
 			<AgeFilter

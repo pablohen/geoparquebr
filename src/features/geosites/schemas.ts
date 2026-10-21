@@ -242,6 +242,9 @@ export type BBox = z.infer<typeof BBoxSchema>;
 /** Default view: the Chapada do Araripe (Brazil's first UNESCO Global Geopark) and the Rio do Peixe basin. */
 export const DEFAULT_BBOX: BBox = [-40.6, -7.9, -37.9, -6.3];
 
+/** All of Brazil, for map links that show every matching geosite. */
+export const BRAZIL_BBOX: BBox = [-74, -34, -34.5, 5.5];
+
 export const GeologicPeriodSchema = z.enum(GEOLOGIC_PERIOD_IDS);
 
 /** A span of geological time as [youngest, oldest] period, inclusive. */

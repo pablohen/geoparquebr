@@ -5,6 +5,11 @@ import { GEOPARKS_INDEX_PATH } from "~/features/geoparks/seo";
 import type { GeoparkId } from "~/features/geosites/schemas";
 import { sitemapXml } from "~/features/geosites/seo";
 import { NEWS_PATH } from "~/features/news/schemas";
+import {
+	COMPARE_PATH,
+	STATS_PATH,
+	TIMELINE_PATH,
+} from "~/features/stats/schemas";
 
 export const Route = createFileRoute("/sitemap.xml")({
 	server: {
@@ -22,9 +27,12 @@ export const Route = createFileRoute("/sitemap.xml")({
 				const genera = await listFossilGenusPages();
 				const xml = sitemapXml(await listGeositeSlugs(), [
 					GEOPARKS_INDEX_PATH,
+					COMPARE_PATH,
 					...geoparks,
 					FOSSILS_INDEX_PATH,
 					NEWS_PATH,
+					TIMELINE_PATH,
+					STATS_PATH,
 					...genera.map((g) => genusPath(g.slug)),
 				]);
 				return new Response(xml, {
