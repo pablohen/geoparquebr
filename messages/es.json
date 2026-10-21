@@ -285,6 +285,19 @@
 	"period_quaternary": "Cuaternario",
 	"period_silurian": "Silúrico",
 	"period_triassic": "Triásico",
+	"progress_title": "Progreso en los geoparques",
+	"progress_visited": "{visited} de {total} visitados",
+	"progress_visited_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} visitados",
+				"count=*, countPlural=one": "{count} visitado",
+				"count=*, countPlural=other": "{count} visitados"
+			}
+		}
+	],
 	"provenance_illustrative": "Ejemplo ilustrativo — no procede de este geositio.",
 	"provenance_locality": "Recolectado/digitalizado en este geositio.",
 	"provenance_region": "Ejemplar de la misma cuenca/región — no se registró el lugar exacto de recolección.",
@@ -363,5 +376,43 @@
 	"strata_exu": "Fm. Exu — arenisca",
 	"strata_ipubi": "Fm. Ipubi — yeso",
 	"strata_romualdo": "Fm. Romualdo — lutita con concreciones",
+	"trip_add": "Añadir a la ruta",
+	"trip_approximate_note": "Los sitios protegidos se añaden con su posición aproximada (cerca de 1 km), como en \"Cómo llegar\".",
+	"trip_clear": "Vaciar",
+	"trip_empty": "Tu ruta está vacía. Añade geositios con el botón de ruta en el mapa o en la página de un geositio, o arma una ruta desde un geoparque.",
+	"trip_from_here": "Empezar desde mi ubicación",
+	"trip_from_here_on": "Empezando desde tu ubicación",
+	"trip_full": "La ruta ya tiene {max} geositios",
+	"trip_geopark_add": "Armar una ruta con estos geositios",
+	"trip_intro": "Geositios para visitar, guardados en este dispositivo. Las distancias son en línea recta, no por carretera.",
+	"trip_link": "Ruta ({count})",
+	"trip_location_error": "No se pudo obtener tu ubicación.",
+	"trip_move_down": "Bajar {name}",
+	"trip_move_up": "Subir {name}",
+	"trip_open": "Abrir ruta",
+	"trip_open_maps": "Abrir en Google Maps",
+	"trip_open_maps_part": "Google Maps, tramo {part} de {total}",
+	"trip_remove": "Quitar de la ruta",
+	"trip_remove_stop": "Quitar {name} de la ruta",
+	"trip_share_title": "Ruta de geositios",
+	"trip_shared_intro": "Compartieron estos geositios contigo. Usa la ruta para reordenarla y abrirla en Google Maps.",
+	"trip_shared_none": "No se encontró ninguno de los geositios de este enlace.",
+	"trip_shared_replaces": "Reemplaza la ruta de este dispositivo ({stops}).",
+	"trip_shared_title": "Ruta compartida",
+	"trip_stops_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geositios",
+				"count=*, countPlural=one": "{count} geositio",
+				"count=*, countPlural=other": "{count} geositios"
+			}
+		}
+	],
+	"trip_suggest_order": "Sugerir orden",
+	"trip_title": "Mi ruta",
+	"trip_total": "Total en línea recta: {distance}",
+	"trip_use_shared": "Usar esta ruta",
 	"viewer_load_failed": "No fue posible cargar el modelo 3D."
 }

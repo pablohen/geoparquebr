@@ -1,5 +1,7 @@
 import {
+	Anchor,
 	Badge,
+	Button,
 	Center,
 	Group,
 	Loader,
@@ -9,15 +11,19 @@ import {
 	Title,
 } from "@mantine/core";
 import { useMounted } from "@mantine/hooks";
-import { CaretRight, CheckCircle, Star } from "@phosphor-icons/react";
+import { CaretRight, CheckCircle, Path, Star } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { getGeoparkCounts } from "~/features/geoparks/geoparks.functions";
 import { geoparkIdLabel } from "~/features/geosites/labels";
 import type { GeoparkId } from "~/features/geosites/schemas";
 import { savedGeoparks } from "~/features/offline/store";
+import { useTrip } from "~/features/trip/store";
+import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import { getLocale } from "~/paraglide/runtime.js";
 import { type MyGeosite, useMyGeosites } from "../store";
+import { VisitProgress } from "./VisitProgress";
 
 const formatDate = (iso: string) =>
 	new Intl.DateTimeFormat(getLocale(), { dateStyle: "medium" }).format(
@@ -45,6 +51,13 @@ export function MyGeositesView() {
 		.filter((e) => e.visitedAt)
 		.sort((a, b) => (b.visitedAt ?? "").localeCompare(a.visitedAt ?? ""));
 	const savedIds = Object.keys(offline) as GeoparkId[];
+	const visitsByGeopark = new Map<GeoparkId, number>();
+	for (const e of visited)
+		if (e.geoparkId)
+			visitsByGeopark.set(
+				e.geoparkId,
+				(visitsByGeopark.get(e.geoparkId) ?? 0) + 1,
+			);
 
 	return (
 		<Stack gap="lg">
@@ -54,6 +67,8 @@ export function MyGeositesView() {
 				</Title>
 				<Text c="dimmed">{m.my_intro()}</Text>
 			</Stack>
+
+			<TripSummary />
 
 			<Section
 				icon={<Star size={18} weight="fill" />}
@@ -72,6 +87,10 @@ export function MyGeositesView() {
 					e.visitedAt && m.my_visited_on({ date: formatDate(e.visitedAt) })
 				}
 			/>
+
+			{visitsByGeopark.size > 0 && (
+				<GeoparkProgressList visits={visitsByGeopark} />
+			)}
 
 			{savedIds.length > 0 && (
 				<Stack gap="xs">
@@ -182,6 +201,79 @@ function Section({
 					))}
 				</Stack>
 			)}
+		</Stack>
+	);
+}
+
+/** The trip on this device, with a way into it. */
+function TripSummary() {
+	const { trip } = useTrip();
+	return (
+		<Stack gap="xs">
+			<Group gap={8}>
+				<Path size={18} weight="bold" />
+				<Title order={2} size="h4">
+					{m.trip_title()}
+				</Title>
+			</Group>
+			{trip.length === 0 ? (
+				<Text size="sm" c="dimmed">
+					{m.trip_empty()}
+				</Text>
+			) : (
+				<Group gap="xs">
+					<Text size="sm">{m.trip_stops_count({ count: trip.length })}</Text>
+					<Button
+						size="xs"
+						variant="light"
+						renderRoot={(props) => <Link {...props} to="/trip" />}
+					>
+						{m.trip_open()}
+					</Button>
+				</Group>
+			)}
+		</Stack>
+	);
+}
+
+/** Visits per geopark against its GEOSSIT geosites (counts need the network). */
+function GeoparkProgressList({ visits }: { visits: Map<GeoparkId, number> }) {
+	const counts = useServerQuery("geopark-counts", () => getGeoparkCounts());
+	return (
+		<Stack gap="xs">
+			<Title order={2} size="h4">
+				{m.progress_title()}
+			</Title>
+			<Stack gap="sm">
+				{[...visits.entries()].map(([id, n]) => {
+					const total =
+						counts.status === "success" ? counts.data[id] : undefined;
+					return (
+						<Stack key={id} gap={4}>
+							<Anchor
+								size="sm"
+								fw={600}
+								renderRoot={(props) => (
+									<Link
+										{...props}
+										to="/geoparks/$geoparkId"
+										params={{ geoparkId: id }}
+									/>
+								)}
+							>
+								{geoparkIdLabel(id)}
+							</Anchor>
+							{total ? (
+								<VisitProgress visited={Math.min(n, total)} total={total} />
+							) : (
+								<Text size="sm" c="dimmed">
+									{m.progress_visited_count({ count: n })}
+								</Text>
+							)}
+						</Stack>
+					);
+				})}
+			</Stack>
 		</Stack>
 	);
 }

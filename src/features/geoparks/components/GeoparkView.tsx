@@ -8,14 +8,22 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { ArrowLeft, CaretRight, MapTrifold } from "@phosphor-icons/react";
+import {
+	ArrowLeft,
+	CaretRight,
+	CheckCircle,
+	MapTrifold,
+} from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { GenusLinkList } from "~/features/fossils/components/GenusLinks";
 import type { GenusLink } from "~/features/fossils/schemas";
 import { CATEGORY_COLORS } from "~/features/geosites/components/categoryStyle";
 import { categoryLabel, geoparkIdLabel } from "~/features/geosites/labels";
 import type { GeoparkId } from "~/features/geosites/schemas";
+import { VisitProgress } from "~/features/my-geosites/components/VisitProgress";
+import { useMyGeosites } from "~/features/my-geosites/store";
 import { SaveOfflineButton } from "~/features/offline/components/SaveOfflineButton";
+import { GeoparkTripButton } from "~/features/trip/components/GeoparkTripButton";
 import { m } from "~/paraglide/messages.js";
 import { GEOPARKS } from "../geoparks";
 import { geoparkAbout } from "../labels";
@@ -30,6 +38,9 @@ type Props = {
 /** One geopark: what it is, its GEOSSIT geosites and a way onto the map. */
 export function GeoparkView({ id, geosites, genera }: Props) {
 	const { designated, area } = GEOPARKS[id];
+	// Device data: empty during SSR and hydration, filled in after.
+	const { state } = useMyGeosites();
+	const visited = geosites.filter((g) => state[g.slug]?.visitedAt).length;
 	return (
 		<Stack gap="lg">
 			<Anchor
@@ -52,16 +63,20 @@ export function GeoparkView({ id, geosites, genera }: Props) {
 				<Text>{geoparkAbout(id)}</Text>
 			</Stack>
 
-			<Button
-				renderRoot={(props) => (
-					<Link {...props} to="/" search={{ bbox: [...area] }} />
+			<Group gap="xs">
+				<Button
+					renderRoot={(props) => (
+						<Link {...props} to="/" search={{ bbox: [...area] }} />
+					)}
+					variant="light"
+					leftSection={<MapTrifold size={16} />}
+				>
+					{m.geopark_view_map()}
+				</Button>
+				{geosites.length > 0 && (
+					<GeoparkTripButton id={id} geosites={geosites} />
 				)}
-				variant="light"
-				leftSection={<MapTrifold size={16} />}
-				style={{ alignSelf: "flex-start" }}
-			>
-				{m.geopark_view_map()}
-			</Button>
+			</Group>
 
 			<Stack gap="xs">
 				<Title order={2} size="h4">
@@ -79,6 +94,9 @@ export function GeoparkView({ id, geosites, genera }: Props) {
 						{m.geopark_geosites_count({ count: geosites.length })}
 					</Text>
 				</Group>
+				{visited > 0 && (
+					<VisitProgress visited={visited} total={geosites.length} />
+				)}
 				{geosites.length === 0 ? (
 					<Text c="dimmed" size="sm">
 						{m.geopark_no_geosites()}
@@ -117,7 +135,19 @@ export function GeoparkView({ id, geosites, genera }: Props) {
 										))}
 									</Group>
 								}
-								rightSection={<CaretRight size={14} />}
+								rightSection={
+									<Group gap={6} wrap="nowrap">
+										{state[g.slug]?.visitedAt && (
+											<CheckCircle
+												size={16}
+												weight="fill"
+												color="var(--mantine-color-teal-6)"
+												aria-label={m.my_visited_label()}
+											/>
+										)}
+										<CaretRight size={14} />
+									</Group>
+								}
 								styles={{ root: { borderRadius: "var(--mantine-radius-md)" } }}
 							/>
 						))}

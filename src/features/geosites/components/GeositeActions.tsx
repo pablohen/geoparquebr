@@ -6,6 +6,8 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { MyGeositeButtons } from "~/features/my-geosites/components/MyGeositeButtons";
+import { TripButton, TripLink } from "~/features/trip/components/TripButton";
+import { toStop } from "~/features/trip/store";
 import { bboxAround, roundBBox } from "~/lib/geo";
 import { m } from "~/paraglide/messages.js";
 import type { Geosite } from "../schemas";
@@ -24,6 +26,7 @@ export function GeositeActions({ geosite, context }: Props) {
 	return (
 		<Group gap="xs">
 			<MyGeositeButtons geosite={geosite} />
+			<TripButton stop={toStop(geosite)} />
 			<ShareButton
 				url={meta.url}
 				title={geosite.name}
@@ -80,6 +83,7 @@ export function GeositeActions({ geosite, context }: Props) {
 					{m.actions_geosite_page()} <ArrowSquareOut size={12} />
 				</Anchor>
 			)}
+			<TripLink />
 		</Group>
 	);
 }

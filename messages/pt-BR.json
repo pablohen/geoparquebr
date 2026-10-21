@@ -285,6 +285,19 @@
 	"period_quaternary": "Quaternário",
 	"period_silurian": "Siluriano",
 	"period_triassic": "Triássico",
+	"progress_title": "Progresso nos geoparques",
+	"progress_visited": "{visited} de {total} visitados",
+	"progress_visited_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} visitados",
+				"count=*, countPlural=one": "{count} visitado",
+				"count=*, countPlural=other": "{count} visitados"
+			}
+		}
+	],
 	"provenance_illustrative": "Exemplo ilustrativo — não provém deste geossítio.",
 	"provenance_locality": "Coletado/digitalizado neste geossítio.",
 	"provenance_region": "Exemplar da mesma bacia/região — local exato de coleta não informado.",
@@ -363,5 +376,43 @@
 	"strata_exu": "Fm. Exu — arenito",
 	"strata_ipubi": "Fm. Ipubi — gipsita",
 	"strata_romualdo": "Fm. Romualdo — folhelho c/ concreções",
+	"trip_add": "Adicionar ao roteiro",
+	"trip_approximate_note": "Sítios protegidos entram com a posição aproximada (cerca de 1 km), como em \"Como chegar\".",
+	"trip_clear": "Limpar",
+	"trip_empty": "Seu roteiro está vazio. Adicione geossítios pelo botão de roteiro no mapa ou na página de um geossítio, ou monte um roteiro a partir de um geoparque.",
+	"trip_from_here": "Começar da minha posição",
+	"trip_from_here_on": "Começando da sua posição",
+	"trip_full": "O roteiro já tem {max} geossítios",
+	"trip_geopark_add": "Montar roteiro com estes geossítios",
+	"trip_intro": "Geossítios para visitar, guardados neste aparelho. As distâncias são em linha reta, não pela estrada.",
+	"trip_link": "Roteiro ({count})",
+	"trip_location_error": "Não foi possível obter sua posição.",
+	"trip_move_down": "Mover {name} para baixo",
+	"trip_move_up": "Mover {name} para cima",
+	"trip_open": "Abrir roteiro",
+	"trip_open_maps": "Abrir no Google Maps",
+	"trip_open_maps_part": "Google Maps, trecho {part} de {total}",
+	"trip_remove": "Tirar do roteiro",
+	"trip_remove_stop": "Tirar {name} do roteiro",
+	"trip_share_title": "Roteiro de geossítios",
+	"trip_shared_intro": "Estes geossítios foram compartilhados com você. Use o roteiro para reordená-lo e abri-lo no Google Maps.",
+	"trip_shared_none": "Nenhum dos geossítios deste link foi encontrado.",
+	"trip_shared_replaces": "Substitui o roteiro deste aparelho ({stops}).",
+	"trip_shared_title": "Roteiro compartilhado",
+	"trip_stops_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios",
+				"count=*, countPlural=one": "{count} geossítio",
+				"count=*, countPlural=other": "{count} geossítios"
+			}
+		}
+	],
+	"trip_suggest_order": "Sugerir ordem",
+	"trip_title": "Meu roteiro",
+	"trip_total": "Total em linha reta: {distance}",
+	"trip_use_shared": "Usar este roteiro",
 	"viewer_load_failed": "Falha ao carregar o modelo 3D."
 }

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TripRouteImport } from './routes/trip'
 import { Route as FossilsIndexRouteImport } from './routes/fossils.index'
 import { Route as FossilsGenusRouteImport } from './routes/fossils.$genus'
 import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
@@ -34,6 +35,11 @@ const MyGeositesRoute = MyGeositesRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TripRoute = TripRouteImport.update({
+  id: '/trip',
+  path: '/trip',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FossilsIndexRoute = FossilsIndexRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/my-geosites'
     | '/sitemap.xml'
+    | '/trip'
     | '/fossils/$genus'
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/my-geosites'
     | '/sitemap.xml'
+    | '/trip'
     | '/fossils/$genus'
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/my-geosites'
     | '/sitemap.xml'
+    | '/trip'
     | '/fossils/$genus'
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MyGeositesRoute: typeof MyGeositesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TripRoute: typeof TripRoute
   FossilsGenusRoute: typeof FossilsGenusRoute
   GeoparksGeoparkIdRoute: typeof GeoparksGeoparkIdRoute
   GeositesSlugRoute: typeof GeositesSlugRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trip': {
+      id: '/trip'
+      path: '/trip'
+      fullPath: '/trip'
+      preLoaderRoute: typeof TripRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fossils/': {
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MyGeositesRoute: MyGeositesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TripRoute: TripRoute,
   FossilsGenusRoute: FossilsGenusRoute,
   GeoparksGeoparkIdRoute: GeoparksGeoparkIdRoute,
   GeositesSlugRoute: GeositesSlugRoute,

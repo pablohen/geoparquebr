@@ -285,6 +285,19 @@
 	"period_quaternary": "Quaternary",
 	"period_silurian": "Silurian",
 	"period_triassic": "Triassic",
+	"progress_title": "Progress in the geoparks",
+	"progress_visited": "{visited} of {total} visited",
+	"progress_visited_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} visited",
+				"count=*, countPlural=one": "{count} visited",
+				"count=*, countPlural=other": "{count} visited"
+			}
+		}
+	],
 	"provenance_illustrative": "Illustrative example — not from this geosite.",
 	"provenance_locality": "Collected/scanned at this geosite.",
 	"provenance_region": "Specimen from the same basin/region — exact collection site not recorded.",
@@ -363,5 +376,43 @@
 	"strata_exu": "Exu Fm. — sandstone",
 	"strata_ipubi": "Ipubi Fm. — gypsum",
 	"strata_romualdo": "Romualdo Fm. — shale with concretions",
+	"trip_add": "Add to trip",
+	"trip_approximate_note": "Protected sites are added with their approximate position (about 1 km), as in \"Directions\".",
+	"trip_clear": "Clear",
+	"trip_empty": "Your trip is empty. Add geosites with the trip button on the map or on a geosite's page, or build a trip from a geopark.",
+	"trip_from_here": "Start from my location",
+	"trip_from_here_on": "Starting from your location",
+	"trip_full": "The trip already has {max} geosites",
+	"trip_geopark_add": "Build a trip with these geosites",
+	"trip_intro": "Geosites to visit, saved on this device. Distances are straight lines, not by road.",
+	"trip_link": "Trip ({count})",
+	"trip_location_error": "Couldn't get your location.",
+	"trip_move_down": "Move {name} down",
+	"trip_move_up": "Move {name} up",
+	"trip_open": "Open trip",
+	"trip_open_maps": "Open in Google Maps",
+	"trip_open_maps_part": "Google Maps, leg {part} of {total}",
+	"trip_remove": "Remove from trip",
+	"trip_remove_stop": "Remove {name} from the trip",
+	"trip_share_title": "Geosite trip",
+	"trip_shared_intro": "These geosites were shared with you. Use the trip to reorder it and open it in Google Maps.",
+	"trip_shared_none": "None of the geosites in this link were found.",
+	"trip_shared_replaces": "Replaces the trip on this device ({stops}).",
+	"trip_shared_title": "Shared trip",
+	"trip_stops_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites",
+				"count=*, countPlural=one": "{count} geosite",
+				"count=*, countPlural=other": "{count} geosites"
+			}
+		}
+	],
+	"trip_suggest_order": "Suggest an order",
+	"trip_title": "My trip",
+	"trip_total": "Straight-line total: {distance}",
+	"trip_use_shared": "Use this trip",
 	"viewer_load_failed": "Couldn't load the 3D model."
 }
