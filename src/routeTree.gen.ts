@@ -14,6 +14,8 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as GeoparksIndexRouteImport } from './routes/geoparks.index'
 import { Route as GeoparksGeoparkIdRouteImport } from './routes/geoparks.$geoparkId'
 import { Route as GeositesSlugRouteImport } from './routes/geosites.$slug'
+import { Route as OgGeoparksGeoparkIdRouteImport } from './routes/og.geoparks.$geoparkId'
+import { Route as OgGeositesSlugRouteImport } from './routes/og.geosites.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +42,16 @@ const GeositesSlugRoute = GeositesSlugRouteImport.update({
   path: '/geosites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OgGeoparksGeoparkIdRoute = OgGeoparksGeoparkIdRouteImport.update({
+  id: '/og/geoparks/$geoparkId',
+  path: '/og/geoparks/$geoparkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgGeositesSlugRoute = OgGeositesSlugRouteImport.update({
+  id: '/og/geosites/$slug',
+  path: '/og/geosites/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +59,8 @@ export interface FileRoutesByFullPath {
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/geoparks/': typeof GeoparksIndexRoute
+  '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
+  '/og/geosites/$slug': typeof OgGeositesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +68,8 @@ export interface FileRoutesByTo {
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/geoparks': typeof GeoparksIndexRoute
+  '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
+  '/og/geosites/$slug': typeof OgGeositesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,6 +78,8 @@ export interface FileRoutesById {
   '/geoparks/$geoparkId': typeof GeoparksGeoparkIdRoute
   '/geosites/$slug': typeof GeositesSlugRoute
   '/geoparks/': typeof GeoparksIndexRoute
+  '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
+  '/og/geosites/$slug': typeof OgGeositesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -71,6 +89,8 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
     | '/geoparks/'
+    | '/og/geoparks/$geoparkId'
+    | '/og/geosites/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -78,6 +98,8 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
     | '/geoparks'
+    | '/og/geoparks/$geoparkId'
+    | '/og/geosites/$slug'
   id:
     | '__root__'
     | '/'
@@ -85,6 +107,8 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId'
     | '/geosites/$slug'
     | '/geoparks/'
+    | '/og/geoparks/$geoparkId'
+    | '/og/geosites/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -93,6 +117,8 @@ export interface RootRouteChildren {
   GeoparksGeoparkIdRoute: typeof GeoparksGeoparkIdRoute
   GeositesSlugRoute: typeof GeositesSlugRoute
   GeoparksIndexRoute: typeof GeoparksIndexRoute
+  OgGeoparksGeoparkIdRoute: typeof OgGeoparksGeoparkIdRoute
+  OgGeositesSlugRoute: typeof OgGeositesSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -132,6 +158,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GeositesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/og/geoparks/$geoparkId': {
+      id: '/og/geoparks/$geoparkId'
+      path: '/og/geoparks/$geoparkId'
+      fullPath: '/og/geoparks/$geoparkId'
+      preLoaderRoute: typeof OgGeoparksGeoparkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og/geosites/$slug': {
+      id: '/og/geosites/$slug'
+      path: '/og/geosites/$slug'
+      fullPath: '/og/geosites/$slug'
+      preLoaderRoute: typeof OgGeositesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -141,6 +181,8 @@ const rootRouteChildren: RootRouteChildren = {
   GeoparksGeoparkIdRoute: GeoparksGeoparkIdRoute,
   GeositesSlugRoute: GeositesSlugRoute,
   GeoparksIndexRoute: GeoparksIndexRoute,
+  OgGeoparksGeoparkIdRoute: OgGeoparksGeoparkIdRoute,
+  OgGeositesSlugRoute: OgGeositesSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

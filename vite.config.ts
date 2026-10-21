@@ -5,6 +5,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig, type Plugin } from "vite";
+import { base64Imports } from "./scripts/vite/base64-imports.ts";
 import { missingMessages } from "./src/lib/catalog-guard.ts";
 
 export default defineConfig({
@@ -22,6 +23,8 @@ export default defineConfig({
 			emitTsDeclarations: true,
 		}),
 		catalogGuard(),
+		// Share-card fonts and resvg's wasm, inlined into the server chunk.
+		base64Imports(),
 		tanstackStart(),
 		// Turns the server build into a deployable app. The preset comes from
 		// the environment: Vercel when VERCEL=1 (or NITRO_PRESET=vercel),

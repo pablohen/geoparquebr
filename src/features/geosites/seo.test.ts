@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { DEFAULT_OG_IMAGE } from "~/lib/site";
 import { baseLocale, overwriteGetLocale } from "~/paraglide/runtime.js";
 import type { Geosite } from "./schemas";
 import {
@@ -58,36 +57,42 @@ describe("geositeMeta", () => {
 		).toBe(true);
 		expect(m.description.length).toBeLessThanOrEqual(160);
 		expect(m.url).toBe("https://geoparquebr.vercel.app/geosites/pedra-cariri");
-		expect(m.image).toBe(base.coverImageUrl);
+		expect(m.image).toBe(
+			"https://geoparquebr.vercel.app/og/geosites/pedra-cariri",
+		);
 	});
 
-	it("falls back to the default share card without a photo", () => {
+	it("describes a geosite without a summary by its context", () => {
 		const m = geositeMeta({ ...base, coverImageUrl: undefined, summary: "" });
-		expect(m.image).toBe(DEFAULT_OG_IMAGE);
 		expect(m.description).toBe("Nova Olinda – CE · Geoparque Araripe (CE)");
 	});
 
-	it("uses the default card when the photo link is known to be dead", () => {
-		expect(geositeMeta(base, { imageOk: false }).image).toBe(DEFAULT_OG_IMAGE);
+	it("keeps dead photos out of the structured data", () => {
 		expect(geositeJsonLd(base, { imageOk: false })).not.toHaveProperty("image");
+		expect(geositeJsonLd(base)).toHaveProperty("image", base.coverImageUrl);
 	});
 
-	it("only declares image dimensions for the default card", () => {
-		const dims = (tags: ReturnType<typeof geositeMetaTags>) =>
-			tags.filter(
-				(t) => "property" in t && t.property?.startsWith("og:image:w"),
-			);
-		expect(dims(geositeMetaTags(base))).toEqual([]);
-		expect(dims(geositeMetaTags(base, { imageOk: false }))).toEqual([
-			{ property: "og:image:width", content: "1200" },
-		]);
+	it("shares the generated 1200×630 card, photo or not", () => {
+		const tags = geositeMetaTags({ ...base, coverImageUrl: undefined });
+		expect(tags).toContainEqual({
+			property: "og:image",
+			content: "https://geoparquebr.vercel.app/og/geosites/pedra-cariri",
+		});
+		expect(tags).toContainEqual({
+			property: "og:image:width",
+			content: "1200",
+		});
+		expect(tags).toContainEqual({
+			property: "og:image:height",
+			content: "630",
+		});
 	});
 
 	it("produces Open Graph and Twitter tags", () => {
 		const tags = geositeMetaTags(base);
 		const prop = (p: string) =>
 			tags.find((t) => "property" in t && t.property === p)?.content;
-		expect(prop("og:image")).toBe(base.coverImageUrl);
+		expect(prop("og:image:alt")).toBe("Pedra Cariri");
 		expect(prop("og:url")).toBe(
 			"https://geoparquebr.vercel.app/geosites/pedra-cariri",
 		);

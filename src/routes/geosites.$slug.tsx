@@ -30,9 +30,7 @@ export const Route = createFileRoute("/geosites/$slug")({
 	head: ({ loaderData }) =>
 		loaderData
 			? {
-					meta: geositeMetaTags(loaderData.geosite, {
-						imageOk: loaderData.shareImageOk,
-					}),
+					meta: geositeMetaTags(loaderData.geosite),
 					links: [
 						{ rel: "canonical", href: geositeMeta(loaderData.geosite).url },
 						...alternateLinks(geositePath(loaderData.geosite.slug), SITE_URL),
