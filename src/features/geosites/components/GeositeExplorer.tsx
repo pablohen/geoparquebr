@@ -159,8 +159,8 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							}
 						/>
 						<MyGeositesLink />
-						<LanguageSwitcher />
 						<ColorSchemeToggle />
+						<LanguageSwitcher />
 					</Group>
 				</Group>
 			</AppShell.Header>
