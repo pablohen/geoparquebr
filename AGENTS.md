@@ -80,6 +80,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - **Plurals** use the message-format `match` form with `count=0` kept plural (CLDR makes 0 singular in Portuguese); see `sheet_count`.
 - **Server functions** run under `/_serverFn/`, which has no locale prefix, so they always see pt-BR. Return data, never copy.
 - The inlang plugins load from `node_modules` (`project.inlang/settings.json`), not a CDN; the build's `catalogGuard` fails if any message failed to compile.
+- **Every compiler writes the same `src/paraglide`.** `pnpm dev`, `pnpm test`, `pnpm build` and `pnpm i18n` (run by `pnpm typecheck`) all use `outputStructure: "locale-modules"` and don't wipe the folder first (`cleanOutdir: false` / `--no-clean-outdir`); `paraglide-config.test.ts` checks it. Otherwise a typecheck or build swaps the folder's layout under a running dev server and breaks it ("Failed to load url …/messages/…", 500s).
 - **SEO:** canonical, `og:url` and share links follow the current locale (`absoluteUrl`), pages list hreflang alternates (`alternateLinks`), and the sitemap lists every page in every language. Only one `og:locale`: TanStack's head keeps one meta per property, so `og:locale:alternate` repeats would collapse.
 
 ## External data

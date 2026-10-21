@@ -116,6 +116,7 @@ docs/                             these docs
 | --- | --- |
 | Blank map, console says "Worker failed to load" | `setWorkerUrl(workerUrl)` is missing or runs after a `Map` is created; see `GeositeMap.tsx` |
 | `"default" is not exported by maplibre-gl` | MapLibre 6 has no default export; use named imports |
+| Dev server shows "An error has occurred" / `Failed to load url /src/paraglide/messages/…` | `src/paraglide` was written in another layout (an old checkout, or a hand-run `paraglide-js compile` without the project's flags). Stop `pnpm dev`, run `rm -rf src/paraglide && pnpm i18n`, start it again |
 | `Missing required env var MONGODB_URI` | `.env` missing, or the command didn't load it (`db:seed` uses `--env-file`) |
 | `$geoNear requires a 2d or 2dsphere index` | Run `pnpm db:seed`, which creates `public_location_2dsphere` and fills `publicLocation` |
 | `MongoServerSelectionError` against Atlas | IP not in the Atlas network access list, or a wrong user/password |
