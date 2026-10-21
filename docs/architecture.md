@@ -77,6 +77,9 @@ sequenceDiagram
 | `/fossils` | fossil genera recorded within 5 km of a geosite, grouped by class (from `fossil_genera`); filters by name, group and geopark live in the URL (`?q=&group=&gp=`) |
 | `/fossils/$genus` | one genus: GBIF classification, species recorded, the geosites near its records (no specimen locations), units and ages as recorded, JSON-LD `Taxon` |
 | `/news`, `/news.xml` | "Novidades": what each weekly GEOSSIT sync added, changed (by field) or removed, from `geosite_changes`; RSS 2.0 in the URL's language |
+| `/stats` | "Números": geosites by relevance, theme, geological period and state, with links to the map filtered over all of Brazil |
+| `/timeline` | every geological period, youngest first, in ICS colours, with the geosites whose dated age overlaps it |
+| `/geoparks/compare` | the geoparks side by side: counts, relevance, themes, rock ages and fossil genera |
 | `/my-geosites` | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`) |
 | `/geoparks/$geoparkId/guide`, `/trip/guide` | printable field guides (`src/features/guide/`): each geosite's full description, age, public coordinates, GEOSSIT source and a QR code for its page (SVG made on the server with `qrcode`); print CSS hides the app chrome and forces light colours (`noindex`) |
 | `/embed/geoparks/$geoparkId`, `/embed/geosites/$slug` | embeddable maps for other sites' `<iframe>`s (`src/features/embed/`): public points, a credit bar linking back, cooperative gestures, no app chrome, no service worker, `noindex`; the "Incorporar" button gives the code |
