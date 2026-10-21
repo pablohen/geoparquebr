@@ -108,6 +108,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 
 - **MapLibre worker:** MapLibre 6 finds its web worker relative to its own module URL, and that breaks under Vite bundling. `GeositeMap.tsx` imports `maplibre-gl/dist/maplibre-gl-worker.mjs?url` and calls `setWorkerUrl` before creating a map. Keep that call if you refactor.
 - **MapLibre 6 has no default export.** Use named imports (`Map`, `NavigationControl`, …).
+- **Relief and 3D terrain** come from AWS Open Data "Terrain Tiles" (`encoding: "terrarium"`; MapLibre assumes Mapbox encoding and silently draws noise otherwise). Relief shading is always on; "Relevo 3D" (`?terrain=true`) adds terrain and tilts the map. A tilted map reports `flatBBox` (the untilted view at the same centre and zoom) as its `bbox`, or the list would reach the horizon.
 - **SGB geology tiles** are an ArcGIS cache whose level 0 is web zoom 4. `GeositeMap` registers an `sgb-geology://` MapLibre protocol that subtracts the offset; a plain `{z}` URL template would request the wrong level, or 404.
 - **Search lookups stay independent.** Photon place search is slow (5–8 s), so geosite and place search are separate server functions, and geoparks are matched on the client (`matchGeoparks`). Don't merge them into one `Promise.all` that the UI waits on.
 - **No drei `<Html>`.** Each `<Html>` mounts its own React root, and React 19 logs "synchronously unmount a root" errors. Put overlays (legends, errors, loaders) in plain DOM outside the `<Canvas>`.

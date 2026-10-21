@@ -166,6 +166,7 @@ This returns the **unrounded** coordinates. It's only for server-side lookups (f
 | `tab` | `overview` \| `model` \| `fossils`? | `undefined` (overview) |
 | `model` | int ≥ 0? | `undefined` (first entry); out-of-range indexes fall back to 0 |
 | `geo` | `true`? | `undefined` (geology layer off) |
+| `terrain` | `true`? | `undefined` (flat map; relief shading still on) |
 
 - **Map ownership.** The map writes `bbox` back on every move using history *replace*, so panning doesn't fill the back stack. It only re-fits to `bbox` when the value changes from outside (location form, back/forward).
 - **What re-runs the loader.** Only `bbox`, `cat`, `rel`, `gp` and `age` are loader deps. `site`, `tab` and `model` are drawer state, fetched separately.
