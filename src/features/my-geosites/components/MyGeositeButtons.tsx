@@ -13,7 +13,7 @@ export function MyGeositeButtons({ geosite }: { geosite: Geosite }) {
 	const favLabel = favourite ? m.my_favourite_remove() : m.my_favourite_add();
 	const visitLabel = visited ? m.my_visited_remove() : m.my_visited_add();
 	return (
-		<Group gap={6}>
+		<Group gap="xs">
 			<Tooltip label={favLabel} withinPortal>
 				<ActionIcon
 					variant={favourite ? "light" : "default"}
