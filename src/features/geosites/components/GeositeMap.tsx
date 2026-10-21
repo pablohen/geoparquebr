@@ -15,6 +15,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
 import { type BBox, bboxCenter, flatBBox, roundBBox } from "~/lib/geo";
 import { m } from "~/paraglide/messages.js";
+import { DEM_TILES, STYLE_URL } from "../map-sources";
 import type { GeositeSummary } from "../schemas";
 
 // MapLibre resolves its worker relative to its own module URL, which breaks
@@ -67,7 +68,6 @@ type Props = {
 	terrain: boolean;
 };
 
-const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 const SOURCE_ID = "geosites";
 const CLUSTERS = "geosites-clusters";
 const CLUSTER_COUNT = "geosites-cluster-count";
@@ -75,12 +75,9 @@ const POINTS = "geosites-points";
 const GEOLOGY = "sgb-geology";
 
 /**
- * Elevation: AWS Open Data "Terrain Tiles" (Terrarium-encoded, SRTM ~30 m
- * over Brazil), free and keyless. Two sources, as MapLibre recommends: one
- * for the hillshade drawn by default, one for the opt-in 3D terrain.
+ * Elevation (DEM_TILES) feeds two sources, as MapLibre recommends: one for
+ * the hillshade drawn by default, one for the opt-in 3D terrain.
  */
-const DEM_TILES =
-	"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
 const DEM_HILLSHADE = "dem-hillshade";
 const DEM_TERRAIN = "dem-terrain";
 const HILLSHADE = "relief-hillshade";
