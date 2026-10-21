@@ -76,7 +76,8 @@ sequenceDiagram
 | `/geoparks/$geoparkId` | one geopark: description, its GEOSSIT geosites (matched by municipality), a link that frames its area on the map, JSON-LD `TouristDestination` |
 | `/fossils` | fossil genera recorded within 5 km of a geosite, grouped by class (from `fossil_genera`, built by `pnpm db:fossils`) |
 | `/fossils/$genus` | one genus: GBIF classification, species recorded, the geosites near its records (no specimen locations), units and ages as recorded, JSON-LD `Taxon` |
-| `/my-geosites` | this device's favourites, visits and offline geoparks (localStorage, `noindex`) |
+| `/my-geosites` | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`) |
+| `/trip` | this device's trip: suggested order, straight-line legs, Google Maps links and a share link; `?stops=a,b,c` opens a shared trip (`noindex`) |
 | `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
 | `/og/geosites/$slug`, `/og/geoparks/$geoparkId` | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`) |
 | `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
@@ -91,11 +92,11 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 
 | Requests | Strategy | Cache |
 | --- | --- | --- |
-| `/assets/*` (content-hashed) | cache first | `assets-v6` |
-| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…`, `/fossils/…` or `/my-geosites` path (any language), or `/offline.html` (in the page's language) | `pages-v6` (150) |
-| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v6` (600) |
-| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v6` (4000) |
-| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v6` (2000) |
+| `/assets/*` (content-hashed) | cache first | `assets-v7` |
+| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…`, `/fossils/…`, `/my-geosites` or `/trip` path (any language), or `/offline.html` (in the page's language) | `pages-v7` (150) |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v7` (600) |
+| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v7` (4000) |
+| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v7` (2000) |
 
 **Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen; "Meus geossítios"; and everything in a geopark saved with **Salvar para uso offline**. **Needs a connection:** viewports and geosites you've never loaded and didn't save. Photos are never cached.
 
@@ -113,7 +114,11 @@ Saved tiles share their caches with normal browsing and can eventually be evicte
 
 ### On this device: favourites and visits
 
-"Meus geossítios" (`/my-geosites`, not indexed) lists favourites, visits (with the date) and saved geoparks. They live in localStorage (`src/features/my-geosites/store.ts`, via `src/lib/local-store.ts`), each with a small snapshot of the geosite so the list works offline. There is no account and nothing is sent to the server.
+"Meus geossítios" (`/my-geosites`, not indexed) lists favourites, visits (with the date) and saved geoparks. They live in localStorage (`src/features/my-geosites/store.ts`, via `src/lib/local-store.ts`), each with a small snapshot of the geosite so the list works offline. There is no account and nothing is sent to the server. A geopark's page shows how many of its geosites this device has visited, and "Meus geossítios" lists that progress per geopark.
+
+### Trips
+
+The trip button (beside the star and tick) adds a geosite to a trip kept in localStorage (`src/features/trip/store.ts`, up to 25 stops); a geopark page can add all of its geosites at once. `/trip` orders the stops on the device (`suggestOrder` in `route.ts`: nearest neighbour, then 2-opt), shows straight-line legs and opens the route in Google Maps (`googleMapsTripUrls`, split into legs of 10 points). "Começar da minha posição" uses the browser's location for the ordering and the links only; it never reaches the server. Stops carry each geosite's public point, so sensitive sites are approximate, as in "Como chegar". A share link (`/trip?stops=a,b,c`) carries slugs only; the server resolves them to public points (`getTripStops`).
 
 ## UI composition
 
