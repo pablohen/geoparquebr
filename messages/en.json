@@ -97,6 +97,13 @@
 	"fossils_credits": "Sources: SGB/CPRM — Fossil Occurrences (OGC API); GBIF.org, with data from the publishing institutions. Each record keeps its own licence.",
 	"fossils_empty": "No fossils indexed yet.",
 	"fossils_error": "Couldn't look up fossil occurrences.",
+	"fossils_filter_all": "All",
+	"fossils_filter_clear": "Clear filters",
+	"fossils_filter_geopark": "Geopark",
+	"fossils_filter_group": "Group",
+	"fossils_filter_name": "Filter by name",
+	"fossils_filter_none": "No genera match these filters.",
+	"fossils_filter_shown": "{shown} of {total} genera",
 	"fossils_genera_here": "Genera recorded here",
 	"fossils_genus_count": [
 		{
@@ -342,6 +349,7 @@
 	"score_tourism": "Tourism potential",
 	"score_vulnerability": "Vulnerability",
 	"search_aria": "Search geosites and places",
+	"search_group_fossils": "Fossils",
 	"search_group_geoparks": "Geoparks",
 	"search_group_geosites": "Geosites",
 	"search_group_places": "Places",

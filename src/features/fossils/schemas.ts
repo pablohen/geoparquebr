@@ -47,8 +47,19 @@ export const FossilGenusSummarySchema = FossilGenusSchema.pick({
 }).extend({
 	geositeCount: z.number().int(),
 	speciesCount: z.number().int(),
+	/** Geoparks of the geosites with records, for the index's filter. */
+	geoparks: z.array(GeoparkIdSchema),
 });
 export type FossilGenusSummary = z.infer<typeof FossilGenusSummarySchema>;
+
+/** `/fossils` filters, kept in the URL so a filtered list can be shared. */
+export const FossilsSearchSchema = z.object({
+	q: z.string().trim().max(60).optional().catch(undefined),
+	/** GBIF class (or phylum when the class is unknown); "other" for neither. */
+	group: z.string().max(60).optional().catch(undefined),
+	gp: GeoparkIdSchema.optional().catch(undefined),
+});
+export type FossilsSearch = z.infer<typeof FossilsSearchSchema>;
 
 /** A genus as linked from a geosite or geopark. */
 export const GenusLinkSchema = FossilGenusSchema.pick({
@@ -56,3 +67,13 @@ export const GenusLinkSchema = FossilGenusSchema.pick({
 	name: true,
 });
 export type GenusLink = z.infer<typeof GenusLinkSchema>;
+
+/** A genus in the header search. */
+export const GenusSearchHitSchema = GenusLinkSchema.extend({
+	group: z.string().optional(),
+	geositeCount: z.number().int(),
+});
+export type GenusSearchHit = z.infer<typeof GenusSearchHitSchema>;
+
+/** The index groups genera by GBIF class, then phylum; "" when neither is known. */
+export const genusGroup = (c: Classification) => c.class ?? c.phylum ?? "";

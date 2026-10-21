@@ -14,6 +14,7 @@ import {
 	generaNearGeosites,
 	listFossilGenera,
 	refreshFossilIndexSlice,
+	searchFossilGenera,
 } from "./fossils.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
@@ -147,6 +148,7 @@ describe.skipIf(!enabled)("fossils.server (MongoDB)", () => {
 				slug: "dastilbe",
 				geositeCount: 2,
 				speciesCount: 1,
+				geoparks: ["araripe"],
 			}),
 		]);
 		expect(await generaNearGeosites(["lajedo"])).toEqual([
@@ -155,6 +157,20 @@ describe.skipIf(!enabled)("fossils.server (MongoDB)", () => {
 		expect(await generaNearGeosites(["nowhere"])).toEqual([]);
 		expect(await generaNearGeopark("araripe")).toHaveLength(1);
 		expect(await generaNearGeopark("serido")).toEqual([]);
+	});
+
+	it("finds genera by the start of the genus or a species word", async () => {
+		const hit = {
+			slug: "dastilbe",
+			name: "Dastilbe",
+			group: "Chordata",
+			geositeCount: 2,
+		};
+		expect(await searchFossilGenera("dast")).toEqual([hit]);
+		expect(await searchFossilGenera("ELONG")).toEqual([hit]);
+		expect(await searchFossilGenera("stilbe")).toEqual([]);
+		// Regex characters are taken literally.
+		expect(await searchFossilGenera("d.*")).toEqual([]);
 	});
 
 	it("refreshes the stalest geosites first, a slice at a time", async () => {

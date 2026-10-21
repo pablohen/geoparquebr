@@ -97,6 +97,13 @@
 	"fossils_credits": "Fontes: SGB/CPRM — Ocorrências Fossilíferas (OGC API); GBIF.org, com dados das instituições publicadoras. Cada registro mantém sua licença.",
 	"fossils_empty": "Ainda não há fósseis indexados.",
 	"fossils_error": "Não foi possível consultar as ocorrências fósseis.",
+	"fossils_filter_all": "Todos",
+	"fossils_filter_clear": "Limpar filtros",
+	"fossils_filter_geopark": "Geoparque",
+	"fossils_filter_group": "Grupo",
+	"fossils_filter_name": "Filtrar por nome",
+	"fossils_filter_none": "Nenhum gênero com esses filtros.",
+	"fossils_filter_shown": "{shown} de {total} gêneros",
 	"fossils_genera_here": "Gêneros registrados aqui",
 	"fossils_genus_count": [
 		{
@@ -342,6 +349,7 @@
 	"score_tourism": "Potencial turístico",
 	"score_vulnerability": "Vulnerabilidade",
 	"search_aria": "Buscar geossítios e lugares",
+	"search_group_fossils": "Fósseis",
 	"search_group_geoparks": "Geoparques",
 	"search_group_geosites": "Geossítios",
 	"search_group_places": "Lugares",

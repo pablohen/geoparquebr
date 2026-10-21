@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import {
+	Bone,
 	MagnifyingGlass,
 	MapPin,
 	MapTrifold,
@@ -15,6 +16,7 @@ import {
 } from "@phosphor-icons/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { searchFossilGeneraFn } from "~/features/fossils/fossils.functions";
 import { GEOPARKS } from "~/features/geoparks/geoparks";
 import { matchGeoparks } from "~/features/geoparks/search";
 import { geoparkIdLabel } from "~/features/geosites/labels";
@@ -33,6 +35,7 @@ type Props = {
 const GEOPARK = "geopark:";
 const GEOSITE = "geosite:";
 const PLACE = "place:";
+const FOSSIL = "fossil:";
 
 export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	const isMobile = useIsMobile();
@@ -47,11 +50,17 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	const placeResults = useServerQuery(key && `search:places:${key}`, () =>
 		searchPlacesFn({ data: { q } }),
 	);
+	const fossilResults = useServerQuery(key && `search:fossils:${key}`, () =>
+		searchFossilGeneraFn({ data: { q } }),
+	);
 	const pending =
-		geositeResults.status === "pending" || placeResults.status === "pending";
+		geositeResults.status === "pending" ||
+		placeResults.status === "pending" ||
+		fossilResults.status === "pending";
 
 	const geosites = geositeResults.data ?? [];
 	const places = placeResults.data ?? [];
+	const fossils = fossilResults.data ?? [];
 	// Matched locally, so they show before the server answers.
 	const geoparks = enabled ? matchGeoparks(q) : [];
 	const data = [
@@ -70,6 +79,13 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			})),
 		},
 		{
+			group: m.search_group_fossils(),
+			items: fossils.map((f) => ({
+				value: `${FOSSIL}${f.slug}`,
+				label: f.name,
+			})),
+		},
+		{
 			group: m.search_group_places(),
 			items: places.map((p) => ({ value: `${PLACE}${p.id}`, label: p.name })),
 		},
@@ -84,6 +100,12 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			`${GEOSITE}${g.slug}`,
 			`${g.municipality} – ${g.state}`,
 		]),
+		...fossils.map((f): [string, string] => [
+			`${FOSSIL}${f.slug}`,
+			[f.group, m.fossils_geosites_count({ count: f.geositeCount })]
+				.filter(Boolean)
+				.join(" · "),
+		]),
 		...places.map((p): [string, string] => [
 			`${PLACE}${p.id}`,
 			[p.context, p.kind?.replace(/_/g, " ")].filter(Boolean).join(" · "),
@@ -95,6 +117,8 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			<MapTrifold size={16} weight="duotone" />
 		) : option.value.startsWith(GEOSITE) ? (
 			<Mountains size={16} weight="duotone" />
+		) : option.value.startsWith(FOSSIL) ? (
+			<Bone size={16} weight="duotone" />
 		) : (
 			<MapPin size={16} />
 		);
@@ -102,7 +126,12 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			<Group gap="xs" wrap="nowrap">
 				{icon}
 				<Stack gap={0}>
-					<Text size="sm">{option.label}</Text>
+					<Text
+						size="sm"
+						fs={option.value.startsWith(FOSSIL) ? "italic" : undefined}
+					>
+						{option.label}
+					</Text>
 					<Text size="xs" c="dimmed">
 						{subtitle.get(option.value)}
 					</Text>
@@ -147,6 +176,11 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 					});
 				else if (selected.startsWith(GEOSITE))
 					onSelectGeosite(selected.slice(GEOSITE.length));
+				else if (selected.startsWith(FOSSIL))
+					navigate({
+						to: "/fossils/$genus",
+						params: { genus: selected.slice(FOSSIL.length) },
+					});
 				else {
 					const place = places.find((p) => `${PLACE}${p.id}` === selected);
 					if (place) onSelectPlace(place);

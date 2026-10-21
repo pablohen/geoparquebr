@@ -17,7 +17,13 @@ import type { GeoparkId } from "~/features/geosites/schemas";
 import { cached } from "~/lib/cache.server";
 import { getDb } from "~/lib/db.server";
 import { aggregateGenera, type GenusRecord } from "./aggregate";
-import type { FossilGenus, FossilGenusSummary, GenusLink } from "./schemas";
+import {
+	type FossilGenus,
+	type FossilGenusSummary,
+	type GenusLink,
+	type GenusSearchHit,
+	genusGroup,
+} from "./schemas";
 import { acceptMatch, matchQuery, type TaxonMatch } from "./taxonomy";
 
 const GBIF_API = "https://api.gbif.org/v1";
@@ -331,7 +337,46 @@ export async function listFossilGenera(): Promise<FossilGenusSummary[]> {
 		classification: d.classification,
 		geositeCount: d.geosites.length,
 		speciesCount: d.species.length,
+		geoparks: [
+			...new Set(d.geosites.flatMap((g) => (g.geoparkId ? [g.geoparkId] : []))),
+		],
 	}));
+}
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Genera whose name, or a species recorded, starts with the query (any word),
+ * names first, at most `limit`. Case-insensitive.
+ */
+export async function searchFossilGenera(
+	q: string,
+	limit = 5,
+): Promise<GenusSearchHit[]> {
+	const word = new RegExp(`(^|\\s)${escapeRegex(q.trim())}`, "i");
+	const docs = await (await fossilGeneraCollection())
+		.find(
+			{ $or: [{ name: word }, { species: word }] },
+			{ projection: { name: 1, classification: 1, geosites: 1 } },
+		)
+		.limit(50)
+		.toArray();
+	const start = new RegExp(`^${escapeRegex(q.trim())}`, "i");
+	return docs
+		.sort(
+			(a, b) =>
+				Number(start.test(b.name)) - Number(start.test(a.name)) ||
+				a.name.localeCompare(b.name),
+		)
+		.slice(0, limit)
+		.map((d) => ({
+			slug: d._id,
+			name: d.name,
+			...(genusGroup(d.classification) && {
+				group: genusGroup(d.classification),
+			}),
+			geositeCount: d.geosites.length,
+		}));
 }
 
 /** Genera recorded near any of these geosites, by name. */

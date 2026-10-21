@@ -8,6 +8,7 @@ import {
 	generaNearGeopark,
 	generaNearGeosites,
 	listFossilGenera,
+	searchFossilGenera,
 } from "./fossils.server";
 import { GenusSlugSchema } from "./schemas";
 
@@ -30,3 +31,8 @@ export const getGeositeGenera = createServerFn({ method: "GET" })
 export const getGeoparkGenera = createServerFn({ method: "GET" })
 	.validator(z.object({ id: GeoparkIdSchema }))
 	.handler(({ data }) => generaNearGeopark(data.id));
+
+/** Header search; separate from geosites and places so none waits on another. */
+export const searchFossilGeneraFn = createServerFn({ method: "GET" })
+	.validator(z.object({ q: z.string().trim().min(2).max(60) }))
+	.handler(({ data }) => searchFossilGenera(data.q));
