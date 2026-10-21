@@ -78,3 +78,17 @@ export function geologicAgeFromUnits(
 		mapScale,
 	};
 }
+
+/** "Grupo Santana — Cretáceo · 101–145 Ma"; the unit leads for map-derived ages. */
+export function formatGeologicAge(age: GeologicAge): string {
+	const range = formatAgeRange(age.minMa, age.maxMa);
+	const names = age.mapScale
+		? [age.formation, age.period]
+		: [age.period, age.formation];
+	return [
+		names.filter(Boolean).join(" — "),
+		range !== age.period ? range : undefined,
+	]
+		.filter(Boolean)
+		.join(" · ");
+}
