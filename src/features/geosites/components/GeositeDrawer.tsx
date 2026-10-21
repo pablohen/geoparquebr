@@ -33,7 +33,14 @@ export function GeositeDrawer({
 			opened={opened}
 			onClose={onClose}
 			position={isMobile ? "bottom" : "right"}
-			size={isMobile ? "92%" : "xl"}
+			// On phones the sheet stops below the header, which stays usable
+			// (search, language, theme) above the overlay: see GeositeExplorer.
+			size={
+				isMobile
+					? "calc(100% - var(--app-shell-header-height, 56px) - 8px)"
+					: "xl"
+			}
+			trapFocus={!isMobile}
 			radius={isMobile ? "lg" : 0}
 			title={
 				geosite && (

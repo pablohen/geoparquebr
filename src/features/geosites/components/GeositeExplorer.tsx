@@ -3,6 +3,7 @@ import {
 	AppShell,
 	Box,
 	Group,
+	getDefaultZIndex,
 	Loader,
 	ScrollArea,
 	Text,
@@ -20,6 +21,7 @@ import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
 import { SearchBox } from "~/features/search/components/SearchBox";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
 import { SITE_NAME } from "~/lib/site";
+import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import { getGeositeBySlug } from "../geosites.functions";
@@ -60,6 +62,7 @@ function formValuesFor(bbox: BBox): LocationFormValues {
 }
 
 export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
+	const isMobile = useIsMobile();
 	// Phone list sheet; from `sm` up the AppShell sidebar is always visible.
 	const [sheetOpened, { open: openSheet, close: closeSheet }] = useDisclosure();
 	const [geologyOpacity, setGeologyOpacity] = useState(0.7);
@@ -121,7 +124,10 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 			}}
 			padding={0}
 		>
-			<AppShell.Header>
+			{/* Above the geosite sheet's overlay on phones, so search and language stay reachable. */}
+			<AppShell.Header
+				zIndex={isMobile ? getDefaultZIndex("modal") + 1 : undefined}
+			>
 				<Group h="100%" px={{ base: "xs", sm: "md" }} gap="xs" wrap="nowrap">
 					<Group gap="xs" wrap="nowrap" style={{ flex: "none" }}>
 						<Mountains
