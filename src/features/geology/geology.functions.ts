@@ -9,7 +9,7 @@ import { cached } from "~/lib/cache.server";
 import { bboxAround } from "~/lib/geo";
 import { findGeositeLocation } from "../geosites/geosites.server";
 import { LatitudeSchema, LongitudeSchema } from "../geosites/schemas";
-import { gbifFossilsNear } from "./gbif.server";
+import { type FossilLookup, fossilLookups } from "./fossils.server";
 import {
 	FOSSIL_SEARCH_RADIUS_KM,
 	type FossilOccurrence,
@@ -19,10 +19,9 @@ import {
 	type GeositeStrata,
 	STRATA_SEARCH_RADIUS_KM,
 } from "./schemas";
-import { type NearbyFossil, sgbFossilsNear, sgbStrataIn } from "./sgb.server";
+import { sgbStrataIn } from "./sgb.server";
 
 const DAY_MS = 24 * 60 * 60 * 1_000;
-const WEEK_MS = 7 * DAY_MS;
 const SlugInput = z.object({ slug: z.string().min(1) });
 
 async function locate(slug: string) {
@@ -33,7 +32,7 @@ async function locate(slug: string) {
 
 /** Runs one upstream lookup; an outage becomes "unavailable" instead of failing the request. */
 async function settle(
-	lookup: () => Promise<{ items: NearbyFossil[]; total: number }>,
+	lookup: FossilLookup,
 	sensitive: boolean,
 ): Promise<GeositeFossils["sgb"]> {
 	try {
@@ -62,25 +61,12 @@ export const getGeositeFossils = createServerFn({ method: "GET" })
 	.validator(SlugInput)
 	.handler(async ({ data }): Promise<GeositeFossils> => {
 		const { point, sensitive } = await locate(data.slug);
-		const radiusKm = FOSSIL_SEARCH_RADIUS_KM;
-
+		const lookups = fossilLookups(data.slug, point);
 		const [sgb, gbif] = await Promise.all([
-			settle(
-				() =>
-					cached(`fossils:sgb:v3:${data.slug}`, WEEK_MS, () =>
-						sgbFossilsNear(point, bboxAround(point, radiusKm), radiusKm),
-					),
-				sensitive,
-			),
-			settle(
-				() =>
-					cached(`fossils:gbif:v1:${data.slug}`, WEEK_MS, () =>
-						gbifFossilsNear(point, radiusKm),
-					),
-				sensitive,
-			),
+			settle(lookups.sgb, sensitive),
+			settle(lookups.gbif, sensitive),
 		]);
-		return { radiusKm, sgb, gbif };
+		return { radiusKm: FOSSIL_SEARCH_RADIUS_KM, sgb, gbif };
 	});
 
 /** Geological maps change rarely; cache for a month. */
