@@ -111,6 +111,12 @@ export function GeositeFilters({ value, onChange }: Props) {
 				>
 					{m.fossils_link()}
 				</Anchor>
+				<Anchor
+					size="xs"
+					renderRoot={(props) => <Link {...props} to="/news" />}
+				>
+					{m.news_link()}
+				</Anchor>
 			</Group>
 			<AgeFilter
 				value={value.age}

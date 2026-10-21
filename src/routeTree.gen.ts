@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
+import { Route as NewsRouteImport } from './routes/news'
+import { Route as NewsDotxmlRouteImport } from './routes/news[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TripRouteImport } from './routes/trip'
 import { Route as FossilsIndexRouteImport } from './routes/fossils.index'
@@ -31,6 +33,16 @@ const IndexRoute = IndexRouteImport.update({
 const MyGeositesRoute = MyGeositesRouteImport.update({
   id: '/my-geosites',
   path: '/my-geosites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsDotxmlRoute = NewsDotxmlRouteImport.update({
+  id: '/news.xml',
+  path: '/news.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -92,6 +104,8 @@ const OgGeositesSlugRoute = OgGeositesSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
+  '/news': typeof NewsRoute
+  '/news.xml': typeof NewsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
@@ -107,6 +121,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
+  '/news': typeof NewsRoute
+  '/news.xml': typeof NewsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
@@ -123,6 +139,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/my-geosites': typeof MyGeositesRoute
+  '/news': typeof NewsRoute
+  '/news.xml': typeof NewsDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trip': typeof TripRoute
   '/fossils/$genus': typeof FossilsGenusRoute
@@ -140,6 +158,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/my-geosites'
+    | '/news'
+    | '/news.xml'
     | '/sitemap.xml'
     | '/trip'
     | '/fossils/$genus'
@@ -155,6 +175,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/my-geosites'
+    | '/news'
+    | '/news.xml'
     | '/sitemap.xml'
     | '/trip'
     | '/fossils/$genus'
@@ -170,6 +192,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/my-geosites'
+    | '/news'
+    | '/news.xml'
     | '/sitemap.xml'
     | '/trip'
     | '/fossils/$genus'
@@ -186,6 +210,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MyGeositesRoute: typeof MyGeositesRoute
+  NewsRoute: typeof NewsRoute
+  NewsDotxmlRoute: typeof NewsDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TripRoute: typeof TripRoute
   FossilsGenusRoute: typeof FossilsGenusRoute
@@ -213,6 +239,20 @@ declare module '@tanstack/react-router' {
       path: '/my-geosites'
       fullPath: '/my-geosites'
       preLoaderRoute: typeof MyGeositesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news.xml': {
+      id: '/news.xml'
+      path: '/news.xml'
+      fullPath: '/news.xml'
+      preLoaderRoute: typeof NewsDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -298,6 +338,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MyGeositesRoute: MyGeositesRoute,
+  NewsRoute: NewsRoute,
+  NewsDotxmlRoute: NewsDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TripRoute: TripRoute,
   FossilsGenusRoute: FossilsGenusRoute,

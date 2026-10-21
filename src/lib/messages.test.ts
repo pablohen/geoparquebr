@@ -33,6 +33,13 @@ test("every locale has exactly the base locale's keys", () => {
 		expect(Object.keys(catalog(locale)).sort(), locale).toEqual(base);
 });
 
+// Regression: the build's Paraglide compile dropped camelCase keys
+// (news_field_geologicAge), and the catalog guard failed the deploy build.
+test("message keys are lower snake_case", () => {
+	for (const key of Object.keys(catalog("pt-BR")))
+		expect(key, key).toMatch(/^[a-z][a-z0-9_]*$/);
+});
+
 test("translations use the same placeholders", () => {
 	const pt = catalog("pt-BR");
 	const en = catalog("en");

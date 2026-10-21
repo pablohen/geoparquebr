@@ -7,6 +7,8 @@
  * records than are stored (a truncated response would otherwise prune most
  * geosites) or when most age lookups fail (it would wipe stored ages).
  */
+import { diffGeosites } from "~/features/news/changes";
+import { recordChanges } from "~/features/news/news.server";
 import { curatedAge } from "./age-catalog.server";
 import { withGeologicAges } from "./geologic-age.server";
 import {
@@ -33,6 +35,8 @@ export type SyncReport = {
 	models: number;
 	dated: number;
 	ageLookupsFailed: number;
+	/** Geosites added, changed (reader-facing fields) and removed. */
+	changes: { added: number; changed: number; removed: number };
 };
 
 /** Throws, writing nothing, when `valid` is implausibly low against `stored`. */
@@ -86,7 +90,14 @@ export async function syncGeosites({
 		};
 	});
 
+	// Read before the write and compared with the import, for the "Novidades"
+	// page. A first import into an empty database isn't news.
+	const before = await col
+		.find({ "source.system": "geossit" }, { projection: { _id: 0, models: 0 } })
+		.toArray();
 	const result = await syncSourcedGeosites(col, "geossit", records);
+	const changes = diffGeosites(before, records);
+	if (before.length > 0) await recordChanges(changes);
 	return {
 		fetched: raw.length,
 		valid: geosites.length,
@@ -96,6 +107,11 @@ export async function syncGeosites({
 		models: records.reduce((n, g) => n + g.models.length, 0),
 		dated: records.filter((g) => g.geologicAge?.maxMa).length,
 		ageLookupsFailed: aged.failed,
+		changes: {
+			added: changes.added.length,
+			changed: changes.changed.length,
+			removed: changes.removed.length,
+		},
 	};
 }
 
@@ -104,4 +120,5 @@ export const formatSyncReport = (r: SyncReport) =>
 	`GEOSSIT: ${r.fetched} fetched, ${r.valid} valid, ${r.skipped.length} skipped → ` +
 	`${r.inserted} inserted, ${r.updated} updated, ${r.deleted} deleted. ` +
 	`${r.inGeoparks} in UNESCO geoparks; ${r.models} 3D model attachments. ` +
-	`Ages: ${r.dated} dated, ${r.ageLookupsFailed} lookups failed.`;
+	`Ages: ${r.dated} dated, ${r.ageLookupsFailed} lookups failed. ` +
+	`Changes: ${r.changes.added} added, ${r.changes.changed} changed, ${r.changes.removed} removed.`;

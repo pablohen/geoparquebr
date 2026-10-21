@@ -4,6 +4,7 @@ import { GEOPARKS, geoparkPath } from "~/features/geoparks/geoparks";
 import { GEOPARKS_INDEX_PATH } from "~/features/geoparks/seo";
 import type { GeoparkId } from "~/features/geosites/schemas";
 import { sitemapXml } from "~/features/geosites/seo";
+import { NEWS_PATH } from "~/features/news/schemas";
 
 export const Route = createFileRoute("/sitemap.xml")({
 	server: {
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 					GEOPARKS_INDEX_PATH,
 					...geoparks,
 					FOSSILS_INDEX_PATH,
+					NEWS_PATH,
 					...genera.map((g) => genusPath(g.slug)),
 				]);
 				return new Response(xml, {
