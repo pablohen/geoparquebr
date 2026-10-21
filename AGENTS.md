@@ -22,6 +22,7 @@ Use **pnpm**, never npm or yarn.
 | Run production build | `pnpm start` |
 | Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
 | Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`; production also syncs weekly via Vercel Cron) |
+| Rebuild the fossil genus index (`/fossils`) | `pnpm db:fossils` (after `db:seed`; not in the cron) |
 | Regenerate share card + app icons | `pnpm brand:images` (commit the PNGs) |
 | Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
 | Local MongoDB | `docker compose up -d` |
@@ -67,6 +68,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - The list query is `$geoNear` (first stage, on `publicLocation`, needs `public_location_2dsphere`) with `$geoWithin` on a densified box polygon in its `query`. **Any query a client can steer (boxes, centres, distances) must use `publicLocation`, never `location`:** matching or measuring on exact points leaks sensitive sites. Return summaries only; the drawer fetches the full geosite by slug.
 - **Distances to sensitive sites** are measured between public (rounded) points and rounded to 100 m, as in `rankNearby`. Never return a distance measured from or to exact sensitive coordinates: a few of them pin the site down.
 - **Geological ages are map-derived or curated.** `geologicAge` comes from SGB's map at seed time (`mapScale` set; show it as the rock mapped at the site, with the scale), or from `age-catalog.server.ts` with a published `reference` (show the source). Never curate an age without a citable source.
+- **Fossil genera come from the GBIF backbone.** `pnpm db:fossils` keeps only exact GBIF matches at genus rank or below (never fuzzy: Portuguese descriptions fuzzy-match unrelated genera), and `fossil_genera` stores geosites, never specimen coordinates.
 - Per-geosite lookups (fossils, strata) take a **slug** and resolve exact coordinates server-side via `findGeositeLocation`. Never accept coordinates from the client for them, and never return exact coordinates of sensitive sites.
 - **Three languages:** Brazilian Portuguese (default), English and Spanish. Enum values stay English slugs; show labels from `labels.ts` (`categoryLabel`, `geoparkLabel`, `relevanceLabel`, …), never raw enum values. Data from GEOSSIT, SGB and GBIF stays as published (Portuguese).
 
@@ -92,7 +94,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 
 ## Pages, sharing and offline
 
-- **Routes.** `/` is the map explorer. `/geoparks` and `/geoparks/$geoparkId` are the geopark pages (`src/features/geoparks/`); designation years and map areas live in `geoparks.ts`, descriptions in messages. `/geosites/$slug` is the indexable page for one geosite, server-rendered, with Open Graph, Twitter and JSON-LD built in `src/features/geosites/seo.ts`. `/sitemap.xml` is a server route. The public origin is `SITE_URL` in `src/lib/site.ts`.
+- **Routes.** `/` is the map explorer. `/geoparks` and `/geoparks/$geoparkId` are the geopark pages (`src/features/geoparks/`); designation years and map areas live in `geoparks.ts`, descriptions in messages. `/fossils` and `/fossils/$genus` are the fossil genus pages (`src/features/fossils/`), read from `fossil_genera`. `/geosites/$slug` is the indexable page for one geosite, server-rendered, with Open Graph, Twitter and JSON-LD built in `src/features/geosites/seo.ts`. `/sitemap.xml` is a server route. The public origin is `SITE_URL` in `src/lib/site.ts`.
 - **Share images.** Geosite and geopark pages share a generated 1200×630 card from `/og/geosites/$slug` and `/og/geoparks/$geoparkId` (`src/features/share/share-card.server.tsx`: satori → resvg-wasm, Inter and the wasm inlined with `?base64` imports). Cards follow the URL's locale, carry no photo (it would push the PNG past WhatsApp's ~300 KB limit) and never draw a map or coordinates. Structured data still uses a geosite's photo, but only when `getGeositePage` confirms it loads (about 2% of GEOSSIT links are dead).
 - **Service worker** (`public/sw.js`, registered in production only). Bump `VERSION` whenever its caching rules or page paths change. `/offline.html` switches language under `/en` and `/es`. Keep `/assets/*` cache-first (content-hashed), pages and `/_serverFn/*` network-first, and map tiles stale-while-revalidate.
 - **Start URL.** The manifest `start_url` must be the default-viewport URL (`/?bbox=…`); `manifest.test.ts` keeps it in sync with `DEFAULT_BBOX`. A redirect (`/` → `/?bbox=…`) can't be served offline.

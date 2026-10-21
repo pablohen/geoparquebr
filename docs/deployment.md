@@ -22,7 +22,13 @@ Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, an
    MONGODB_URI="mongodb+srv://…" MONGODB_DB=geoparquebr pnpm db:seed
    ```
 
-   This creates the indexes (2dsphere, text, unique keys) and imports GEOSSIT. The `api_cache` collection and its TTL index are created automatically on first use.
+   This creates the indexes (2dsphere, text, unique keys) and imports GEOSSIT. Then build the fossil pages' index (a few minutes; not part of the weekly cron, so re-run it now and then):
+
+   ```bash
+   MONGODB_URI="mongodb+srv://…" MONGODB_DB=geoparquebr pnpm db:fossils
+   ```
+
+   The `api_cache` collection and its TTL index are created automatically on first use.
 
 ### 2. Project
 
@@ -94,5 +100,6 @@ PORT=3000 MONGODB_URI=… MONGODB_DB=geoparquebr pnpm start
 | --- | --- |
 | Pages return 500/504 after ~10 s | Atlas is unreachable. Check `MONGODB_URI`, the database user, and that Network Access allows `0.0.0.0/0` |
 | Empty map/list in production | The database wasn't seeded. Run `pnpm db:seed` against the Atlas URI |
+| `/fossils` says no fossils are indexed | Run `pnpm db:fossils` against the Atlas URI |
 | `ERR_PNPM_…` lockfile errors on install | Vercel isn't using the pinned pnpm. Check `packageManager` in `package.json` and that corepack isn't disabled in project settings |
 | Function deployed outside São Paulo | Check `regions` in `.vc-config.json` and the project's Function Region setting |

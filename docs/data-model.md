@@ -190,7 +190,29 @@ These are per-geosite queries to public APIs, made by server functions in [`src/
 
 **Strata.** Detailed scales cover only parts of Brazil. The lookup uses the most detailed scale with any unit and falls back to 1:1,000,000, which covers the whole country. Units are deduplicated by code and ordered youngest (top) → oldest (base), coloured with ICS colours by mid-age ([`time-scale.ts`](../src/features/geology/time-scale.ts)). The map has no thickness data, so the column's thicknesses are illustrative, and the UI says so.
 
-Cache keys are versioned (`fossils:sgb:v2:<slug>`). Bump the version when the mapping changes, so stale entries are ignored and expire on their own.
+Cache keys are versioned (`fossils:sgb:v3:<slug>`). Bump the version when the mapping changes, so stale entries are ignored and expire on their own.
+
+## Collection: `fossil_genera`
+
+The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. `pnpm db:fossils` (`buildFossilIndex` in [`fossils.server.ts`](../src/features/fossils/fossils.server.ts)) rebuilds it from the same cached lookups as each geosite's "Fósseis" tab:
+
+1. For every geosite, the SGB and GBIF fossil records within 5 km.
+2. Each recorded name is cut to genus + epithet (`matchQuery`: "dastilbe elongatus santos, 1947" → "Dastilbe elongatus") and matched with GBIF's [`species/match`](https://techdocs.gbif.org/en/openapi/v1/species) (cached 30 days as `gbif-match:v1:<name>`).
+3. Only **exact** matches at genus rank or below are kept, plus a HIGHERRANK match to the recorded genus when the backbone lacks the species (`acceptMatch`). Fuzzy matches are dropped: recorded names include Portuguese descriptions ("Restos vegetais") that fuzzy matching turns into unrelated genera. Higher taxa ("Araneae", "Squamata") are skipped.
+4. Records are folded per GBIF genus key (`aggregateGenera`): accepted species, the geosites with record counts, units and ages as recorded (up to 12 each), records per source.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | string | URL slug, the genus in lower case (`dastilbe`); `<slug>-<gbifKey>` for a homonym |
+| `name`, `gbifKey` | string, int | GBIF backbone genus |
+| `classification` | `{ kingdom?, phylum?, class?, order?, family? }` | from GBIF; the index groups by `class` |
+| `species` | string[] | accepted species names recorded |
+| `geosites` | `{ slug, name, municipality, state, geoparkId?, records }[]` | most records first |
+| `units`, `ages` | string[] | as recorded (Portuguese from SGB, English from GBIF) |
+| `records` | `{ sgb, gbif }` | |
+| `updatedAt` | Date | |
+
+Index: `geosites.slug` (genera near a geosite or geopark). **No coordinates are stored**: a genus page names geosites, never where a specimen was found, so sensitive sites stay as private as on their own page. The build writes nothing when more than 10% of the upstream lookups or name matches fail, so an outage can't prune the index. It isn't part of the weekly cron (about 640 upstream calls on a cold cache, past the function's 60 s); run it after `pnpm db:seed`.
 
 ## Other open data sources (not used yet)
 

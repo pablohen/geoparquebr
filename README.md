@@ -13,6 +13,7 @@ pnpm install
 cp .env.example .env          # set MONGODB_URI (Atlas, or mongodb://localhost:27017)
 docker compose up -d          # optional: local MongoDB instead of Atlas
 pnpm db:seed                  # indexes + geosites from GEOSSIT (SGB/CPRM) + 3D models
+pnpm db:fossils               # fossil genus pages (records near geosites, matched to GBIF)
 pnpm models:fetch             # optional: self-host CC BY 3D models (needs SKETCHFAB_TOKEN)
 pnpm dev                      # http://localhost:3000
 ```

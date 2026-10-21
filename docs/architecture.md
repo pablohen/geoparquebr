@@ -74,6 +74,8 @@ sequenceDiagram
 | `/geosites/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
 | `/geoparks` | Brazil's UNESCO Global Geoparks, with designation year, description and GEOSSIT geosite count |
 | `/geoparks/$geoparkId` | one geopark: description, its GEOSSIT geosites (matched by municipality), a link that frames its area on the map, JSON-LD `TouristDestination` |
+| `/fossils` | fossil genera recorded within 5 km of a geosite, grouped by class (from `fossil_genera`, built by `pnpm db:fossils`) |
+| `/fossils/$genus` | one genus: GBIF classification, species recorded, the geosites near its records (no specimen locations), units and ages as recorded, JSON-LD `Taxon` |
 | `/my-geosites` | this device's favourites, visits and offline geoparks (localStorage, `noindex`) |
 | `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
 | `/og/geosites/$slug`, `/og/geoparks/$geoparkId` | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`) |
@@ -89,11 +91,11 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 
 | Requests | Strategy | Cache |
 | --- | --- | --- |
-| `/assets/*` (content-hashed) | cache first | `assets-v5` |
-| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…` or `/my-geosites` path (any language), or `/offline.html` (in the page's language) | `pages-v5` (150) |
-| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v5` (600) |
-| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v5` (4000) |
-| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v5` (2000) |
+| `/assets/*` (content-hashed) | cache first | `assets-v6` |
+| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…`, `/fossils/…` or `/my-geosites` path (any language), or `/offline.html` (in the page's language) | `pages-v6` (150) |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v6` (600) |
+| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v6` (4000) |
+| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v6` (2000) |
 
 **Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen; "Meus geossítios"; and everything in a geopark saved with **Salvar para uso offline**. **Needs a connection:** viewports and geosites you've never loaded and didn't save. Photos are never cached.
 
