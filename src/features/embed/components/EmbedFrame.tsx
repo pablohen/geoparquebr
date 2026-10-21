@@ -24,7 +24,12 @@ export function EmbedFrame({ title, pageUrl, points }: Props) {
 		</Center>
 	);
 	return (
-		<Box pos="relative" h="100dvh" style={{ overflow: "hidden" }}>
+		<Box
+			component="main"
+			pos="relative"
+			h="100dvh"
+			style={{ overflow: "hidden" }}
+		>
 			<ClientOnly fallback={loading}>
 				<Suspense fallback={loading}>
 					<EmbedMap points={points} />

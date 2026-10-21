@@ -1,5 +1,6 @@
 import {
 	ActionIcon,
+	Anchor,
 	AppShell,
 	Box,
 	Group,
@@ -142,6 +143,10 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 			}}
 			padding={0}
 		>
+			{/* Phones reach the list from the bottom sheet's button instead. */}
+			<Anchor href="#geosite-list" className="skip-link" visibleFrom="sm">
+				{m.explorer_skip_to_list()}
+			</Anchor>
 			{/* Above the geosite sheet's overlay on phones, so search and language stay reachable. */}
 			<AppShell.Header
 				zIndex={isMobile ? getDefaultZIndex("modal") + 1 : undefined}
@@ -202,7 +207,14 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								: m.explorer_count({ count: geosites.length })}
 					</Text>
 				</AppShell.Section>
-				<AppShell.Section grow component={ScrollArea} px={4} py="xs">
+				<AppShell.Section
+					id="geosite-list"
+					tabIndex={-1}
+					grow
+					component={ScrollArea}
+					px={4}
+					py="xs"
+				>
 					{list}
 				</AppShell.Section>
 			</AppShell.Navbar>

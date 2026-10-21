@@ -106,6 +106,7 @@
 			}
 		}
 	],
+	"explorer_skip_to_list": "Pular para a lista de geossítios",
 	"explorer_theme_dark": "Ativar tema escuro",
 	"explorer_theme_light": "Ativar tema claro",
 	"filters_age": "Idade da rocha no local",
@@ -114,6 +115,9 @@
 	"filters_age_aria_to": "Idade mais recente",
 	"filters_age_hint": "Pelo mapa geológico do SGB; geossítios sem unidade mapeada ficam de fora.",
 	"filters_age_range": "{from} – {to}",
+	"filters_age_value_from": "Desde o início do {period}, {ma} milhões de anos atrás",
+	"filters_age_value_to": "Até o fim do {period}, {ma} milhões de anos atrás",
+	"filters_age_value_to_now": "Até hoje, incluindo o {period}",
 	"filters_all_feminine": "Todas",
 	"filters_all_masculine": "Todos",
 	"filters_clear": "Limpar filtros",

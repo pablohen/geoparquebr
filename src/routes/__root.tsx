@@ -20,6 +20,7 @@ import { ogLocaleTags } from "~/features/geosites/seo";
 import { getLocale } from "~/lib/i18n";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
+import appCss from "~/styles/app.css?url";
 import { cssVariablesResolver, theme } from "~/theme";
 
 /**
@@ -57,6 +58,7 @@ export const Route = createRootRoute({
 		],
 		links: [
 			{ rel: "stylesheet", href: mantineCss },
+			{ rel: "stylesheet", href: appCss },
 			{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
 			{ rel: "manifest", href: "/manifest.webmanifest" },
 			{ rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },

@@ -106,6 +106,7 @@
 			}
 		}
 	],
+	"explorer_skip_to_list": "Skip to the geosite list",
 	"explorer_theme_dark": "Switch to dark theme",
 	"explorer_theme_light": "Switch to light theme",
 	"filters_age": "Age of the rock on site",
@@ -114,6 +115,9 @@
 	"filters_age_aria_to": "Youngest age",
 	"filters_age_hint": "From SGB's geological map; geosites without a mapped unit are left out.",
 	"filters_age_range": "{from} – {to}",
+	"filters_age_value_from": "From the start of the {period}, {ma} million years ago",
+	"filters_age_value_to": "To the end of the {period}, {ma} million years ago",
+	"filters_age_value_to_now": "Up to today, including the {period}",
 	"filters_all_feminine": "All",
 	"filters_all_masculine": "All",
 	"filters_clear": "Clear filters",

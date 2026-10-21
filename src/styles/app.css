@@ -1,0 +1,23 @@
+/* App-wide rules Mantine style props can't reach. */
+
+/* MapLibre's attribution links are only a shade off their text: underline them
+   (two classes, since maplibre-gl.css loads after this file on map pages). */
+.maplibregl-ctrl.maplibregl-ctrl-attrib a {
+	text-decoration: underline;
+}
+
+/* "Pular para…" links: off-screen until focused from the keyboard. */
+.skip-link {
+	position: absolute;
+	left: -9999px;
+	top: 8px;
+	z-index: 1000;
+	padding: 8px 12px;
+	border-radius: var(--mantine-radius-md);
+	background: var(--mantine-color-body);
+	color: var(--mantine-color-anchor);
+	box-shadow: var(--mantine-shadow-md);
+}
+.skip-link:focus {
+	left: 8px;
+}

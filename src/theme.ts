@@ -21,6 +21,9 @@ const laterite: MantineColorsTuple = [
 
 export const theme = createTheme({
 	primaryColor: "laterite",
+	// Shade 6 (#e9712c) is 3:1 on white, for links and under white button text;
+	// shade 8 reaches 4.9:1. Dark mode already used 8.
+	primaryShade: { light: 8, dark: 8 },
 	colors: { laterite },
 	fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
 	defaultRadius: "md",
@@ -34,8 +37,19 @@ export const theme = createTheme({
  * Mantine's "dimmed" greys miss WCAG AA contrast for body text (4.03:1 on
  * the dark background, ~3.3:1 on white); these reach 4.5:1 or more.
  */
-export const cssVariablesResolver: CSSVariablesResolver = () => ({
+export const cssVariablesResolver: CSSVariablesResolver = (t) => ({
 	variables: {},
-	light: { "--mantine-color-dimmed": "#5f656d" },
+	light: {
+		"--mantine-color-dimmed": "#5f656d",
+		// "light" badges and buttons write in the colour itself on a 10% tint
+		// of it; yellow, lime and teal miss 4.5:1 even at shade 9. Shade 9
+		// with 30% black passes for every colour (5:1 or more).
+		...Object.fromEntries(
+			Object.keys(t.colors).map((c) => [
+				`--mantine-color-${c}-light-color`,
+				`color-mix(in srgb, var(--mantine-color-${c}-9) 70%, black)`,
+			]),
+		),
+	},
 	dark: { "--mantine-color-dimmed": "#9c9c9c" },
 });

@@ -1,5 +1,5 @@
 import { Group, RangeSlider, Stack, Text } from "@mantine/core";
-import { type CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { periodLabel } from "~/features/geology/labels";
 import {
 	GEOLOGIC_PERIODS,
@@ -43,6 +43,21 @@ export function trackImage([a, b]: [number, number]): string {
 	return `${shade}, ${TRACK}`;
 }
 
+/**
+ * What a screen reader says for each thumb. Mantine's thumbs only expose
+ * `aria-valuenow`, here a boundary number (0…N) that means nothing aloud.
+ */
+export function thumbValueTexts([a, b]: [number, number]): [string, string] {
+	const ma = (k: number) => boundaryMa(k).toLocaleString(getLocale());
+	const youngest = periodLabel(idAt(b - 1));
+	return [
+		m.filters_age_value_from({ period: periodLabel(idAt(a)), ma: ma(a) }),
+		b === N
+			? m.filters_age_value_to_now({ period: youngest })
+			: m.filters_age_value_to({ period: youngest, ma: ma(b) }),
+	];
+}
+
 type Props = {
 	value?: AgeRange;
 	onChange: (next: AgeRange | undefined) => void;
@@ -59,6 +74,15 @@ export function AgeFilter({ value, onChange }: Props) {
 	const urlKey = fromUrl.join(",");
 	// biome-ignore lint/correctness/useExhaustiveDependencies: re-sync only when the URL value changes.
 	useEffect(() => setRange(fromUrl), [urlKey]);
+
+	// Mantine has no prop for aria-valuetext, so set it on the thumbs directly.
+	const root = useRef<HTMLDivElement>(null);
+	const [fromText, toText] = thumbValueTexts(range);
+	useEffect(() => {
+		const thumbs = root.current?.querySelectorAll('[role="slider"]') ?? [];
+		thumbs[0]?.setAttribute("aria-valuetext", fromText);
+		thumbs[1]?.setAttribute("aria-valuetext", toText);
+	}, [fromText, toText]);
 
 	const oldest = range[0];
 	const youngest = range[1] - 1;
@@ -82,6 +106,7 @@ export function AgeFilter({ value, onChange }: Props) {
 				</Text>
 			</Group>
 			<RangeSlider
+				ref={root}
 				size="sm"
 				min={0}
 				max={N}
