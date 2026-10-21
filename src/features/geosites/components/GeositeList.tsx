@@ -26,6 +26,8 @@ export function GeositeList({ geosites, selectedSlug, onSelect }: Props) {
 		<Stack gap={2}>
 			{geosites.map((g) => (
 				<NavLink
+					// Selects on the map; a button, not a link without href.
+					component="button"
 					key={g.id}
 					active={g.slug === selectedSlug}
 					onClick={() => onSelect(g.slug)}

@@ -21,7 +21,8 @@ export function LanguageSwitcher() {
 					size="sm"
 					px="xs"
 					leftSection={<Translate size={16} />}
-					aria-label={m.language_menu_aria()}
+					// The accessible name must contain the visible code (WCAG 2.5.3).
+					aria-label={`${m.language_menu_aria()}: ${LOCALE_CODES[current]}`}
 					style={{ flex: "none" }}
 				>
 					{LOCALE_CODES[current]}

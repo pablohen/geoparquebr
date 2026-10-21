@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
 import { GeositeExplorer } from "~/features/geosites/components/GeositeExplorer";
 import { getGeositesInBounds } from "~/features/geosites/geosites.functions";
 import { ExplorerSearchSchema } from "~/features/geosites/schemas";
@@ -31,6 +32,8 @@ export const Route = createFileRoute("/")({
 			{ property: "og:image:height", content: "630" },
 		],
 		links: [
+			// Only the map page needs MapLibre's styles; other pages skip the request.
+			{ rel: "stylesheet", href: maplibreCss },
 			{ rel: "canonical", href: absoluteUrl("/") },
 			...alternateLinks("/", SITE_URL),
 		],

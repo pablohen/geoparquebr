@@ -40,7 +40,7 @@ export const Route = createFileRoute("/geoparks/$geoparkId")({
 			: {},
 	component: GeoparkPage,
 	notFoundComponent: () => (
-		<Container size="sm" py="xl">
+		<Container component="main" size="sm" py="xl">
 			<Title order={1} size="h2">
 				{m.geopark_not_found()}
 			</Title>
@@ -54,7 +54,7 @@ export const Route = createFileRoute("/geoparks/$geoparkId")({
 function GeoparkPage() {
 	const { id, geosites } = Route.useLoaderData();
 	return (
-		<Container size="md" px={{ base: "sm", sm: "md" }} py="md">
+		<Container component="main" size="md" px={{ base: "sm", sm: "md" }} py="md">
 			<PageHeader />
 			<GeoparkView id={id} geosites={geosites} />
 		</Container>

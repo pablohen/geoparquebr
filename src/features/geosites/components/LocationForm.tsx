@@ -92,6 +92,7 @@ export function LocationForm({ values, onSubmit }: Props) {
 								value={field.value}
 								onChange={field.onChange}
 								label={(v) => `${v} km`}
+								thumbLabel={m.location_radius({ radius: field.value })}
 								marks={[{ value: 50 }, { value: 250 }, { value: 500 }]}
 							/>
 						</div>

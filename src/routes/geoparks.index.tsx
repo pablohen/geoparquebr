@@ -26,7 +26,7 @@ export const Route = createFileRoute("/geoparks/")({
 function GeoparksPage() {
 	const counts = Route.useLoaderData();
 	return (
-		<Container size="md" px={{ base: "sm", sm: "md" }} py="md">
+		<Container component="main" size="md" px={{ base: "sm", sm: "md" }} py="md">
 			<PageHeader />
 			<GeoparksIndex counts={counts} />
 		</Container>

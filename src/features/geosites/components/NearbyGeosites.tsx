@@ -104,7 +104,7 @@ function NearbyItem({
 		styles: { root: { borderRadius: "var(--mantine-radius-md)" } },
 	};
 	return onSelect ? (
-		<NavLink {...props} onClick={() => onSelect(g.slug)} />
+		<NavLink {...props} component="button" onClick={() => onSelect(g.slug)} />
 	) : (
 		<NavLink
 			{...props}
