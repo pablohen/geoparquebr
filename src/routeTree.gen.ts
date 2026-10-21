@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as NewsDotxmlRouteImport } from './routes/news[.]xml'
+import { Route as RankingsRouteImport } from './routes/rankings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as TimelineRouteImport } from './routes/timeline'
@@ -37,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GlossaryRoute = GlossaryRouteImport.update({
+  id: '/glossary',
+  path: '/glossary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyGeositesRoute = MyGeositesRouteImport.update({
   id: '/my-geosites',
   path: '/my-geosites',
@@ -50,6 +57,11 @@ const NewsRoute = NewsRouteImport.update({
 const NewsDotxmlRoute = NewsDotxmlRouteImport.update({
   id: '/news.xml',
   path: '/news.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RankingsRoute = RankingsRouteImport.update({
+  id: '/rankings',
+  path: '/rankings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -145,9 +157,11 @@ const OgGeositesSlugRoute = OgGeositesSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
   '/news.xml': typeof NewsDotxmlRoute
+  '/rankings': typeof RankingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats': typeof StatsRoute
   '/timeline': typeof TimelineRoute
@@ -169,9 +183,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
   '/news.xml': typeof NewsDotxmlRoute
+  '/rankings': typeof RankingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats': typeof StatsRoute
   '/timeline': typeof TimelineRoute
@@ -194,9 +210,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
   '/news.xml': typeof NewsDotxmlRoute
+  '/rankings': typeof RankingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats': typeof StatsRoute
   '/timeline': typeof TimelineRoute
@@ -220,9 +238,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/glossary'
     | '/my-geosites'
     | '/news'
     | '/news.xml'
+    | '/rankings'
     | '/sitemap.xml'
     | '/stats'
     | '/timeline'
@@ -244,9 +264,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/glossary'
     | '/my-geosites'
     | '/news'
     | '/news.xml'
+    | '/rankings'
     | '/sitemap.xml'
     | '/stats'
     | '/timeline'
@@ -268,9 +290,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/glossary'
     | '/my-geosites'
     | '/news'
     | '/news.xml'
+    | '/rankings'
     | '/sitemap.xml'
     | '/stats'
     | '/timeline'
@@ -293,9 +317,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GlossaryRoute: typeof GlossaryRoute
   MyGeositesRoute: typeof MyGeositesRoute
   NewsRoute: typeof NewsRoute
   NewsDotxmlRoute: typeof NewsDotxmlRoute
+  RankingsRoute: typeof RankingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatsRoute: typeof StatsRoute
   TimelineRoute: typeof TimelineRoute
@@ -325,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/glossary': {
+      id: '/glossary'
+      path: '/glossary'
+      fullPath: '/glossary'
+      preLoaderRoute: typeof GlossaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-geosites': {
       id: '/my-geosites'
       path: '/my-geosites'
@@ -344,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/news.xml'
       fullPath: '/news.xml'
       preLoaderRoute: typeof NewsDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rankings': {
+      id: '/rankings'
+      path: '/rankings'
+      fullPath: '/rankings'
+      preLoaderRoute: typeof RankingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -477,9 +517,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GlossaryRoute: GlossaryRoute,
   MyGeositesRoute: MyGeositesRoute,
   NewsRoute: NewsRoute,
   NewsDotxmlRoute: NewsDotxmlRoute,
+  RankingsRoute: RankingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatsRoute: StatsRoute,
   TimelineRoute: TimelineRoute,

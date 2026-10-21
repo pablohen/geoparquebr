@@ -16,7 +16,7 @@ import {
 	Text,
 } from "@mantine/core";
 import { ArrowSquareOut, Bone, Cube, Info } from "@phosphor-icons/react";
-import { ClientOnly } from "@tanstack/react-router";
+import { ClientOnly, Link } from "@tanstack/react-router";
 import {
 	lazy,
 	type ReactNode,
@@ -34,6 +34,7 @@ import {
 	midAge,
 	shade,
 } from "~/features/geology/time-scale";
+import { scoreAnchor, themeAnchor } from "~/features/glossary/glossary";
 import { imageFailed } from "~/lib/image";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
@@ -170,7 +171,16 @@ function Overview({
 			{geosite.categories.length > 0 && (
 				<Group gap={6}>
 					{geosite.categories.map((c) => (
-						<Badge key={c} variant="light" color={CATEGORY_COLORS[c]}>
+						<Badge
+							key={c}
+							variant="light"
+							color={CATEGORY_COLORS[c]}
+							// Each theme opens its definition in the glossary.
+							renderRoot={(props) => (
+								<Link {...props} to="/glossary" hash={themeAnchor(c)} />
+							)}
+							style={{ cursor: "pointer" }}
+						>
 							{categoryLabel(c)}
 						</Badge>
 					))}
@@ -298,9 +308,31 @@ function CoverImage({ src, alt }: { src: string; alt: string }) {
 function Scores({ scores }: { scores: GeositeScores }) {
 	return (
 		<Stack gap={6}>
-			<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-				{m.detail_scores_title()}
-			</Text>
+			<Group justify="space-between" gap="xs">
+				<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+					{m.detail_scores_title()}
+				</Text>
+				<Group gap="sm">
+					<Anchor
+						size="xs"
+						renderRoot={(props) => (
+							<Link
+								{...props}
+								to="/glossary"
+								hash={scoreAnchor("scientific")}
+							/>
+						)}
+					>
+						{m.detail_scores_glossary()}
+					</Anchor>
+					<Anchor
+						size="xs"
+						renderRoot={(props) => <Link {...props} to="/rankings" />}
+					>
+						{m.detail_scores_ranking()}
+					</Anchor>
+				</Group>
+			</Group>
 			<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" verticalSpacing="xs">
 				{SCORE_KEYS.map((key) => (
 					<div key={key}>

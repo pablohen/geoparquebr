@@ -129,6 +129,18 @@ export function GeositeFilters({ value, onChange }: Props) {
 				>
 					{m.stats_link()}
 				</Anchor>
+				<Anchor
+					size="xs"
+					renderRoot={(props) => <Link {...props} to="/rankings" />}
+				>
+					{m.rankings_link()}
+				</Anchor>
+				<Anchor
+					size="xs"
+					renderRoot={(props) => <Link {...props} to="/glossary" />}
+				>
+					{m.glossary_link()}
+				</Anchor>
 			</Group>
 			<AgeFilter
 				value={value.age}

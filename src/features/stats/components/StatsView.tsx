@@ -7,7 +7,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { ChartBar, Clock } from "@phosphor-icons/react";
+import { BookOpen, ChartBar, Clock, Ranking } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { periodLabel } from "~/features/geology/labels";
 import { GEOLOGIC_PERIODS } from "~/features/geology/time-scale";
@@ -56,6 +56,24 @@ export function StatsView({ stats }: { stats: GeositeStats }) {
 						<Group gap={4}>
 							<ChartBar size={14} aria-hidden />
 							{m.compare_link()}
+						</Group>
+					</Anchor>
+					<Anchor
+						size="sm"
+						renderRoot={(props) => <Link {...props} to="/rankings" />}
+					>
+						<Group gap={4}>
+							<Ranking size={14} aria-hidden />
+							{m.rankings_link()}
+						</Group>
+					</Anchor>
+					<Anchor
+						size="sm"
+						renderRoot={(props) => <Link {...props} to="/glossary" />}
+					>
+						<Group gap={4}>
+							<BookOpen size={14} aria-hidden />
+							{m.glossary_link()}
 						</Group>
 					</Anchor>
 				</Group>

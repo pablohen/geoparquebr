@@ -14,7 +14,7 @@
  *
  * Bump VERSION to drop every cache on the next visit.
  */
-const VERSION = "v9";
+const VERSION = "v10";
 const CACHES = {
 	shell: `shell-${VERSION}`,
 	assets: `assets-${VERSION}`,
@@ -134,7 +134,7 @@ async function cachePages(urls) {
  */
 async function offlinePage(url) {
 	if (
-		/^(\/(en|es))?\/(geosites|geoparks|fossils|my-geosites|trip|news|timeline|stats)(\/|$)/.test(
+		/^(\/(en|es))?\/(geosites|geoparks|fossils|my-geosites|trip|news|timeline|stats|rankings|glossary)(\/|$)/.test(
 			url.pathname,
 		)
 	) {
