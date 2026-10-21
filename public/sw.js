@@ -6,18 +6,21 @@
  * - /_serverFn/*   GET data (geosites, fossils, strata) → network first,
  *                  cached copy offline (e.g. geosites you opened before)
  * - map tiles      OpenFreeMap + SGB geology → stale-while-revalidate, capped
+ * - relief tiles   AWS Terrain Tiles (hillshade, 3D) → same, own cache
  *
  * Bump VERSION to drop every cache on the next visit.
  */
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHES = {
 	shell: `shell-${VERSION}`,
 	assets: `assets-${VERSION}`,
 	pages: `pages-${VERSION}`,
 	data: `data-${VERSION}`,
 	tiles: `tiles-${VERSION}`,
+	relief: `relief-${VERSION}`,
 };
-const LIMITS = { pages: 60, data: 300, tiles: 1500 };
+// Relief tiles are 40–100 KB each, so they get their own, smaller cap.
+const LIMITS = { pages: 60, data: 300, tiles: 1500, relief: 600 };
 const SHELL = [
 	"/offline.html",
 	"/favicon.svg",
@@ -25,6 +28,8 @@ const SHELL = [
 	"/icons/icon-192.png",
 ];
 const TILE_HOSTS = ["tiles.openfreemap.org", "geoportal.sgb.gov.br"];
+const RELIEF_PREFIX =
+	"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/";
 
 self.addEventListener("install", (event) => {
 	event.waitUntil(
@@ -68,6 +73,10 @@ self.addEventListener("fetch", (event) => {
 		return;
 	}
 
+	if (request.url.startsWith(RELIEF_PREFIX))
+		return event.respondWith(
+			staleWhileRevalidate(request, CACHES.relief, LIMITS.relief),
+		);
 	if (TILE_HOSTS.includes(url.hostname))
 		event.respondWith(
 			staleWhileRevalidate(request, CACHES.tiles, LIMITS.tiles),

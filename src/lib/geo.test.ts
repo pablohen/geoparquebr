@@ -3,6 +3,7 @@ import {
 	bboxAround,
 	bboxCenter,
 	bboxPolygon,
+	flatBBox,
 	haversineMeters,
 	roundBBox,
 } from "./geo";
@@ -51,6 +52,31 @@ describe("bboxAround / bboxCenter", () => {
 		expect(n).toBeLessThanOrEqual(90);
 		expect(w).toBeGreaterThanOrEqual(-180);
 		expect(s).toBeGreaterThanOrEqual(-90);
+	});
+});
+
+describe("flatBBox", () => {
+	it("spans the whole world at zoom 0 on a 512-px map", () => {
+		const [w, , e] = flatBBox([0, 0], 0, 512, 512);
+		expect(w).toBeCloseTo(-180);
+		expect(e).toBeCloseTo(180);
+	});
+
+	it("halves the span with each zoom level and stays centred", () => {
+		const a = flatBBox([-39.5, -7.2], 10, 800, 600);
+		const b = flatBBox([-39.5, -7.2], 11, 800, 600);
+		expect(a[2] - a[0]).toBeCloseTo(2 * (b[2] - b[0]), 10);
+		expect(bboxCenter(a)[0]).toBeCloseTo(-39.5, 10);
+		// Mercator: the centre latitude sits between south and north, near the middle.
+		expect(a[1]).toBeLessThan(-7.2);
+		expect(a[3]).toBeGreaterThan(-7.2);
+		expect(bboxCenter(a)[1]).toBeCloseTo(-7.2, 2);
+	});
+
+	it("matches the span of an 800×600 map at zoom 10 near the equator", () => {
+		// 800 px × 360° / (512 × 2^10 px) ≈ 0.549°.
+		const [w, , e] = flatBBox([-39.5, -7.2], 10, 800, 600);
+		expect(e - w).toBeCloseTo((800 * 360) / (512 * 1024), 10);
 	});
 });
 

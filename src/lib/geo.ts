@@ -36,6 +36,35 @@ export function bboxAround(
 	];
 }
 
+/** Web-mercator world size in pixels at `zoom` (MapLibre uses 512-px tiles). */
+const worldPx = (zoom: number) => 512 * 2 ** zoom;
+const latToY = (lat: number, size: number) =>
+	size * (0.5 - Math.log(Math.tan(Math.PI / 4 + rad(lat) / 2)) / (2 * Math.PI));
+const yToLat = (y: number, size: number) =>
+	(Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / size))) * 180) / Math.PI;
+
+/**
+ * The box a flat, north-up map of `width`×`height` pixels shows at this
+ * centre and zoom. A tilted map's own bounds reach the horizon; this keeps
+ * the URL viewport (and so the list) to the area around the centre.
+ */
+export function flatBBox(
+	[lng, lat]: [number, number],
+	zoom: number,
+	width: number,
+	height: number,
+): BBox {
+	const size = worldPx(zoom);
+	const halfLng = (width / 2) * (360 / size);
+	const y = latToY(lat, size);
+	return [
+		Math.max(-180, lng - halfLng),
+		Math.max(-85, yToLat(y + height / 2, size)),
+		Math.min(180, lng + halfLng),
+		Math.min(85, yToLat(y - height / 2, size)),
+	];
+}
+
 /** Rounds to ~11 m so URLs stay short and tiny map jitters don't re-query. */
 export function roundBBox(bbox: BBox): BBox {
 	return bbox.map((v) => Math.round(v * 1e4) / 1e4) as BBox;

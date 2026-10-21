@@ -6,6 +6,7 @@ import {
 	getDefaultZIndex,
 	Loader,
 	ScrollArea,
+	Stack,
 	Text,
 	Title,
 	useComputedColorScheme,
@@ -35,6 +36,7 @@ import { GeositeFilters } from "./GeositeFilters";
 import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
 import { MobileListSheet } from "./MobileListSheet";
+import { TerrainControl } from "./TerrainControl";
 
 // MapLibre touches `window` at import time, so it only loads in the browser.
 const GeositeMap = lazy(() => import("./GeositeMap"));
@@ -203,18 +205,34 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								geology={{ visible: geologyVisible, opacity: geologyOpacity }}
 								onIdentify={setIdentifyPoint}
 								identifyPoint={geologyVisible ? identifyPoint : undefined}
+								terrain={search.terrain === true}
 							/>
 						</Suspense>
 					</ClientOnly>
-					<GeologyLayerControl
-						visible={geologyVisible}
-						opacity={geologyOpacity}
-						onVisibleChange={(on) => {
-							onSearchChange({ geo: on ? true : undefined });
-							if (!on) setIdentifyPoint(undefined);
-						}}
-						onOpacityChange={setGeologyOpacity}
-					/>
+					<Stack
+						pos="absolute"
+						top={12}
+						left={12}
+						gap={8}
+						align="flex-start"
+						style={{ zIndex: 2 }}
+					>
+						<GeologyLayerControl
+							visible={geologyVisible}
+							opacity={geologyOpacity}
+							onVisibleChange={(on) => {
+								onSearchChange({ geo: on ? true : undefined });
+								if (!on) setIdentifyPoint(undefined);
+							}}
+							onOpacityChange={setGeologyOpacity}
+						/>
+						<TerrainControl
+							on={search.terrain === true}
+							onChange={(on) =>
+								onSearchChange({ terrain: on ? true : undefined })
+							}
+						/>
+					</Stack>
 					<MobileListSheet
 						opened={sheetOpened}
 						onOpen={openSheet}

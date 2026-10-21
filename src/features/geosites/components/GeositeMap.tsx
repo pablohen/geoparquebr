@@ -13,7 +13,7 @@ import {
 } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
-import { type BBox, roundBBox } from "~/lib/geo";
+import { type BBox, bboxCenter, flatBBox, roundBBox } from "~/lib/geo";
 import { m } from "~/paraglide/messages.js";
 import type { GeositeSummary } from "../schemas";
 
@@ -63,6 +63,8 @@ type Props = {
 	onIdentify: (point: [number, number]) => void;
 	/** Marker for the point being identified. */
 	identifyPoint?: [number, number];
+	/** "Relevo 3D": terrain elevation plus a tilted camera. */
+	terrain: boolean;
 };
 
 const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
@@ -71,6 +73,19 @@ const CLUSTERS = "geosites-clusters";
 const CLUSTER_COUNT = "geosites-cluster-count";
 const POINTS = "geosites-points";
 const GEOLOGY = "sgb-geology";
+
+/**
+ * Elevation: AWS Open Data "Terrain Tiles" (Terrarium-encoded, SRTM ~30 m
+ * over Brazil), free and keyless. Two sources, as MapLibre recommends: one
+ * for the hillshade drawn by default, one for the opt-in 3D terrain.
+ */
+const DEM_TILES =
+	"https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
+const DEM_HILLSHADE = "dem-hillshade";
+const DEM_TERRAIN = "dem-terrain";
+const HILLSHADE = "relief-hillshade";
+const TERRAIN_EXAGGERATION = 1.5;
+const TERRAIN_PITCH = 60;
 const COLOR = "#ea7a3a";
 const SELECTED_COLOR = "#a24511";
 
@@ -119,6 +134,7 @@ export default function GeositeMap({
 	geology,
 	onIdentify,
 	identifyPoint,
+	terrain,
 }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<MapLibreMap | null>(null);
@@ -131,6 +147,7 @@ export default function GeositeMap({
 		onViewportChange,
 		geology,
 		onIdentify,
+		terrain,
 	});
 	latest.current = {
 		geosites,
@@ -139,6 +156,7 @@ export default function GeositeMap({
 		onViewportChange,
 		geology,
 		onIdentify,
+		terrain,
 	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the map is created once; later bbox changes are handled below.
@@ -175,7 +193,18 @@ export default function GeositeMap({
 		map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
 
 		const emitViewport = () => {
-			const next = toBBox(map.getBounds());
+			// A tilted map's bounds reach the horizon; report the flat view's.
+			const next =
+				map.getPitch() > 1
+					? roundBBox(
+							flatBBox(
+								map.getCenter().toArray() as [number, number],
+								map.getZoom(),
+								map.getContainer().clientWidth,
+								map.getContainer().clientHeight,
+							),
+						)
+					: toBBox(map.getBounds());
 			const key = JSON.stringify(next);
 			if (key === lastEmitted.current) return;
 			lastEmitted.current = key;
@@ -211,6 +240,29 @@ export default function GeositeMap({
 				},
 				firstLabel,
 			);
+			// Relief shading over the basemap and geology, under the labels.
+			for (const id of [DEM_HILLSHADE, DEM_TERRAIN])
+				map.addSource(id, {
+					type: "raster-dem",
+					tiles: [DEM_TILES],
+					tileSize: 256,
+					maxzoom: 15,
+					encoding: "terrarium",
+					attribution: id === DEM_HILLSHADE ? m.map_relief_attribution() : "",
+				});
+			map.addLayer(
+				{
+					id: HILLSHADE,
+					type: "hillshade",
+					source: DEM_HILLSHADE,
+					paint: {
+						"hillshade-exaggeration": 0.3,
+						"hillshade-shadow-color": "#3d3528",
+					},
+				},
+				firstLabel,
+			);
+			if (latest.current.terrain) applyTerrain(map, true, { animate: false });
 			map.addSource(SOURCE_ID, {
 				type: "geojson",
 				data: toFeatureCollection(latest.current.geosites),
@@ -310,8 +362,21 @@ export default function GeositeMap({
 	useEffect(() => {
 		const map = mapRef.current;
 		if (!map || JSON.stringify(bbox) === lastEmitted.current) return;
-		map.fitBounds(bbox, { duration: 800 });
+		if (map.getPitch() > 1) {
+			// Keep the tilt: frame the box as a flat map would, then ease there.
+			const camera = map.cameraForBounds(bbox, { bearing: 0 });
+			map.easeTo({
+				center: bboxCenter(bbox),
+				zoom: camera?.zoom ?? map.getZoom(),
+				duration: 800,
+			});
+		} else map.fitBounds(bbox, { duration: 800 });
 	}, [bbox]);
+
+	useEffect(() => {
+		const map = mapRef.current;
+		if (map?.getSource(DEM_TERRAIN)) applyTerrain(map, terrain);
+	}, [terrain]);
 
 	useEffect(() => {
 		const source = mapRef.current?.getSource<GeoJSONSource>(SOURCE_ID);
@@ -362,4 +427,18 @@ export default function GeositeMap({
 	}, [focusKey]);
 
 	return <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />;
+}
+
+/** Turns 3D terrain on (tilting a flat view) or off (back to a flat map). */
+function applyTerrain(
+	map: MapLibreMap,
+	on: boolean,
+	{ animate = true }: { animate?: boolean } = {},
+) {
+	map.setTerrain(
+		on ? { source: DEM_TERRAIN, exaggeration: TERRAIN_EXAGGERATION } : null,
+	);
+	const pitch = on ? Math.max(map.getPitch(), TERRAIN_PITCH) : 0;
+	if (animate) map.easeTo({ pitch, duration: 700 });
+	else map.jumpTo({ pitch });
 }

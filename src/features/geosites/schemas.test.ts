@@ -45,6 +45,12 @@ describe("ExplorerSearchSchema", () => {
 		expect(ExplorerSearchSchema.parse({ geo: "yes" }).geo).toBeUndefined();
 	});
 
+	it("only accepts `terrain: true` for 3D terrain", () => {
+		expect(ExplorerSearchSchema.parse({ terrain: true }).terrain).toBe(true);
+		expect(ExplorerSearchSchema.parse({ terrain: 1 }).terrain).toBeUndefined();
+		expect(ExplorerSearchSchema.parse({}).terrain).toBeUndefined();
+	});
+
 	it("coerces a numeric model index from the query string", () => {
 		expect(ExplorerSearchSchema.parse({ model: "2" }).model).toBe(2);
 	});

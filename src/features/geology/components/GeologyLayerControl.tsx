@@ -18,15 +18,11 @@ export function GeologyLayerControl({
 }: Props) {
 	return (
 		<Paper
-			pos="absolute"
-			top={12}
-			left={12}
 			p={{ base: 6, sm: "xs" }}
 			radius="md"
 			shadow="sm"
 			// A compact chip on phones; a full panel from `sm` up.
 			w={visible ? { base: 180, sm: 230 } : { base: "auto", sm: 230 }}
-			style={{ zIndex: 2 }}
 		>
 			<Stack gap={6}>
 				<Switch

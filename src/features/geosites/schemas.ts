@@ -311,6 +311,8 @@ export const ExplorerSearchSchema = z.object({
 	age: AgeRangeSchema.optional().catch(undefined),
 	/** Geology map layer on. */
 	geo: z.literal(true).optional().catch(undefined),
+	/** "Relevo 3D" on: 3D terrain and a tilted map. */
+	terrain: z.literal(true).optional().catch(undefined),
 	site: SlugSchema.optional().catch(undefined),
 	/** Drawer tab; omitted means "overview". */
 	tab: DrawerTabSchema.optional().catch(undefined),
