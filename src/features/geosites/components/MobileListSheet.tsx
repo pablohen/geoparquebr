@@ -19,6 +19,8 @@ type Props = {
 	onClose: () => void;
 	count: number;
 	filtered: boolean;
+	/** Replaces the default title, e.g. in "Perto de mim". */
+	title?: string;
 	/** Location form + filters, tucked behind a toggle so the list leads. */
 	controls: ReactNode;
 	list: ReactNode;
@@ -35,6 +37,7 @@ export function MobileListSheet({
 	onClose,
 	count,
 	filtered,
+	title,
 	controls,
 	list,
 }: Props) {
@@ -73,9 +76,10 @@ export function MobileListSheet({
 				radius="lg"
 				title={
 					<Text fw={600}>
-						{filtered
-							? m.sheet_title_filtered({ count })
-							: m.sheet_title({ count })}
+						{title ??
+							(filtered
+								? m.sheet_title_filtered({ count })
+								: m.sheet_title({ count }))}
 					</Text>
 				}
 				styles={{ body: { paddingInline: 4 } }}

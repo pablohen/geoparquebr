@@ -21,12 +21,16 @@ import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerC
 import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
 import { SearchBox } from "~/features/search/components/SearchBox";
+import { TripMapControl } from "~/features/trip/components/TripMapControl";
+import { tripBBox } from "~/features/trip/map";
+import { useTrip } from "~/features/trip/store";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
 import { SITE_NAME } from "~/lib/site";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import { getGeositeBySlug } from "../geosites.functions";
+import { bboxContains, rankFromPoint } from "../near";
 import type {
 	ExplorerSearch,
 	GeositeSummary,
@@ -37,6 +41,7 @@ import { GeositeFilters } from "./GeositeFilters";
 import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
 import { MobileListSheet } from "./MobileListSheet";
+import { NearMeControl } from "./NearMeControl";
 import { TerrainControl } from "./TerrainControl";
 
 // MapLibre touches `window` at import time, so it only loads in the browser.
@@ -71,6 +76,16 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	const [geologyOpacity, setGeologyOpacity] = useState(0.7);
 	const [identifyPoint, setIdentifyPoint] = useState<[number, number]>();
 	const geologyVisible = search.geo === true;
+	// "Perto de mim": the traveller's position, kept in this page only.
+	const [near, setNear] = useState<[number, number]>();
+	const nearActive = near !== undefined && bboxContains(search.bbox, near);
+	const listed = nearActive ? rankFromPoint(geosites, near) : geosites;
+	// The trip lives on this device; empty until hydrated.
+	const { trip } = useTrip();
+	const tripPins =
+		search.trip && trip.length > 0
+			? trip.map((s) => ({ slug: s.slug, point: s.point }))
+			: undefined;
 
 	// The full record is fetched by slug, so a shared link opens the drawer
 	// even when the geosite lies outside the current viewport or filters.
@@ -110,7 +125,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	);
 	const list = (
 		<GeositeList
-			geosites={geosites}
+			geosites={listed}
 			selectedSlug={search.site}
 			onSelect={select}
 		/>
@@ -180,9 +195,11 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 				</AppShell.Section>
 				<AppShell.Section px="md" pt="sm">
 					<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-						{filtered
-							? m.explorer_count_filtered({ count: geosites.length })
-							: m.explorer_count({ count: geosites.length })}
+						{nearActive
+							? m.near_count({ count: geosites.length })
+							: filtered
+								? m.explorer_count_filtered({ count: geosites.length })
+								: m.explorer_count({ count: geosites.length })}
 					</Text>
 				</AppShell.Section>
 				<AppShell.Section grow component={ScrollArea} px={4} py="xs">
@@ -208,6 +225,8 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								onIdentify={setIdentifyPoint}
 								identifyPoint={geologyVisible ? identifyPoint : undefined}
 								terrain={search.terrain === true}
+								trip={tripPins}
+								userPoint={nearActive ? near : undefined}
 							/>
 						</Suspense>
 					</ClientOnly>
@@ -234,6 +253,27 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								onSearchChange({ terrain: on ? true : undefined })
 							}
 						/>
+						{trip.length > 0 && (
+							<TripMapControl
+								on={search.trip === true}
+								onChange={(on) => {
+									const box = tripBBox(trip);
+									onSearchChange(
+										on && box
+											? { trip: true, bbox: roundBBox(box) }
+											: { trip: undefined },
+									);
+								}}
+							/>
+						)}
+						<NearMeControl
+							active={nearActive}
+							onLocate={(point) => {
+								setNear(point);
+								onSearchChange({ bbox: roundBBox(bboxAround(point, 25)) });
+							}}
+							onClear={() => setNear(undefined)}
+						/>
 					</Stack>
 					<MobileListSheet
 						opened={sheetOpened}
@@ -241,6 +281,9 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 						onClose={closeSheet}
 						count={geosites.length}
 						filtered={filtered}
+						title={
+							nearActive ? m.near_count({ count: geosites.length }) : undefined
+						}
 						controls={
 							<>
 								{filters}

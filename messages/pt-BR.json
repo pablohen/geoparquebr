@@ -234,6 +234,8 @@
 	"map_reset_bearing": "Apontar para o norte",
 	"map_terrain": "Relevo 3D",
 	"map_terrain_hint": "Gire e incline com dois dedos ou com o botão direito do mouse.",
+	"map_trip": "Roteiro no mapa",
+	"map_trip_hint": "Toque num número para abrir o geossítio.",
 	"map_zoom_in": "Aproximar",
 	"map_zoom_out": "Afastar",
 	"my_count": [
@@ -259,6 +261,20 @@
 	"my_visited_label": "Visitado",
 	"my_visited_on": "Visitado em {date}",
 	"my_visited_remove": "Desmarcar visita",
+	"near_active": "Perto de você",
+	"near_button": "Perto de mim",
+	"near_clear": "Voltar à lista do mapa",
+	"near_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geossítios perto de você",
+				"count=*, countPlural=one": "{count} geossítio perto de você",
+				"count=*, countPlural=other": "{count} geossítios perto de você"
+			}
+		}
+	],
 	"nearby_approximate": "Distâncias aproximadas para sítios protegidos.",
 	"nearby_error": "Não foi possível carregar os geossítios próximos.",
 	"nearby_none": "Nenhum outro geossítio num raio de 300 km.",

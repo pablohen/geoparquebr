@@ -3,7 +3,6 @@ import {
 	addProtocol,
 	type ExpressionSpecification,
 	type GeoJSONSource,
-	GeolocateControl,
 	type LngLatBounds,
 	Map as MapLibreMap,
 	Marker,
@@ -13,6 +12,7 @@ import {
 } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
+import { type TripPin, tripFeatures } from "~/features/trip/map";
 import { type BBox, bboxCenter, flatBBox, roundBBox } from "~/lib/geo";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES, STYLE_URL } from "../map-sources";
@@ -66,6 +66,10 @@ type Props = {
 	identifyPoint?: [number, number];
 	/** "Relevo 3D": terrain elevation plus a tilted camera. */
 	terrain: boolean;
+	/** The trip drawn as a numbered route; undefined hides it. */
+	trip?: TripPin[];
+	/** "Perto de mim": where the traveller is, shown as a dot. */
+	userPoint?: [number, number];
 };
 
 const SOURCE_ID = "geosites";
@@ -73,6 +77,11 @@ const CLUSTERS = "geosites-clusters";
 const CLUSTER_COUNT = "geosites-cluster-count";
 const POINTS = "geosites-points";
 const GEOLOGY = "sgb-geology";
+const TRIP = "trip";
+const TRIP_LINE = "trip-line";
+const TRIP_STOPS = "trip-stops";
+const TRIP_NUMBERS = "trip-numbers";
+const TRIP_COLOR = "#1c7ed6";
 
 /**
  * Elevation (DEM_TILES) feeds two sources, as MapLibre recommends: one for
@@ -132,6 +141,8 @@ export default function GeositeMap({
 	onIdentify,
 	identifyPoint,
 	terrain,
+	trip,
+	userPoint,
 }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<MapLibreMap | null>(null);
@@ -145,6 +156,7 @@ export default function GeositeMap({
 		geology,
 		onIdentify,
 		terrain,
+		trip,
 	});
 	latest.current = {
 		geosites,
@@ -154,6 +166,7 @@ export default function GeositeMap({
 		geology,
 		onIdentify,
 		terrain,
+		trip,
 	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the map is created once; later bbox changes are handled below.
@@ -174,17 +187,6 @@ export default function GeositeMap({
 		});
 		map.addControl(
 			new NavigationControl({ visualizePitch: true }),
-			"top-right",
-		);
-		// "Perto de mim": centre on the user; the viewport query then lists
-		// the geosites around them, nearest first.
-		map.addControl(
-			new GeolocateControl({
-				positionOptions: { enableHighAccuracy: false, timeout: 10_000 },
-				fitBoundsOptions: { maxZoom: 9 },
-				trackUserLocation: false,
-				showAccuracyCircle: false,
-			}),
 			"top-right",
 		);
 		map.addControl(new ScaleControl({ unit: "metric" }), "bottom-left");
@@ -305,7 +307,57 @@ export default function GeositeMap({
 				},
 			});
 
+			// The trip, above the geosites: a dashed route and numbered stops.
+			map.addSource(TRIP, {
+				type: "geojson",
+				data: tripFeatures(latest.current.trip ?? []),
+			});
+			const tripVisibility = latest.current.trip ? "visible" : "none";
+			map.addLayer({
+				id: TRIP_LINE,
+				type: "line",
+				source: TRIP,
+				filter: ["==", ["get", "kind"], "route"],
+				layout: { visibility: tripVisibility, "line-cap": "round" },
+				paint: {
+					"line-color": TRIP_COLOR,
+					"line-width": 3,
+					"line-dasharray": [2, 1.5],
+				},
+			});
+			map.addLayer({
+				id: TRIP_STOPS,
+				type: "circle",
+				source: TRIP,
+				filter: ["==", ["get", "kind"], "stop"],
+				layout: { visibility: tripVisibility },
+				paint: {
+					"circle-radius": 11,
+					"circle-color": TRIP_COLOR,
+					"circle-stroke-width": 2,
+					"circle-stroke-color": "#ffffff",
+				},
+			});
+			map.addLayer({
+				id: TRIP_NUMBERS,
+				type: "symbol",
+				source: TRIP,
+				filter: ["==", ["get", "kind"], "stop"],
+				layout: {
+					visibility: tripVisibility,
+					"text-field": ["to-string", ["get", "n"]],
+					"text-font": ["Noto Sans Bold"],
+					"text-size": 12,
+					"text-allow-overlap": true,
+				},
+				paint: { "text-color": "#ffffff" },
+			});
+
 			map.on("click", POINTS, (e) => {
+				const slug = e.features?.[0]?.properties?.slug;
+				if (typeof slug === "string") latest.current.onSelect(slug);
+			});
+			map.on("click", TRIP_STOPS, (e) => {
 				const slug = e.features?.[0]?.properties?.slug;
 				if (typeof slug === "string") latest.current.onSelect(slug);
 			});
@@ -324,12 +376,12 @@ export default function GeositeMap({
 			map.on("click", (e) => {
 				if (!latest.current.geology.visible) return;
 				const hit = map.queryRenderedFeatures(e.point, {
-					layers: [POINTS, CLUSTERS],
+					layers: [POINTS, CLUSTERS, TRIP_STOPS],
 				});
 				if (hit.length === 0)
 					latest.current.onIdentify([e.lngLat.lng, e.lngLat.lat]);
 			});
-			for (const layer of [POINTS, CLUSTERS]) {
+			for (const layer of [POINTS, CLUSTERS, TRIP_STOPS]) {
 				map.on("mouseenter", layer, () => {
 					map.getCanvas().style.cursor = "pointer";
 				});
@@ -397,6 +449,30 @@ export default function GeositeMap({
 		map.setPaintProperty(GEOLOGY, "raster-opacity", geology.opacity);
 		map.getCanvas().style.cursor = geology.visible ? "crosshair" : "";
 	}, [geology.visible, geology.opacity]);
+
+	const tripKey = trip ? JSON.stringify(trip) : "";
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `tripKey` encodes `trip`.
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map?.getLayer(TRIP_STOPS)) return;
+		map.getSource<GeoJSONSource>(TRIP)?.setData(tripFeatures(trip ?? []));
+		for (const id of [TRIP_LINE, TRIP_STOPS, TRIP_NUMBERS])
+			map.setLayoutProperty(id, "visibility", trip ? "visible" : "none");
+	}, [tripKey]);
+
+	const userKey = userPoint?.join(",");
+	// biome-ignore lint/correctness/useExhaustiveDependencies: `userKey` encodes `userPoint`.
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map || !userPoint) return;
+		const dot = document.createElement("div");
+		dot.style.cssText =
+			"width:16px;height:16px;border-radius:50%;background:#1c7ed6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(28,126,214,.25)";
+		const marker = new Marker({ element: dot }).setLngLat(userPoint).addTo(map);
+		return () => {
+			marker.remove();
+		};
+	}, [userKey]);
 
 	const identifyKey = identifyPoint?.join(",");
 	// biome-ignore lint/correctness/useExhaustiveDependencies: `identifyKey` encodes `identifyPoint`.

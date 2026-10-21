@@ -234,6 +234,8 @@
 	"map_reset_bearing": "Reset bearing to north",
 	"map_terrain": "3D terrain",
 	"map_terrain_hint": "Rotate and tilt with two fingers or the right mouse button.",
+	"map_trip": "Trip on the map",
+	"map_trip_hint": "Tap a number to open the geosite.",
 	"map_zoom_in": "Zoom in",
 	"map_zoom_out": "Zoom out",
 	"my_count": [
@@ -259,6 +261,20 @@
 	"my_visited_label": "Visited",
 	"my_visited_on": "Visited on {date}",
 	"my_visited_remove": "Unmark visit",
+	"near_active": "Near you",
+	"near_button": "Near me",
+	"near_clear": "Back to the map's list",
+	"near_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} geosites near you",
+				"count=*, countPlural=one": "{count} geosite near you",
+				"count=*, countPlural=other": "{count} geosites near you"
+			}
+		}
+	],
 	"nearby_approximate": "Distances to protected sites are approximate.",
 	"nearby_error": "Couldn't load nearby geosites.",
 	"nearby_none": "No other geosites within 300 km.",
