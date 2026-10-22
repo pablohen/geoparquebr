@@ -10,24 +10,24 @@ Deeper docs: [architecture](docs/architecture.md) · [data model](docs/data-mode
 
 Use **pnpm**, never npm or yarn.
 
-| Task | Command |
-| --- | --- |
-| Install | `pnpm install` |
-| Dev server (http://localhost:3000) | `pnpm dev` |
-| Typecheck (compiles messages first) | `pnpm typecheck` |
-| Compile messages into `src/paraglide` | `pnpm i18n` (dev, build and tests also do it) |
-| Lint + format check | `pnpm lint` |
-| Auto-fix lint/format | `pnpm format` |
-| Production build | `pnpm build` (Nitro: `.output/`, or `.vercel/output/` on Vercel) |
-| Run production build | `pnpm start` |
-| Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
-| Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`; production also syncs weekly via Vercel Cron) |
-| Rebuild geopark outlines for the map | `pnpm geo:outlines` (IBGE shapefiles; commit `public/data/geopark-outlines.geojson`) |
-| Rebuild state outlines + municipality centres for the sync | `pnpm geo:places` (IBGE shapefiles; commit `src/features/geosites/brazil-places.json`) |
-| Rebuild the fossil genus index (`/fossils`) | `pnpm db:fossils` (after `db:seed`; production also refreshes it daily via Vercel Cron) |
-| Regenerate share card + app icons | `pnpm brand:images` (commit the PNGs) |
-| Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
-| Local MongoDB | `docker compose up -d` |
+| Task                                                       | Command                                                                                 |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Install                                                    | `pnpm install`                                                                          |
+| Dev server (http://localhost:3000)                         | `pnpm dev`                                                                              |
+| Typecheck (compiles messages first)                        | `pnpm typecheck`                                                                        |
+| Compile messages into `src/paraglide`                      | `pnpm i18n` (dev, build and tests also do it)                                           |
+| Lint + format check                                        | `pnpm lint`                                                                             |
+| Auto-fix lint/format                                       | `pnpm format`                                                                           |
+| Production build                                           | `pnpm build` (Nitro: `.output/`, or `.vercel/output/` on Vercel)                        |
+| Run production build                                       | `pnpm start`                                                                            |
+| Tests (unit + MongoDB integration)                         | `pnpm test` (`pnpm test:watch` while developing)                                        |
+| Sync geosites from GEOSSIT + attach 3D models              | `pnpm db:seed` (reads `.env`; production also syncs weekly via Vercel Cron)             |
+| Rebuild geopark outlines for the map                       | `pnpm geo:outlines` (IBGE shapefiles; commit `public/data/geopark-outlines.geojson`)    |
+| Rebuild state outlines + municipality centres for the sync | `pnpm geo:places` (IBGE shapefiles; commit `src/features/geosites/brazil-places.json`)  |
+| Rebuild the fossil genus index (`/fossils`)                | `pnpm db:fossils` (after `db:seed`; production also refreshes it daily via Vercel Cron) |
+| Regenerate share card + app icons                          | `pnpm brand:images` (commit the PNGs)                                                   |
+| Download + optimize CC BY 3D models                        | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`)                                           |
+| Local MongoDB                                              | `docker compose up -d`                                                                  |
 
 Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && pnpm build`. For UI changes, also load the page and check the browser console.
 
@@ -124,7 +124,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - **No drei `<Html>`.** Each `<Html>` mounts its own React root, and React 19 logs "synchronously unmount a root" errors. Put overlays (legends, errors, loaders) in plain DOM outside the `<Canvas>`.
 - **Color-scheme script:** don't use Mantine's `<ColorSchemeScript>`, which triggers a React 19 "script tag" warning on hydration. `__root.tsx` injects the same script with TanStack's `<ScriptOnce>`.
 - **Don't gate MapLibre handlers on `map.loaded()`.** It's false whenever tiles are still streaming, i.e. right after most moves. `GeositeMap` keeps its own `ready` flag set in `on("load")`.
-- **Viewport ↔ URL loop.** The map reports moves with history *replace*, and only re-fits when the URL `bbox` differs from the last value it emitted. Keep that guard, or fit→move→navigate will loop.
+- **Viewport ↔ URL loop.** The map reports moves with history _replace_, and only re-fits when the URL `bbox` differs from the last value it emitted. Keep that guard, or fit→move→navigate will loop.
 - **Map effects that need the style loaded** must also run inside `map.on("load")`. Effects that fire earlier find no layer and return early (deep-linked `?site=` relies on this).
 - **`src/routeTree.gen.ts` is generated** by the TanStack Start plugin on dev and build. It's committed, but excluded from Biome. Don't edit it by hand.
 - Env vars (`MONGODB_URI`, `MONGODB_DB`) are read with `process.env` in `*.server.ts` only. Never prefix secrets with `VITE_`.

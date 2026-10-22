@@ -30,7 +30,7 @@ export function LocationForm({ values, onSubmit }: Props) {
 	});
 	const [locating, setLocating] = useState(false);
 
-	const useMyLocation = () => {
+	const locateMe = () => {
 		if (!("geolocation" in navigator)) return;
 		setLocating(true);
 		navigator.geolocation.getCurrentPosition(
@@ -104,7 +104,7 @@ export function LocationForm({ values, onSubmit }: Props) {
 						size="xs"
 						leftSection={<Crosshair size={14} />}
 						loading={locating}
-						onClick={useMyLocation}
+						onClick={locateMe}
 					>
 						{m.location_my_position()}
 					</Button>

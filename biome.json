@@ -9,6 +9,7 @@
 		"includes": [
 			"**",
 			"!src/routeTree.gen.ts",
+			"!pnpm-lock.yaml",
 			"!src/features/geosites/brazil-places.json",
 			"!!**/src/paraglide"
 		]

@@ -2,10 +2,10 @@
 
 GeoparqueBR is a TanStack Start app built by Vite. The [Nitro](https://nitro.build) plugin (`nitro/vite`, in [`vite.config.ts`](../vite.config.ts)) turns the server build into a deployable app. The preset is chosen from the environment:
 
-| Where `pnpm build` runs | Output | Run with |
-| --- | --- | --- |
-| Vercel (`VERCEL=1`), or `NITRO_PRESET=vercel` | `.vercel/output/` ([Build Output API v3](https://vercel.com/docs/build-output-api/v3)) | Vercel |
-| anywhere else | `.output/` (standalone Node.js server) | `pnpm start` |
+| Where `pnpm build` runs                       | Output                                                                                 | Run with     |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- | ------------ |
+| Vercel (`VERCEL=1`), or `NITRO_PRESET=vercel` | `.vercel/output/` ([Build Output API v3](https://vercel.com/docs/build-output-api/v3)) | Vercel       |
+| anywhere else                                 | `.output/` (standalone Node.js server)                                                 | `pnpm start` |
 
 Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, and the database should be an Atlas cluster in AWS `sa-east-1`. Users, the SGB/GEOSSIT APIs and the database are all in Brazil, so keep them close together.
 
@@ -36,10 +36,10 @@ Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, an
 2. Keep the defaults. Vercel installs with the pnpm version pinned in `packageManager`, runs `pnpm build`, and picks up `.vercel/output`. Node comes from `engines` (`>=24`, so Node 24).
 3. **Environment variables** (Production and Preview):
 
-   | Name | Value |
-   | --- | --- |
-   | `MONGODB_URI` | the Atlas `mongodb+srv://` connection string |
-   | `MONGODB_DB` | `geoparquebr` |
+   | Name          | Value                                                                         |
+   | ------------- | ----------------------------------------------------------------------------- |
+   | `MONGODB_URI` | the Atlas `mongodb+srv://` connection string                                  |
+   | `MONGODB_DB`  | `geoparquebr`                                                                 |
    | `CRON_SECRET` | a long random string (`openssl rand -hex 32`), **Production** only; see below |
 
    `SKETCHFAB_TOKEN` is only needed locally, for `pnpm models:fetch`.
@@ -50,14 +50,14 @@ Everything is hosted in **São Paulo**: the Vercel function region is `gru1`, an
 
 The Vercel preset writes these values in `vite.config.ts` (`nitro({ vercel: { functions } })`):
 
-| Setting | Value | Why |
-| --- | --- | --- |
-| `regions` | `["gru1"]` | São Paulo |
-| `maxDuration` | `60` s | Place search can take up to 12 s and the weekly sync ~10 s; MongoDB fails after 10 s (`serverSelectionTimeoutMS`) rather than hanging |
-| `crons` | `/api/cron/sync-geosites`, `0 6 * * 1` | weekly GEOSSIT sync, Mondays 06:00 UTC |
-| | `/api/cron/sync-fossils`, `30 6 * * *` | daily fossil refresh, 06:30 UTC |
-| `runtime` | `nodejs24.x` | from `engines` |
-| static `/assets/*` | `cache-control: public, max-age=31536000, immutable` | content-hashed files |
+| Setting            | Value                                                | Why                                                                                                                                   |
+| ------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `regions`          | `["gru1"]`                                           | São Paulo                                                                                                                             |
+| `maxDuration`      | `60` s                                               | Place search can take up to 12 s and the weekly sync ~10 s; MongoDB fails after 10 s (`serverSelectionTimeoutMS`) rather than hanging |
+| `crons`            | `/api/cron/sync-geosites`, `0 6 * * 1`               | weekly GEOSSIT sync, Mondays 06:00 UTC                                                                                                |
+|                    | `/api/cron/sync-fossils`, `30 6 * * *`               | daily fossil refresh, 06:30 UTC                                                                                                       |
+| `runtime`          | `nodejs24.x`                                         | from `engines`                                                                                                                        |
+| static `/assets/*` | `cache-control: public, max-age=31536000, immutable` | content-hashed files                                                                                                                  |
 
 The whole app (SSR, server functions, share cards and the sync cron) runs as one function, `__server` (~9 MB). Static files are served from Vercel's CDN.
 
@@ -71,7 +71,6 @@ cat .vercel/output/functions/__server.func/.vc-config.json   # regions: ["gru1"]
 ### Weekly data refresh
 
 Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in Brasília). It runs the same sync as `pnpm db:seed` (`src/features/geosites/sync.server.ts`) and logs one summary line under **Logs**. What it added, changed or removed is recorded for the "Novidades" page (`/news`, RSS at `/news.xml`).
-
 - **Auth.** Vercel sends `Authorization: Bearer $CRON_SECRET`. Without `CRON_SECRET` the endpoint answers 401 to everyone, so it can't run open.
 - **Safety.** It writes nothing when GEOSSIT returns fewer than 80% of the stored geosites (a truncated response would otherwise prune the rest) or when more than 10% of the age lookups fail. GEOSSIT pages are retried on server errors.
 - **Run it now:** **Settings → Cron Jobs → Run**, or `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-geosites`.
@@ -80,7 +79,6 @@ Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in 
 ### Daily fossil refresh
 
 Vercel Cron calls `/api/cron/sync-fossils` every day at 06:30 UTC, with the same `CRON_SECRET` auth. It refreshes the fossil records (`fossil_sites`) of the geosites refreshed longest ago, for about 35 s (roughly 80 geosites on a cold cache), then rebuilds the genus pages (`fossil_genera`). So every geosite is refreshed every few days without `pnpm db:fossils`.
-
 - **Safety.** A geosite whose SGB or GBIF lookup or GBIF name match fails keeps its previous records. The genus pages are rebuilt only when at least 90% of the geosites have records, so a fresh database waits for `pnpm db:fossils` (or a few daily runs) instead of publishing a partial index. The JSON response says why a rebuild was skipped.
 - **Run it now:** `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-fossils`.
 
@@ -104,10 +102,10 @@ PORT=3000 MONGODB_URI=… MONGODB_DB=geoparquebr pnpm start
 
 ## Troubleshooting
 
-| Symptom | Fix |
-| --- | --- |
-| Pages return 500/504 after ~10 s | Atlas is unreachable. Check `MONGODB_URI`, the database user, and that Network Access allows `0.0.0.0/0` |
-| Empty map/list in production | The database wasn't seeded. Run `pnpm db:seed` against the Atlas URI |
-| `/fossils` says no fossils are indexed | Run `pnpm db:fossils` against the Atlas URI (the daily cron rebuilds nothing until 90% of geosites have fossil records) |
+| Symptom                                 | Fix                                                                                                                               |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Pages return 500/504 after ~10 s        | Atlas is unreachable. Check `MONGODB_URI`, the database user, and that Network Access allows `0.0.0.0/0`                          |
+| Empty map/list in production            | The database wasn't seeded. Run `pnpm db:seed` against the Atlas URI                                                              |
+| `/fossils` says no fossils are indexed  | Run `pnpm db:fossils` against the Atlas URI (the daily cron rebuilds nothing until 90% of geosites have fossil records)           |
 | `ERR_PNPM_…` lockfile errors on install | Vercel isn't using the pinned pnpm. Check `packageManager` in `package.json` and that corepack isn't disabled in project settings |
-| Function deployed outside São Paulo | Check `regions` in `.vc-config.json` and the project's Function Region setting |
+| Function deployed outside São Paulo     | Check `regions` in `.vc-config.json` and the project's Function Region setting                                                    |

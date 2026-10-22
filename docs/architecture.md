@@ -27,12 +27,12 @@ flowchart LR
   Schemas -.-> UI
 ```
 
-| Layer | Files | May import |
-| --- | --- | --- |
-| UI | `src/features/*/components/*`, `src/routes/*` | schemas, `*.functions.ts`, Mantine/MapLibre/R3F |
-| RPC boundary | `*.functions.ts` | schemas, `*.server.ts` (only inside handlers) |
-| Server | `*.server.ts`, `src/lib/*.server.ts` | schemas, `mongodb`, `process.env` |
-| Shared | `schemas.ts`, `theme.ts` | `zod`, nothing server-only |
+| Layer        | Files                                         | May import                                      |
+| ------------ | --------------------------------------------- | ----------------------------------------------- |
+| UI           | `src/features/*/components/*`, `src/routes/*` | schemas, `*.functions.ts`, Mantine/MapLibre/R3F |
+| RPC boundary | `*.functions.ts`                              | schemas, `*.server.ts` (only inside handlers)   |
+| Server       | `*.server.ts`, `src/lib/*.server.ts`          | schemas, `mongodb`, `process.env`               |
+| Shared       | `schemas.ts`, `theme.ts`                      | `zod`, nothing server-only                      |
 
 The TanStack Start compiler replaces each `createServerFn(...).handler(...)` body with an HTTP stub in the client bundle. The `*.server.ts` import then goes unused there and is tree-shaken out. `mongodb` never reaches the browser; `pnpm build` followed by a grep of `dist/client` confirms it.
 
@@ -68,33 +68,33 @@ sequenceDiagram
 
 ## Routes
 
-| Path | What |
-| --- | --- |
-| `/` | map explorer; URL holds `bbox`, filters and drawer state |
-| `/geosites/$slug` | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD |
-| `/geoparks` | Brazil's UNESCO Global Geoparks, with designation year, description and GEOSSIT geosite count |
-| `/geoparks/$geoparkId` | one geopark: description, its GEOSSIT geosites (matched by municipality), a link that frames its area on the map, JSON-LD `TouristDestination` |
-| `/fossils` | fossil genera recorded within 5 km of a geosite, grouped by class (from `fossil_genera`); filters by name, group and geopark live in the URL (`?q=&group=&gp=`) |
-| `/fossils/$genus` | one genus: GBIF classification, species recorded, the geosites near its records (no specimen locations), units and ages as recorded, JSON-LD `Taxon` |
-| `/news`, `/news.xml` | "Novidades": what each weekly GEOSSIT sync added, changed (by field) or removed, from `geosite_changes`; RSS 2.0 in the URL's language |
-| `/stats` | "Números": geosites by relevance, theme, geological period and state, with links to the map filtered over all of Brazil |
-| `/timeline` | every geological period, youngest first, in ICS colours, with the geosites whose dated age overlaps it |
-| `/geoparks/compare` | the geoparks side by side: counts, relevance, themes, rock ages and fossil genera |
-| `/rankings` | the top 25 geosites by a GEOSSIT score (scientific, tourism, didactic or vulnerability), filterable by geopark and state (`?by=&gp=&uf=`); ties share a place |
-| `/glossary` | plain-language definitions of the app's terms, themes and scores, with anchors that theme badges and the score section link to |
-| `/states`, `/states/$uf` | states with GEOSSIT geosites; one page per state (`/states/pe`) with counts by theme and period, the top scientific values, its geoparks, fossil genera and every geosite, plus a map link framed on the geosites' public points |
-| `/regions`, `/regions/$region` | Brazil's five regions; one page per region with its states side by side (geosites, international relevance, geoparks), themes, periods, geoparks and fossil genera |
-| `/units`, `/units/$slug` | rock units the SGB map names at geosites (`?q=` filters the list); one page per unit with its mapped age (from geosites where it is the only unit), the geosites on it and fossil genera nearby |
-| `/conservation` | geosites at high GEOSSIT degradation risk, most vulnerable first, with guidance on visiting without damage |
-| `/compare` | two geosites side by side (`?a=&b=`, `noindex`): GEOSSIT marks with the higher one in bold, themes, age and units, risk, nearby fossil genera |
-| `/og/states/$uf`, `/og/regions/$region`, `/og/units/$slug`, `/og/pages/$page` | share cards for the state, region, unit and listing pages, text only, in the URL's language |
-| `/my-geosites` | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`) |
-| `/geoparks/$geoparkId/guide`, `/trip/guide` | printable field guides (`src/features/guide/`): each geosite's full description, age, public coordinates, GEOSSIT source and a QR code for its page (SVG made on the server with `qrcode`); print CSS hides the app chrome and forces light colours (`noindex`) |
-| `/embed/geoparks/$geoparkId`, `/embed/geosites/$slug` | embeddable maps for other sites' `<iframe>`s (`src/features/embed/`): public points, a credit bar linking back, cooperative gestures, no app chrome, no service worker, `noindex`; the "Incorporar" button gives the code |
-| `/trip` | this device's trip: suggested order, straight-line legs, Google Maps links and a share link; `?stops=a,b,c` opens a shared trip (`noindex`) |
-| `/sitemap.xml` | server route listing every page in every language, with hreflang alternates |
-| `/og/geosites/$slug`, `/og/geoparks/$geoparkId` | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`) |
-| `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/` |
+| Path                                                                                             | What                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                                                              | map explorer; URL holds `bbox`, filters and drawer state                                                                                                                                                                                                        |
+| `/geosites/$slug`                                                                                | standalone page per geosite: server-rendered overview, 3D and fossils tabs, share and directions buttons, share-preview meta tags and JSON-LD                                                                                                                   |
+| `/geoparks`                                                                                      | Brazil's UNESCO Global Geoparks, with designation year, description and GEOSSIT geosite count                                                                                                                                                                   |
+| `/geoparks/$geoparkId`                                                                           | one geopark: description, its GEOSSIT geosites (matched by municipality), a link that frames its area on the map, JSON-LD `TouristDestination`                                                                                                                  |
+| `/fossils`                                                                                       | fossil genera recorded within 5 km of a geosite, grouped by class (from `fossil_genera`); filters by name, group and geopark live in the URL (`?q=&group=&gp=`)                                                                                                 |
+| `/fossils/$genus`                                                                                | one genus: GBIF classification, species recorded, the geosites near its records (no specimen locations), units and ages as recorded, JSON-LD `Taxon`                                                                                                            |
+| `/news`, `/news.xml`                                                                             | "Novidades": what each weekly GEOSSIT sync added, changed (by field) or removed, from `geosite_changes`; RSS 2.0 in the URL's language                                                                                                                          |
+| `/stats`                                                                                         | "Números": geosites by relevance, theme, geological period and state, with links to the map filtered over all of Brazil                                                                                                                                         |
+| `/timeline`                                                                                      | every geological period, youngest first, in ICS colours, with the geosites whose dated age overlaps it                                                                                                                                                          |
+| `/geoparks/compare`                                                                              | the geoparks side by side: counts, relevance, themes, rock ages and fossil genera                                                                                                                                                                               |
+| `/rankings`                                                                                      | the top 25 geosites by a GEOSSIT score (scientific, tourism, didactic or vulnerability), filterable by geopark and state (`?by=&gp=&uf=`); ties share a place                                                                                                   |
+| `/glossary`                                                                                      | plain-language definitions of the app's terms, themes and scores, with anchors that theme badges and the score section link to                                                                                                                                  |
+| `/states`, `/states/$uf`                                                                         | states with GEOSSIT geosites; one page per state (`/states/pe`) with counts by theme and period, the top scientific values, its geoparks, fossil genera and every geosite, plus a map link framed on the geosites' public points                                |
+| `/regions`, `/regions/$region`                                                                   | Brazil's five regions; one page per region with its states side by side (geosites, international relevance, geoparks), themes, periods, geoparks and fossil genera                                                                                              |
+| `/units`, `/units/$slug`                                                                         | rock units the SGB map names at geosites (`?q=` filters the list); one page per unit with its mapped age (from geosites where it is the only unit), the geosites on it and fossil genera nearby                                                                 |
+| `/conservation`                                                                                  | geosites at high GEOSSIT degradation risk, most vulnerable first, with guidance on visiting without damage                                                                                                                                                      |
+| `/compare`                                                                                       | two geosites side by side (`?a=&b=`, `noindex`): GEOSSIT marks with the higher one in bold, themes, age and units, risk, nearby fossil genera                                                                                                                   |
+| `/og/states/$uf`, `/og/regions/$region`, `/og/units/$slug`, `/og/pages/$page`                    | share cards for the state, region, unit and listing pages, text only, in the URL's language                                                                                                                                                                     |
+| `/my-geosites`                                                                                   | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`)                                                                                                                                                     |
+| `/geoparks/$geoparkId/guide`, `/trip/guide`                                                      | printable field guides (`src/features/guide/`): each geosite's full description, age, public coordinates, GEOSSIT source and a QR code for its page (SVG made on the server with `qrcode`); print CSS hides the app chrome and forces light colours (`noindex`) |
+| `/embed/geoparks/$geoparkId`, `/embed/geosites/$slug`                                            | embeddable maps for other sites' `<iframe>`s (`src/features/embed/`): public points, a credit bar linking back, cooperative gestures, no app chrome, no service worker, `noindex`; the "Incorporar" button gives the code                                       |
+| `/trip`                                                                                          | this device's trip: suggested order, straight-line legs, Google Maps links and a share link; `?stops=a,b,c` opens a shared trip (`noindex`)                                                                                                                     |
+| `/sitemap.xml`                                                                                   | server route listing every page in every language, with hreflang alternates                                                                                                                                                                                     |
+| `/og/geosites/$slug`, `/og/geoparks/$geoparkId`                                                  | server routes rendering share cards (PNG, cached a week at the CDN), in the locale of the URL (`/en/og/…`)                                                                                                                                                      |
+| `/robots.txt`, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, `/og-default.png`, `/icons/*` | static files in `public/`                                                                                                                                                                                                                                       |
 
 Every path also exists in English under `/en` and in Spanish under `/es` (`/en/geosites/$slug`, `/es/geosites/$slug`). Routes don't declare the prefix: the router's `rewrite` removes it before matching and adds it to links in the page's language (Paraglide's URL strategy), and `src/server.ts` wraps each request in `paraglideMiddleware` so server rendering uses the same locale.
 
@@ -104,20 +104,19 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 
 `public/sw.js` registers in production builds only:
 
-| Requests | Strategy | Cache |
-| --- | --- | --- |
-| `/assets/*` (content-hashed) | cache first | `assets-v7` |
-| page navigations | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…`, `/fossils/…`, `/my-geosites` or `/trip` path (any language), or `/offline.html` (in the page's language) | `pages-v7` (150) |
-| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback | `data-v7` (600) |
-| OpenFreeMap and SGB geology tiles | stale-while-revalidate | `tiles-v7` (4000) |
-| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate | `relief-v7` (2000) |
+| Requests                                       | Strategy                                                                                                                                                                                              | Cache              |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `/assets/*` (content-hashed)                   | cache first                                                                                                                                                                                           | `assets-v7`        |
+| page navigations                               | network first; offline: exact URL, any cached copy of the same `/geosites/…`, `/geoparks/…`, `/fossils/…`, `/my-geosites` or `/trip` path (any language), or `/offline.html` (in the page's language) | `pages-v7` (150)   |
+| `/_serverFn/*` GET (geosites, fossils, strata) | network first, cached fallback                                                                                                                                                                        | `data-v7` (600)    |
+| OpenFreeMap and SGB geology tiles              | stale-while-revalidate                                                                                                                                                                                | `tiles-v7` (4000)  |
+| AWS Terrain Tiles (relief shading, 3D terrain) | stale-while-revalidate                                                                                                                                                                                | `relief-v7` (2000) |
 
 **Works offline:** the installed app opens on its start URL with that view's geosites; any geosite page or drawer you've opened before; map tiles you've seen; "Meus geossítios"; and everything in a geopark saved with **Salvar para uso offline**. **Needs a connection:** viewports and geosites you've never loaded and didn't save. Photos are never cached.
 
 ### Saving a geopark for offline use
 
 The button on each geopark page (`src/features/offline/`) stores, in about 10–20 s:
-
 - **Pages** (geopark, its geosites, `/geoparks`, `/my-geosites`, the map of its area), through a `cache-pages` message to the service worker, which also stores the hashed scripts and styles each page loads.
 - **Data**: each geosite's record, fossils, strata and nearby list, by calling the same server functions the drawer calls, so the cached requests match.
 - **Map code**: the lazily loaded map chunk and MapLibre's worker.
@@ -185,17 +184,16 @@ flowchart LR
 
 ### Code splitting
 
-| Chunk | Loaded when | Approx. gzip |
-| --- | --- | --- |
-| App shell (React, Router, Mantine) | always | ~145 kB |
-| `GeositeMap` (MapLibre) | after hydration | ~290 kB |
-| `maplibre-gl-worker` | when the map starts | separate asset |
-| `ModelViewer` (three.js, R3F, drei) | when the 3D tab opens | ~270 kB |
+| Chunk                               | Loaded when           | Approx. gzip   |
+| ----------------------------------- | --------------------- | -------------- |
+| App shell (React, Router, Mantine)  | always                | ~145 kB        |
+| `GeositeMap` (MapLibre)             | after hydration       | ~290 kB        |
+| `maplibre-gl-worker`                | when the map starts   | separate asset |
+| `ModelViewer` (three.js, R3F, drei) | when the 3D tab opens | ~270 kB        |
 
 ## Adding a feature
 
 To add a new domain area (for example `caves` or `geoparks`):
-
 1. `src/features/<name>/schemas.ts`: Zod schemas for input, DTO and queries.
 2. `src/features/<name>/<name>.server.ts`: collection accessor, index definitions, queries, `toDto`.
 3. `src/features/<name>/<name>.functions.ts`: `createServerFn` wrappers with `.validator(schema)`.

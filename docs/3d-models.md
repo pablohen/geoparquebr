@@ -6,10 +6,10 @@ Each geosite can carry up to 20 `models`, shown in the drawer's **Modelo 3D** ta
 
 `Model3DSchema` is a discriminated union on `provider`:
 
-| `provider` | Rendered by | Used for |
-| --- | --- | --- |
+| `provider`  | Rendered by                                                                                                         | Used for                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `sketchfab` | [`SketchfabEmbed`](../src/features/geosites/components/SketchfabEmbed.tsx): Sketchfab's own iframe viewer (`dnt=1`) | view-only models we may display but not redistribute, and CC BY models not downloaded yet |
-| `gltf` | [`ModelViewer`](../src/features/geosites/components/ModelViewer.tsx): React Three Fiber | self-hosted GLBs in `public/models/`, or any HTTPS URL with CORS |
+| `gltf`      | [`ModelViewer`](../src/features/geosites/components/ModelViewer.tsx): React Three Fiber                             | self-hosted GLBs in `public/models/`, or any HTTPS URL with CORS                          |
 
 The three.js chunk (~270 kB gzip) loads only when a `gltf` model or a strata column is on screen; Sketchfab embeds don't need it.
 
@@ -19,15 +19,15 @@ Every geosite's model picker ends with **"Coluna estratigráfica (mapa do SGB)"*
 
 ### Shared fields
 
-| Field | Notes |
-| --- | --- |
-| `kind` | `fossil`, `strata`, `cave`, `outcrop`, `mineral` |
-| `title` | shown above the credits and in the model picker |
-| `provenance` | `locality` (from this geosite), `region` (same basin, exact site unknown), `illustrative` (example only). Shown to users verbatim |
-| `license` | `CC-BY-4.0`, or `Sketchfab Standard` for view-only |
-| `attribution` | required credit |
-| `sourceUrl` | page where the model is published |
-| `realWorldSizeM`, `polycount` | optional |
+| Field                         | Notes                                                                                                                             |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`                        | `fossil`, `strata`, `cave`, `outcrop`, `mineral`                                                                                  |
+| `title`                       | shown above the credits and in the model picker                                                                                   |
+| `provenance`                  | `locality` (from this geosite), `region` (same basin, exact site unknown), `illustrative` (example only). Shown to users verbatim |
+| `license`                     | `CC-BY-4.0`, or `Sketchfab Standard` for view-only                                                                                |
+| `attribution`                 | required credit                                                                                                                   |
+| `sourceUrl`                   | page where the model is published                                                                                                 |
+| `realWorldSizeM`, `polycount` | optional                                                                                                                          |
 
 `gltf` models add `format` (`glb` \| `gltf`), `url` (`https://…` or `/models/<file>.glb`) and `upAxis` (`y` default; `z` rotates −90° about X for Z-up photogrammetry). `sketchfab` models add `uid` (32 hex chars).
 
@@ -35,11 +35,11 @@ Every geosite's model picker ends with **"Coluna estratigráfica (mapa do SGB)"*
 
 Each entry names a Sketchfab model, its license, its provenance, and what it attaches to: specific GEOSSIT ids, or every geosite in some categories. Current entries, all from **GeoHereditas · Museu de Geociências IGc-USP**:
 
-| Model | License | Attached to | Provenance |
-| --- | --- | --- | --- |
-| Peixe fóssil da Bacia do Araripe | CC BY 4.0 | GEOSSIT 1915, Membro Romualdo (fish-bearing nodules) | region |
-| Amonita | view-only | GEOSSIT 1920, Pedreira Poty (K–Pg boundary; its abstract cites the ammonite extinction) | illustrative |
-| Estalagmite de aragonita com coralóides | CC BY 4.0 | every `speleological` geosite | illustrative |
+| Model                                   | License   | Attached to                                                                             | Provenance   |
+| --------------------------------------- | --------- | --------------------------------------------------------------------------------------- | ------------ |
+| Peixe fóssil da Bacia do Araripe        | CC BY 4.0 | GEOSSIT 1915, Membro Romualdo (fish-bearing nodules)                                    | region       |
+| Amonita                                 | view-only | GEOSSIT 1920, Pedreira Poty (K–Pg boundary; its abstract cites the ammonite extinction) | illustrative |
+| Estalagmite de aragonita com coralóides | CC BY 4.0 | every `speleological` geosite                                                           | illustrative |
 
 **Only attach a model where the provenance holds up, and label it honestly.** GeoHereditas also has Purussaurus, mastodon and mesosaur fossils, but GEOSSIT has no matching sites, so they're left out.
 
@@ -56,7 +56,6 @@ pnpm db:seed          # re-attach models; they now point at /models/<uid>.glb
 ```
 
 [`scripts/fetch-models.ts`](../scripts/fetch-models.ts):
-
 1. Re-checks each model's license (`slug === "by"`) and `isDownloadable` before downloading, since authors can change them.
 2. Requests a signed GLB URL from `GET /v3/models/{uid}/download`, which needs the token.
 3. Optimizes with [`scripts/lib/optimize-glb.ts`](../scripts/lib/optimize-glb.ts): dedup, weld, simplify to ≤ 300k triangles (meshoptimizer), WebP textures ≤ 2048 px (sharp), then meshopt compression. On a Khronos sample this took 3.8 MB → 0.53 MB.
