@@ -8,6 +8,7 @@ import { z } from "zod";
 import { GEOLOGIC_PERIOD_IDS } from "~/features/geology/time-scale";
 import { UFS } from "~/features/states/states";
 import { OverlaySchema } from "./overlays";
+import { ProtectedAreaSchema } from "./protected-areas";
 
 // ---------------------------------------------------------------------------
 // GeoJSON
@@ -222,6 +223,11 @@ export const GeositeInputSchema = z.object({
 	 * `location` is its municipality's centre (`placement.ts`).
 	 */
 	locationIsApproximate: z.boolean().default(false),
+	/**
+	 * CNUC protected areas the geosite lies in (its public point for
+	 * sensitive sites; none for approximate ones), set by the sync.
+	 */
+	protectedAreas: z.array(ProtectedAreaSchema).max(20).optional(),
 });
 export type GeositeInput = z.input<typeof GeositeInputSchema>;
 

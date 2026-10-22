@@ -222,6 +222,23 @@ function Overview({
 					<Row label={m.detail_relevance()}>
 						{relevanceLabel(geosite.relevance)}
 					</Row>
+					{geosite.protectedAreas && (
+						<Row label={m.detail_protected_areas()}>
+							<Stack gap={4}>
+								{geosite.protectedAreas.map((a) => (
+									<div key={a.id}>
+										{a.name}
+										<Text size="xs" c="dimmed">
+											{[a.category, a.sphere].filter(Boolean).join(" · ")}
+										</Text>
+									</div>
+								))}
+								<Text size="xs" c="dimmed">
+									{m.detail_protected_areas_source()}
+								</Text>
+							</Stack>
+						</Row>
+					)}
 					{geosite.degradationRisk && (
 						<Row label={m.detail_degradation_risk()}>
 							{degradationRiskLabel(geosite.degradationRisk)}

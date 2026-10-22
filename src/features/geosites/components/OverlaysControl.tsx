@@ -17,6 +17,7 @@ import {
 	MINERALS_SERVICE,
 	OVERLAY_IDS,
 	type Overlay,
+	PROTECTED_COLORS,
 } from "../overlays";
 
 type Props = {
@@ -29,12 +30,14 @@ const LABEL: Record<Overlay, () => string> = {
 	contours: m.overlay_contours,
 	outlines: m.overlay_outlines,
 	minerals: m.overlay_minerals,
+	protected: m.overlay_protected,
 };
 const HINT: Record<Overlay, () => string> = {
 	fossils: m.overlay_fossils_hint,
 	contours: m.overlay_contours_hint,
 	outlines: m.overlay_outlines_hint,
 	minerals: m.overlay_minerals_hint,
+	protected: m.overlay_protected_hint,
 };
 
 /** "Camadas": optional overlays, each with what it shows and its legend. */
@@ -89,6 +92,7 @@ export function OverlaysControl({ on, onChange }: Props) {
 									</Text>
 									{id === "fossils" && <DensityLegend />}
 									{id === "minerals" && <MineralsLegend />}
+									{id === "protected" && <ProtectedLegend />}
 								</Box>
 							)}
 						</Stack>
@@ -96,6 +100,38 @@ export function OverlaysControl({ on, onChange }: Props) {
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
+	);
+}
+
+function ProtectedLegend() {
+	const items = [
+		[PROTECTED_COLORS["Proteção Integral"], m.overlay_protected_integral()],
+		[PROTECTED_COLORS["Uso Sustentável"], m.overlay_protected_sustainable()],
+	] as const;
+	return (
+		<Stack gap={2} mt={4} component="ul" m={0} p={0}>
+			{items.map(([color, label]) => (
+				<Group
+					key={label}
+					gap={6}
+					wrap="nowrap"
+					component="li"
+					style={{ listStyle: "none" }}
+				>
+					<Box
+						aria-hidden
+						w={12}
+						h={12}
+						style={{
+							border: `2px solid ${color}`,
+							background: `color-mix(in srgb, ${color} 25%, transparent)`,
+							borderRadius: 2,
+						}}
+					/>
+					<Text size="xs">{label}</Text>
+				</Group>
+			))}
+		</Stack>
 	);
 }
 

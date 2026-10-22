@@ -1,7 +1,7 @@
 /**
  * Optional map overlays ("Camadas"): fossil record density (GBIF), contour
- * lines (from the relief tiles), geopark outlines (IBGE) and mineral
- * occurrences (SGB). Isomorphic ids and URLs; the MapLibre wiring lives in
+ * lines (from the relief tiles), geopark outlines (IBGE), mineral
+ * occurrences (SGB) and protected areas (CNUC). Isomorphic ids and URLs; the MapLibre wiring lives in
  * overlay-layers.ts, which only the map imports.
  */
 import { z } from "zod";
@@ -11,6 +11,7 @@ export const OVERLAY_IDS = [
 	"contours",
 	"outlines",
 	"minerals",
+	"protected",
 ] as const;
 export const OverlaySchema = z.enum(OVERLAY_IDS);
 export type Overlay = z.infer<typeof OverlaySchema>;
@@ -37,6 +38,14 @@ export const MINERALS_TILES = "sgb-minerals://{bbox-epsg-3857}";
 export const MINERALS_RETRY = { tries: 5, backoffMs: 800 };
 /** Below this the points merge into a solid carpet. */
 export const MINERALS_MINZOOM = 6;
+
+/** CNUC protected areas, built by `pnpm geo:protected` (~500 m detail). */
+export const PROTECTED_AREAS_URL = "/data/protected-areas.geojson";
+/** Fill and line colours per CNUC group: stricter protection, darker green. */
+export const PROTECTED_COLORS = {
+	"Proteção Integral": "#2b8a3e",
+	"Uso Sustentável": "#82c91e",
+} as const;
 
 /** Contours appear from this zoom; spacing in metres per zoom: [minor, major]. */
 export const CONTOURS_MINZOOM = 10;

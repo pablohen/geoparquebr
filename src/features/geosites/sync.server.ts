@@ -15,11 +15,13 @@ import { withGeologicAges } from "./geologic-age.server";
 import {
 	ensureGeositeIndexes,
 	geositesCollection,
+	publicPoint,
 	syncSourcedGeosites,
 } from "./geosites.server";
 import { fetchGeossitFeatures, mapGeossitFeatures } from "./geossit.server";
 import { modelsFor } from "./model-catalog.server";
 import type { BrazilPlaces } from "./placement";
+import { type ProtectedAreasData, protectedAreasAt } from "./protected-areas";
 
 /** Below this share of the stored geosites, a GEOSSIT response is suspect. */
 export const MIN_SHARE_OF_STORED = 0.8;
@@ -35,6 +37,8 @@ export type SyncReport = {
 	deleted: number;
 	inGeoparks: number;
 	models: number;
+	/** Geosites inside at least one CNUC protected area. */
+	protectedAreas: number;
 	/** Geosites placed at their municipality's centre (`placement.ts`). */
 	approximate: string[];
 	dated: number;
@@ -90,6 +94,19 @@ export async function syncGeosites({
 			`SGB age lookup failed for ${aged.failed}/${geosites.length} geosites; nothing was written`,
 		);
 
+	// Four megabytes of CNUC outlines, so only the sync loads them. Sensitive
+	// geosites are matched on their public point: a small area containing
+	// the exact point would narrow it down past the rounding.
+	const { default: cnuc } = await import("./protected-areas.json");
+	const areasOf = (g: (typeof aged.geosites)[number]) => {
+		if (g.locationIsApproximate) return undefined;
+		const found = protectedAreasAt(
+			publicPoint(g),
+			cnuc as unknown as ProtectedAreasData,
+		);
+		return found.length > 0 ? found : undefined;
+	};
+
 	// modelsFor checks public/models for self-hosted GLBs. In a serverless
 	// function that folder isn't on disk, so the cron attaches Sketchfab
 	// embeds; fine while no GLB is self-hosted (see docs/3d-models.md).
@@ -101,6 +118,7 @@ export async function syncGeosites({
 			// A curated, sourced age beats the one read off the map at the point.
 			geologicAge: curatedAge(g.source) ?? g.geologicAge,
 			models: modelsFor({ source: g.source, categories: g.categories }),
+			protectedAreas: areasOf(g),
 		};
 	});
 
@@ -119,6 +137,7 @@ export async function syncGeosites({
 		...result,
 		inGeoparks: records.filter((g) => g.geoparkId).length,
 		models: records.reduce((n, g) => n + g.models.length, 0),
+		protectedAreas: records.filter((g) => g.protectedAreas).length,
 		approximate: records
 			.filter((g) => g.locationIsApproximate)
 			.map((g) => g.slug),
@@ -136,7 +155,8 @@ export async function syncGeosites({
 export const formatSyncReport = (r: SyncReport) =>
 	`GEOSSIT: ${r.fetched} fetched, ${r.valid} valid, ${r.skipped.length} skipped → ` +
 	`${r.inserted} inserted, ${r.updated} updated, ${r.deleted} deleted. ` +
-	`${r.inGeoparks} in UNESCO geoparks; ${r.models} 3D model attachments. ` +
+	`${r.inGeoparks} in UNESCO geoparks; ${r.models} 3D model attachments; ` +
+	`${r.protectedAreas} in protected areas. ` +
 	`${r.approximate.length} at their municipality's centre` +
 	(r.approximate.length ? ` (${r.approximate.join(", ")}). ` : ". ") +
 	`Ages: ${r.dated} dated, ${r.ageLookupsFailed} lookups failed. ` +

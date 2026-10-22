@@ -22,6 +22,8 @@ import {
 	MINERALS_RETRY,
 	MINERALS_TILES,
 	type Overlay,
+	PROTECTED_AREAS_URL,
+	PROTECTED_COLORS,
 } from "./overlays";
 
 /** Contours are computed in a worker from the same Terrarium tiles as the relief. */
@@ -54,7 +56,16 @@ const LAYERS: Record<Overlay, string[]> = {
 	contours: ["overlay-contours", "overlay-contour-labels"],
 	outlines: ["overlay-outlines-fill", "overlay-outlines"],
 	minerals: ["overlay-minerals"],
+	protected: ["overlay-protected-fill", "overlay-protected"],
 };
+
+const protectedColor: ExpressionSpecification = [
+	"match",
+	["get", "group"],
+	"Proteção Integral",
+	PROTECTED_COLORS["Proteção Integral"],
+	PROTECTED_COLORS["Uso Sustentável"],
+];
 
 const density: ExpressionSpecification = [
 	"interpolate",
@@ -167,6 +178,31 @@ function add(map: MapLibreMap, overlay: Overlay, beforeId?: string) {
 						"line-width": 2,
 						"line-dasharray": [3, 2],
 					},
+				},
+				beforeId,
+			);
+			return;
+		case "protected":
+			map.addSource("overlay-protected", {
+				type: "geojson",
+				data: PROTECTED_AREAS_URL,
+				attribution: m.overlay_protected_attribution(),
+			});
+			map.addLayer(
+				{
+					id: "overlay-protected-fill",
+					type: "fill",
+					source: "overlay-protected",
+					paint: { "fill-color": protectedColor, "fill-opacity": 0.12 },
+				},
+				beforeId,
+			);
+			map.addLayer(
+				{
+					id: "overlay-protected",
+					type: "line",
+					source: "overlay-protected",
+					paint: { "line-color": protectedColor, "line-width": 1.5 },
 				},
 				beforeId,
 			);
