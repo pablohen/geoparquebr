@@ -8,7 +8,14 @@ import { sitemapXml } from "~/features/geosites/seo";
 import { GLOSSARY_PATH } from "~/features/glossary/glossary";
 import { NEWS_PATH } from "~/features/news/schemas";
 import { RANKINGS_PATH } from "~/features/rankings/schemas";
-import { STATES_PATH, statePath } from "~/features/states/states";
+import {
+	REGION_IDS,
+	REGIONS_PATH,
+	regionOf,
+	regionPath,
+	STATES_PATH,
+	statePath,
+} from "~/features/states/states";
 import {
 	COMPARE_PATH,
 	STATS_PATH,
@@ -50,6 +57,10 @@ export const Route = createFileRoute("/sitemap.xml")({
 					GLOSSARY_PATH,
 					STATES_PATH,
 					...states.map(statePath),
+					REGIONS_PATH,
+					...REGION_IDS.filter((r) =>
+						states.some((uf) => regionOf(uf) === r),
+					).map(regionPath),
 					UNITS_PATH,
 					CONSERVATION_PATH,
 					...units.map((u) => unitPath(u.slug)),

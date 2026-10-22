@@ -484,6 +484,36 @@
 	"rankings_title": "Geosite rankings",
 	"rankings_vulnerability_note": "Here a high mark is not a merit: it means a more fragile site that needs more care when visiting.",
 	"rankings_what": "What does this criterion measure?",
+	"region_all": "All regions",
+	"region_centro_oeste": "Central-West",
+	"region_col_geoparks": "UNESCO geoparks",
+	"region_col_geosites": "Geosites",
+	"region_col_international": "International relevance",
+	"region_col_state": "State",
+	"region_eyebrow": "Region",
+	"region_meta_description": "GEOSSIT's geosites in the {name} region, state by state: themes, rock ages, recorded fossils and geoparks.",
+	"region_meta_title": "{name} region: geosites and geoparks",
+	"region_nordeste": "Northeast",
+	"region_norte": "North",
+	"region_not_found": "Region not found, or no geosites yet",
+	"region_of_state": "{name} region",
+	"region_states": "States side by side",
+	"region_states_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} states",
+				"count=*, countPlural=one": "{count} state",
+				"count=*, countPlural=other": "{count} states"
+			}
+		}
+	],
+	"region_sudeste": "Southeast",
+	"region_sul": "South",
+	"regions_intro": "Brazil's five regions, with their states side by side, themes, rock ages, fossils and geoparks.",
+	"regions_link": "Regions",
+	"regions_title": "Geosites by region",
 	"relevance_geodiversity": "Geodiversity site",
 	"relevance_international": "Geosite of international relevance",
 	"relevance_national": "Geosite of national relevance",

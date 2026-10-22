@@ -5,8 +5,8 @@ import type { GeoparkId, Geosite } from "~/features/geosites/schemas";
 import { rankBy } from "~/features/rankings/rank";
 import { tally } from "~/features/stats/stats";
 import { frameAround } from "./frame";
-import { type StatePage, TOP_IN_STATE } from "./schemas";
-import type { Uf } from "./states";
+import { type RegionPage, type StatePage, TOP_IN_STATE } from "./schemas";
+import { REGIONS, type Region, type Uf } from "./states";
 
 type Row = Pick<
 	Geosite,
@@ -89,6 +89,64 @@ export async function findStatePage(uf: Uf): Promise<StatePage | null> {
 		geoparks: [
 			...new Set(rows.flatMap((r) => (r.geoparkId ? [r.geoparkId] : []))),
 		].sort() as GeoparkId[],
+		genera: await generaNearGeosites(rows.map((r) => r.slug)),
+	};
+}
+
+/** A region's geosites counted, state by state; null when it has none. */
+export async function findRegionPage(
+	region: Region,
+): Promise<RegionPage | null> {
+	const ufs: readonly Uf[] = REGIONS[region];
+	const rows = await (await geositesCollection())
+		.find<Row>(
+			{ state: { $in: [...ufs] } },
+			{
+				projection: {
+					_id: 0,
+					slug: 1,
+					state: 1,
+					categories: 1,
+					relevance: 1,
+					geoparkId: 1,
+					geologicAge: 1,
+					publicLocation: 1,
+				},
+			},
+		)
+		.toArray();
+	const bbox = frameAround(rows.map((r) => r.publicLocation.coordinates));
+	if (!bbox) return null;
+	const geoparksOf = (list: Row[]) =>
+		[
+			...new Set(list.flatMap((r) => (r.geoparkId ? [r.geoparkId] : []))),
+		].sort();
+	return {
+		region,
+		tally: tally(
+			rows.map((r) => ({
+				...r,
+				name: r.slug,
+				municipality: "",
+				minMa: r.geologicAge?.minMa,
+				maxMa: r.geologicAge?.maxMa,
+			})),
+		),
+		bbox,
+		states: ufs
+			.map((uf) => {
+				const inState = rows.filter((r) => r.state === uf);
+				return {
+					uf,
+					total: inState.length,
+					international: inState.filter((r) => r.relevance === "international")
+						.length,
+					geoparks: geoparksOf(inState).length,
+				};
+			})
+			.filter((s) => s.total > 0)
+			.sort((a, b) => b.total - a.total || a.uf.localeCompare(b.uf)),
+		geoparks: geoparksOf(rows) as GeoparkId[],
 		genera: await generaNearGeosites(rows.map((r) => r.slug)),
 	};
 }

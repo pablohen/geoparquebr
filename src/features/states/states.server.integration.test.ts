@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { geositesCollection } from "~/features/geosites/geosites.server";
 import { closeDb, getDb } from "~/lib/db.server";
 import { testDbName } from "~/lib/test-db";
-import { findStatePage } from "./states.server";
+import { findRegionPage, findStatePage } from "./states.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
 
@@ -56,6 +56,17 @@ describe.skipIf(!enabled)("states.server (MongoDB)", () => {
 		const [w, , e] = page?.bbox ?? [];
 		expect(w).toBeCloseTo(-38.53);
 		expect(e).toBeCloseTo(-37.93);
+	});
+
+	it("counts a region state by state", async () => {
+		const page = await findRegionPage("nordeste");
+		expect(page?.tally.total).toBe(3);
+		expect(page?.states.map((s) => [s.uf, s.total])).toEqual([
+			["PB", 2],
+			["CE", 1],
+		]);
+		expect(JSON.stringify(page)).not.toContain("coordinates");
+		expect(await findRegionPage("sul")).toBeNull();
 	});
 
 	it("has no page for a state without geosites", async () => {

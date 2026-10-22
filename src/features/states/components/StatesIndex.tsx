@@ -1,4 +1,12 @@
-import { Card, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import {
+	Anchor,
+	Card,
+	Group,
+	SimpleGrid,
+	Stack,
+	Text,
+	Title,
+} from "@mantine/core";
 import { Link } from "@tanstack/react-router";
 import type { GeositeStats } from "~/features/stats/schemas";
 import { m } from "~/paraglide/messages.js";
@@ -19,6 +27,13 @@ export function StatesIndex({ stats }: { stats: GeositeStats }) {
 					{m.states_title()}
 				</Title>
 				<Text c="dimmed">{m.states_intro()}</Text>
+				<Anchor
+					size="sm"
+					style={{ alignSelf: "flex-start" }}
+					renderRoot={(props) => <Link {...props} to="/regions" />}
+				>
+					{m.regions_title()}
+				</Anchor>
 			</Stack>
 			<SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm">
 				{withGeosites.map((uf) => (

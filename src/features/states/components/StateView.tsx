@@ -25,8 +25,9 @@ import { MapLink } from "~/features/stats/components/MapLink";
 import { Section } from "~/features/stats/components/Section";
 import { m } from "~/paraglide/messages.js";
 import { getLocale } from "~/paraglide/runtime.js";
+import { regionLabel } from "../labels";
 import type { StatePage } from "../schemas";
-import { stateName } from "../states";
+import { regionOf, stateName } from "../states";
 
 const PERIOD_COLOR = Object.fromEntries(
 	GEOLOGIC_PERIODS.map((p) => [p.id, p.color]),
@@ -52,7 +53,19 @@ export function StateView({ page }: { page: StatePage }) {
 
 			<Stack gap={6}>
 				<Text size="sm" c="dimmed" tt="uppercase" fw={600}>
-					{m.state_eyebrow()}
+					{m.state_eyebrow()} ·{" "}
+					<Anchor
+						inherit
+						renderRoot={(props) => (
+							<Link
+								{...props}
+								to="/regions/$region"
+								params={{ region: regionOf(uf) }}
+							/>
+						)}
+					>
+						{m.region_of_state({ name: regionLabel(regionOf(uf)) })}
+					</Anchor>
 				</Text>
 				<Title order={1} size="h2">
 					{stateName(uf)} ({uf})

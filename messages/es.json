@@ -484,6 +484,36 @@
 	"rankings_title": "Ranking de los geositios",
 	"rankings_vulnerability_note": "Aquí una nota alta no es un mérito: significa un lugar más frágil, que pide más cuidado en la visita.",
 	"rankings_what": "¿Qué mide este criterio?",
+	"region_all": "Todas las regiones",
+	"region_centro_oeste": "Centro-Oeste",
+	"region_col_geoparks": "Geoparques UNESCO",
+	"region_col_geosites": "Geositios",
+	"region_col_international": "Relevancia internacional",
+	"region_col_state": "Estado",
+	"region_eyebrow": "Región",
+	"region_meta_description": "Los geositios de GEOSSIT en la región {name}, estado por estado: temas, edad de las rocas, fósiles registrados y geoparques.",
+	"region_meta_title": "Región {name}: geositios y geoparques",
+	"region_nordeste": "Nordeste",
+	"region_norte": "Norte",
+	"region_not_found": "Región no encontrada o sin geositios",
+	"region_of_state": "Región {name}",
+	"region_states": "Estados lado a lado",
+	"region_states_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} estados",
+				"count=*, countPlural=one": "{count} estado",
+				"count=*, countPlural=other": "{count} estados"
+			}
+		}
+	],
+	"region_sudeste": "Sudeste",
+	"region_sul": "Sur",
+	"regions_intro": "Las cinco regiones de Brasil, con sus estados lado a lado, temas, edades de las rocas, fósiles y geoparques.",
+	"regions_link": "Regiones",
+	"regions_title": "Geositios por región",
 	"relevance_geodiversity": "Sitio de geodiversidad",
 	"relevance_international": "Geositio de relevancia internacional",
 	"relevance_national": "Geositio de relevancia nacional",

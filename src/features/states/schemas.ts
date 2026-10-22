@@ -8,7 +8,7 @@ import {
 } from "~/features/geosites/schemas";
 import { RankedGeositeSchema } from "~/features/rankings/schemas";
 import { TallySchema } from "~/features/stats/schemas";
-import { UFS } from "./states";
+import { REGION_IDS, UFS } from "./states";
 
 export const UfSchema = z.enum(UFS);
 
@@ -42,3 +42,23 @@ export const StatePageSchema = z.object({
 export type StatePage = z.infer<typeof StatePageSchema>;
 
 export const TOP_IN_STATE = 5;
+
+export const RegionSchema = z.enum(REGION_IDS);
+
+export const RegionPageSchema = z.object({
+	region: RegionSchema,
+	tally: TallySchema,
+	bbox: BBoxSchema,
+	/** The region's states with geosites, most first. */
+	states: z.array(
+		z.object({
+			uf: UfSchema,
+			total: z.number().int(),
+			international: z.number().int(),
+			geoparks: z.number().int(),
+		}),
+	),
+	geoparks: z.array(GeoparkIdSchema),
+	genera: z.array(GenusLinkSchema),
+});
+export type RegionPage = z.infer<typeof RegionPageSchema>;
