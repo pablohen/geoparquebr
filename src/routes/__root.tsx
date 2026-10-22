@@ -17,6 +17,9 @@ import {
 } from "@tanstack/react-router";
 import { type ReactNode, useEffect } from "react";
 import { ogLocaleTags } from "~/features/geosites/seo";
+// Loaded with the root, not a page chunk: Chrome fires beforeinstallprompt
+// once, early, and a listener in a lazily loaded chunk would miss it.
+import "~/features/install/prompt";
 import { getLocale } from "~/lib/i18n";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
