@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { GEOPARK_MUNICIPALITIES } from "~/features/geoparks/geoparks";
 import {
 	fetchWithRetries,
 	mapGeossitFeatures,
@@ -107,6 +108,22 @@ describe("mapGeossitFeatures", () => {
 			}),
 		]).geosites;
 		expect(cacapava?.geoparkId).toBe("cacapava");
+	});
+
+	// Regression: Morro Grande (SC) was missing, so its geosites fell outside
+	// Caminhos dos Cânions do Sul, whose territory has seven municipalities.
+	it("counts Morro Grande in Caminhos dos Cânions do Sul", () => {
+		const [g] = mapGeossitFeatures([
+			feature({
+				municipio: "Morro Grande",
+				uf: "SC",
+				geoparque__proposta_: "Nao",
+			}),
+		]).geosites;
+		expect(g?.geoparkId).toBe("caminhos-dos-canions-do-sul");
+		expect(GEOPARK_MUNICIPALITIES["caminhos-dos-canions-do-sul"]).toHaveLength(
+			7,
+		);
 	});
 
 	it("keeps a free-text proposal only outside UNESCO geoparks", () => {

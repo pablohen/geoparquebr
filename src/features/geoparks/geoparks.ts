@@ -32,4 +32,50 @@ export const GEOPARKS = {
 	uberaba: { designated: 2024, area: [-48.3, -20.0, -47.6, -19.5] },
 } as const satisfies Record<GeoparkId, GeoparkInfo>;
 
+/**
+ * The municipalities each geopark is legally made of, as "UF:name" in lower
+ * case without accents (how GEOSSIT records are matched). The source of
+ * geopark membership and of the map outlines.
+ */
+export const GEOPARK_MUNICIPALITIES: Record<GeoparkId, string[]> = {
+	araripe: [
+		"CE:barbalha",
+		"CE:crato",
+		"CE:juazeiro do norte",
+		"CE:missao velha",
+		"CE:nova olinda",
+		"CE:santana do cariri",
+	],
+	serido: [
+		"RN:acari",
+		"RN:carnauba dos dantas",
+		"RN:cerro cora",
+		"RN:currais novos",
+		"RN:lagoa nova",
+		"RN:parelhas",
+	],
+	"caminhos-dos-canions-do-sul": [
+		"RS:cambara do sul",
+		"RS:mampituba",
+		"RS:torres",
+		"SC:jacinto machado",
+		"SC:morro grande",
+		"SC:praia grande",
+		"SC:timbe do sul",
+	],
+	"quarta-colonia": [
+		"RS:agudo",
+		"RS:dona francisca",
+		"RS:faxinal do soturno",
+		"RS:ivora",
+		"RS:nova palma",
+		"RS:pinhal grande",
+		"RS:restinga seca",
+		"RS:sao joao do polesine",
+		"RS:silveira martins",
+	],
+	cacapava: ["RS:cacapava do sul"],
+	uberaba: ["MG:uberaba"],
+};
+
 export const geoparkPath = (id: GeoparkId) => `/geoparks/${id}`;

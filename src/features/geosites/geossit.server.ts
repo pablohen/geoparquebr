@@ -5,6 +5,7 @@
  * Read-only: the layer advertises edit capabilities, but we only ever `query`.
  */
 import { z } from "zod";
+import { GEOPARK_MUNICIPALITIES } from "~/features/geoparks/geoparks";
 import {
 	type DegradationRisk,
 	type GeoparkId,
@@ -176,46 +177,6 @@ const RISK: Record<string, DegradationRisk> = {
  * more reliable than GEOSSIT's free-text "geoparque (proposta)" field (it marks
  * e.g. the Romualdo Member as "Não" although it lies inside Araripe).
  */
-const GEOPARK_MUNICIPALITIES: Record<GeoparkId, string[]> = {
-	araripe: [
-		"CE:barbalha",
-		"CE:crato",
-		"CE:juazeiro do norte",
-		"CE:missao velha",
-		"CE:nova olinda",
-		"CE:santana do cariri",
-	],
-	serido: [
-		"RN:acari",
-		"RN:carnauba dos dantas",
-		"RN:cerro cora",
-		"RN:currais novos",
-		"RN:lagoa nova",
-		"RN:parelhas",
-	],
-	"caminhos-dos-canions-do-sul": [
-		"RS:cambara do sul",
-		"RS:mampituba",
-		"RS:torres",
-		"SC:jacinto machado",
-		"SC:praia grande",
-		"SC:timbe do sul",
-	],
-	"quarta-colonia": [
-		"RS:agudo",
-		"RS:dona francisca",
-		"RS:faxinal do soturno",
-		"RS:ivora",
-		"RS:nova palma",
-		"RS:pinhal grande",
-		"RS:restinga seca",
-		"RS:sao joao do polesine",
-		"RS:silveira martins",
-	],
-	cacapava: ["RS:cacapava do sul"],
-	uberaba: ["MG:uberaba"],
-};
-
 const MUNICIPALITY_TO_GEOPARK = new Map<string, GeoparkId>(
 	Object.entries(GEOPARK_MUNICIPALITIES).flatMap(([id, keys]) =>
 		keys.map((k) => [k, id as GeoparkId] as const),
