@@ -27,6 +27,7 @@ import { VisitProgress } from "~/features/my-geosites/components/VisitProgress";
 import { useMyGeosites } from "~/features/my-geosites/store";
 import { SaveOfflineButton } from "~/features/offline/components/SaveOfflineButton";
 import { GeoparkTripButton } from "~/features/trip/components/GeoparkTripButton";
+import { SuggestedItineraries } from "~/features/trip/components/SuggestedItineraries";
 import { m } from "~/paraglide/messages.js";
 import { GEOPARKS } from "../geoparks";
 import { geoparkAbout } from "../labels";
@@ -99,6 +100,8 @@ export function GeoparkView({ id, geosites, genera }: Props) {
 					</>
 				)}
 			</Group>
+
+			{geosites.length > 1 && <SuggestedItineraries query={{ gp: id }} />}
 
 			<Stack gap="xs">
 				<Title order={2} size="h4">

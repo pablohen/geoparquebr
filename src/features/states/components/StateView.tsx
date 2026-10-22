@@ -23,6 +23,7 @@ import {
 import { BarList } from "~/features/stats/components/BarList";
 import { MapLink } from "~/features/stats/components/MapLink";
 import { Section } from "~/features/stats/components/Section";
+import { SuggestedItineraries } from "~/features/trip/components/SuggestedItineraries";
 import { m } from "~/paraglide/messages.js";
 import { getLocale } from "~/paraglide/runtime.js";
 import { regionLabel } from "../labels";
@@ -196,6 +197,8 @@ export function StateView({ page }: { page: StatePage }) {
 					</Group>
 				</Section>
 			)}
+
+			{tally.total > 1 && <SuggestedItineraries query={{ uf }} />}
 
 			{genera.length > 0 && (
 				<Section title={m.state_genera()}>

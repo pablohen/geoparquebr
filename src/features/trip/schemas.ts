@@ -41,3 +41,10 @@ export function parseTripSlugs(stops: string | undefined): string[] {
 export const TripSlugsSchema = z.object({
 	slugs: z.array(SlugSchema).min(1).max(MAX_TRIP_STOPS),
 });
+
+/** Where to suggest itineraries: a geopark or a state. */
+export const ItinerariesQuerySchema = z.union([
+	z.object({ gp: GeoparkIdSchema }),
+	z.object({ uf: z.string().regex(/^[A-Z]{2}$/) }),
+]);
+export type ItinerariesQuery = z.infer<typeof ItinerariesQuerySchema>;

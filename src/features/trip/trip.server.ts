@@ -4,7 +4,8 @@ import {
 	publicPoint,
 } from "~/features/geosites/geosites.server";
 import type { GeoparkId } from "~/features/geosites/schemas";
-import type { TripStop } from "./schemas";
+import { type Itineraries, suggestItineraries } from "./itineraries";
+import type { ItinerariesQuery, TripStop } from "./schemas";
 
 /** The geosites named by `slugs`, in that order, with public points only. */
 export async function findTripStops(slugs: string[]): Promise<TripStop[]> {
@@ -40,4 +41,45 @@ export async function findTripStops(slugs: string[]): Promise<TripStop[]> {
 			},
 		];
 	});
+}
+
+/**
+ * Suggested 1- and 2-day itineraries in a geopark or a state, from the
+ * geosites' tourism marks and public points.
+ */
+export async function findItineraries(
+	query: ItinerariesQuery,
+): Promise<Itineraries> {
+	const docs = await (await geositesCollection())
+		.find(
+			{
+				"scores.tourism": { $type: "number" },
+				...("gp" in query ? { geoparkId: query.gp } : { state: query.uf }),
+			},
+			{
+				projection: {
+					slug: 1,
+					name: 1,
+					municipality: 1,
+					state: 1,
+					geoparkId: 1,
+					location: 1,
+					locationIsSensitive: 1,
+					scores: 1,
+				},
+			},
+		)
+		.toArray();
+	return suggestItineraries(
+		docs.map((d) => ({
+			slug: d.slug,
+			name: d.name,
+			municipality: d.municipality,
+			state: d.state,
+			...(d.geoparkId && { geoparkId: d.geoparkId as GeoparkId }),
+			point: publicPoint(d),
+			approximate: d.locationIsSensitive,
+			tourism: d.scores?.tourism ?? 0,
+		})),
+	);
 }
