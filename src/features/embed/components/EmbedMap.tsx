@@ -9,6 +9,7 @@ import {
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
 import { STYLE_URL } from "~/features/geosites/map-sources";
+import { autoHideAttribution } from "~/lib/map-attribution";
 import { m } from "~/paraglide/messages.js";
 
 // Same worker fix as GeositeMap: Vite rebundles MapLibre.
@@ -61,7 +62,10 @@ export default function EmbedMap({ points }: { points: EmbedPoint[] }) {
 		});
 		map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
+		let cancelAutoHide = () => {};
 		map.on("load", () => {
+			// Credits show at first, then fold to their "i" button.
+			cancelAutoHide = autoHideAttribution(map.getContainer());
 			// A lazy iframe can lay out after the map was created; fit again at
 			// the real size so no point is left outside.
 			map.resize();
@@ -120,7 +124,10 @@ export default function EmbedMap({ points }: { points: EmbedPoint[] }) {
 				map.getCanvas().style.cursor = "";
 			});
 		});
-		return () => map.remove();
+		return () => {
+			cancelAutoHide();
+			map.remove();
+		};
 	}, []);
 
 	return <div ref={ref} style={{ position: "absolute", inset: 0 }} />;

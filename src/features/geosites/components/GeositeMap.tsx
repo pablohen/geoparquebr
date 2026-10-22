@@ -14,6 +14,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
 import { type TripPin, tripFeatures } from "~/features/trip/map";
 import { type BBox, bboxCenter, flatBBox, roundBBox } from "~/lib/geo";
+import { autoHideAttribution } from "~/lib/map-attribution";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES, STYLE_URL } from "../map-sources";
 import type { GeositeSummary } from "../schemas";
@@ -213,8 +214,11 @@ export default function GeositeMap({
 		// `map.loaded()` is false whenever tiles are still streaming in (i.e. right
 		// after most moves), so track "style + layers ready" ourselves.
 		let ready = false;
+		// Credits show at first, then fold to their "i" button.
+		let cancelAutoHide = () => {};
 		map.on("load", () => {
 			ready = true;
+			cancelAutoHide = autoHideAttribution(map.getContainer());
 			// Geology goes under the basemap's labels; geosites go on top of all.
 			const firstLabel = map
 				.getStyle()
@@ -402,6 +406,7 @@ export default function GeositeMap({
 
 		mapRef.current = map;
 		return () => {
+			cancelAutoHide();
 			map.remove();
 			mapRef.current = null;
 		};
