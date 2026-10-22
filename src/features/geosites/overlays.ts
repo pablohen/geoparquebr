@@ -30,6 +30,11 @@ export const MINERALS_SERVICE =
 export const MINERALS_EXPORT = `${MINERALS_SERVICE}/export?bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`;
 /** Through a protocol that retries SGB's intermittent failures (overlay-layers.ts). */
 export const MINERALS_TILES = "sgb-minerals://{bbox-epsg-3857}";
+/**
+ * SGB fails a few tiles of each burst (500s, empty 200s): five tries, waiting
+ * 0.8, 1.6, 2.4 and 3.2 s between them, about 8 s at most on a bad tile.
+ */
+export const MINERALS_RETRY = { tries: 5, backoffMs: 800 };
 /** Below this the points merge into a solid carpet. */
 export const MINERALS_MINZOOM = 6;
 

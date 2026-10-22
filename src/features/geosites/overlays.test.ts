@@ -3,6 +3,7 @@ import {
 	CONTOUR_THRESHOLDS,
 	DENSITY_STOPS,
 	FOSSIL_DENSITY_TILES,
+	MINERALS_RETRY,
 } from "./overlays";
 
 describe("overlay sources", () => {
@@ -27,5 +28,14 @@ describe("overlay sources", () => {
 		};
 		const values = DENSITY_STOPS.map(([, c]) => lum(c));
 		expect([...values].sort((a, b) => b - a)).toEqual(values);
+	});
+
+	// Three tries still left an empty SGB tile on the live site.
+	it("retries SGB tiles five times within about eight seconds", () => {
+		expect(MINERALS_RETRY.tries).toBe(5);
+		let waited = 0;
+		for (let i = 1; i < MINERALS_RETRY.tries; i++)
+			waited += MINERALS_RETRY.backoffMs * i;
+		expect(waited).toBeLessThanOrEqual(8_000);
 	});
 });

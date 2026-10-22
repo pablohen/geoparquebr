@@ -18,6 +18,7 @@ import {
 	FOSSIL_MAXZOOM,
 	MINERALS_EXPORT,
 	MINERALS_MINZOOM,
+	MINERALS_RETRY,
 	MINERALS_TILES,
 	type Overlay,
 } from "./overlays";
@@ -41,6 +42,7 @@ addProtocol("sgb-minerals", async ({ url }, abort) => {
 		data: await fetchTileWithRetry(
 			`${MINERALS_EXPORT}&bbox=${bbox}`,
 			abort.signal,
+			MINERALS_RETRY,
 		),
 	};
 });
