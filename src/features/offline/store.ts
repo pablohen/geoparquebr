@@ -55,7 +55,8 @@ export function savedGeositesInBounds(
 	saved: SavedGeoparks,
 	query: GeositesInBoundsQuery,
 ): GeositeSummary[] {
-	if (query.age) return [];
+	// Saved summaries carry neither ages nor scores to filter on.
+	if (query.age || query.minScore) return [];
 	const [w, s, e, n] = query.bbox;
 	const centre = bboxCenter(query.bbox);
 	return Object.entries(saved)

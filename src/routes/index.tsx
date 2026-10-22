@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
 import { GeositeExplorer } from "~/features/geosites/components/GeositeExplorer";
 import { getGeositesInBounds } from "~/features/geosites/geosites.functions";
-import { ExplorerSearchSchema } from "~/features/geosites/schemas";
+import { ExplorerSearchSchema, minScoreOf } from "~/features/geosites/schemas";
 import { savedGeoparks, savedGeositesInBounds } from "~/features/offline/store";
 import { alternateLinks } from "~/lib/i18n";
 import { absoluteUrl, SITE_URL } from "~/lib/site";
@@ -48,12 +48,13 @@ export const Route = createFileRoute("/")({
 	}),
 	// Only the viewport and filters change the list; the drawer state
 	// (site/tab/model) is fetched separately and must not re-run this.
-	loaderDeps: ({ search: { bbox, cat, rel, gp, age } }) => ({
+	loaderDeps: ({ search: { bbox, cat, rel, gp, age, sk, sm } }) => ({
 		bbox,
 		cat,
 		rel,
 		gp,
 		age,
+		minScore: minScoreOf({ sk, sm }),
 	}),
 	loader: ({ deps }) =>
 		listGeositesOrEmptyOffline({
@@ -63,6 +64,7 @@ export const Route = createFileRoute("/")({
 				relevance: deps.rel,
 				geoparkId: deps.gp,
 				age: deps.age,
+				minScore: deps.minScore,
 			},
 		}),
 	// Keep showing the current list while panning instead of a pending screen.

@@ -12,6 +12,7 @@ import { m } from "~/paraglide/messages.js";
 import { categoryLabel, geoparkIdLabel, relevanceLabel } from "../labels";
 import {
 	type AgeRange,
+	type FilterScoreKey,
 	GEOPARK_IDS,
 	GEOSITE_CATEGORIES,
 	type GeoparkId,
@@ -22,12 +23,15 @@ import {
 	RelevanceSchema,
 } from "../schemas";
 import { AgeFilter } from "./AgeFilter";
+import { MinScoreFilter } from "./MinScoreFilter";
 
 export type FilterValues = {
 	cat?: GeositeCategory[];
 	rel?: Relevance;
 	gp?: GeoparkId;
 	age?: AgeRange;
+	sk?: FilterScoreKey;
+	sm?: number;
 };
 
 type Props = {
@@ -51,7 +55,7 @@ export function GeositeFilters({ value, onChange }: Props) {
 		label: geoparkIdLabel(g),
 	}));
 	const active = Boolean(
-		value.cat?.length || value.rel || value.gp || value.age,
+		value.cat?.length || value.rel || value.gp || value.age || value.sk,
 	);
 
 	return (
@@ -152,6 +156,10 @@ export function GeositeFilters({ value, onChange }: Props) {
 				value={value.age}
 				onChange={(age) => onChange({ ...value, age })}
 			/>
+			<MinScoreFilter
+				value={{ sk: value.sk, sm: value.sm }}
+				onChange={(score) => onChange({ ...value, ...score })}
+			/>
 			{active && (
 				<Button
 					size="compact-xs"
@@ -163,6 +171,8 @@ export function GeositeFilters({ value, onChange }: Props) {
 							rel: undefined,
 							gp: undefined,
 							age: undefined,
+							sk: undefined,
+							sm: undefined,
 						})
 					}
 					style={{ alignSelf: "flex-start" }}

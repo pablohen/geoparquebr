@@ -32,10 +32,11 @@ import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import { getGeositeBySlug } from "../geosites.functions";
 import { bboxContains, rankFromPoint } from "../near";
-import type {
-	ExplorerSearch,
-	GeositeSummary,
-	LocationFormValues,
+import {
+	type ExplorerSearch,
+	type GeositeSummary,
+	type LocationFormValues,
+	minScoreOf,
 } from "../schemas";
 import { GeositeDrawer } from "./GeositeDrawer";
 import { GeositeFilters } from "./GeositeFilters";
@@ -101,7 +102,9 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 		closeSheet();
 	};
 
-	const filtered = Boolean(search.cat || search.rel || search.gp || search.age);
+	const filtered = Boolean(
+		search.cat || search.rel || search.gp || search.age || minScoreOf(search),
+	);
 	const locationForm = (
 		<LocationForm
 			values={formValuesFor(search.bbox)}
@@ -120,6 +123,8 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 				rel: search.rel,
 				gp: search.gp,
 				age: search.age,
+				sk: search.sk,
+				sm: search.sm,
 			}}
 			onChange={(next) => onSearchChange(next)}
 		/>

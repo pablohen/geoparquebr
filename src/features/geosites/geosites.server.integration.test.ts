@@ -65,6 +65,12 @@ const sites = [
 		categories: ["speleological"],
 		relevance: "international",
 		geoparkId: "araripe",
+		scores: {
+			scientific: 300,
+			tourism: 250,
+			didactic: 200,
+			vulnerability: 100,
+		},
 	}),
 	geosite(3, "sensivel", [-39.123456, -7.654321], {
 		locationIsSensitive: true,
@@ -253,6 +259,15 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		expect(await slugs(["cretaceous", "cretaceous"])).toEqual(["centro"]);
 		expect(await slugs(["quaternary", "jurassic"])).toEqual(["centro"]);
 		expect(await slugs(["jurassic", "archean"])).toEqual([]);
+	});
+
+	it("filters by a minimum score, dropping geosites without scores", async () => {
+		const slugs = async (key: "tourism" | "didactic", min: number) =>
+			(await findGeositesInBounds({ bbox: box, minScore: { key, min } })).map(
+				(g) => g.slug,
+			);
+		expect(await slugs("tourism", 250)).toEqual(["leste"]);
+		expect(await slugs("didactic", 201)).toEqual([]);
 	});
 
 	// Regression: the viewport query used to match and measure on exact

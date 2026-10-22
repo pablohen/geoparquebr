@@ -5,6 +5,7 @@ import {
 	ExplorerSearchSchema,
 	GeositeInputSchema,
 	Model3DSchema,
+	minScoreOf,
 } from "./schemas";
 
 describe("ExplorerSearchSchema", () => {
@@ -53,6 +54,20 @@ describe("ExplorerSearchSchema", () => {
 
 	it("coerces a numeric model index from the query string", () => {
 		expect(ExplorerSearchSchema.parse({ model: "2" }).model).toBe(2);
+	});
+
+	it("reads a minimum score only when both its parts are valid", () => {
+		const both = ExplorerSearchSchema.parse({ sk: "tourism", sm: "250" });
+		expect(minScoreOf(both)).toEqual({ key: "tourism", min: 250 });
+		expect(
+			minScoreOf(ExplorerSearchSchema.parse({ sk: "tourism" })),
+		).toBeUndefined();
+		expect(minScoreOf(ExplorerSearchSchema.parse({ sm: 250 }))).toBeUndefined();
+		// No minimum vulnerability, and nothing above the 400 scale.
+		expect(
+			ExplorerSearchSchema.parse({ sk: "vulnerability" }).sk,
+		).toBeUndefined();
+		expect(ExplorerSearchSchema.parse({ sm: 900 }).sm).toBeUndefined();
 	});
 });
 

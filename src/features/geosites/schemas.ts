@@ -254,6 +254,21 @@ export const AgeRangeSchema = z.tuple([
 ]);
 export type AgeRange = z.infer<typeof AgeRangeSchema>;
 
+/** Scores the map can filter on; a minimum vulnerability would make no sense. */
+export const FilterScoreKeySchema = z.enum([
+	"scientific",
+	"tourism",
+	"didactic",
+]);
+export type FilterScoreKey = z.infer<typeof FilterScoreKeySchema>;
+
+/** A GEOSSIT score of at least `min` (0–400). */
+export const MinScoreSchema = z.object({
+	key: FilterScoreKeySchema,
+	min: z.number().int().min(1).max(400),
+});
+export type MinScore = z.infer<typeof MinScoreSchema>;
+
 /** Optional filters shared by the URL, the filter UI and the query. */
 export const GeositeFiltersSchema = z.object({
 	categories: z.array(GeositeCategorySchema).optional(),
@@ -261,6 +276,8 @@ export const GeositeFiltersSchema = z.object({
 	geoparkId: GeoparkIdSchema.optional(),
 	/** Geosites whose mapped age overlaps this span; ones without an age drop out. */
 	age: AgeRangeSchema.optional(),
+	/** Geosites without that score drop out. */
+	minScore: MinScoreSchema.optional(),
 });
 export type GeositeFilters = z.infer<typeof GeositeFiltersSchema>;
 
@@ -312,6 +329,9 @@ export const ExplorerSearchSchema = z.object({
 	gp: GeoparkIdSchema.optional().catch(undefined),
 	/** Geological age filter, [youngest, oldest] period. */
 	age: AgeRangeSchema.optional().catch(undefined),
+	/** Minimum GEOSSIT score: the criterion (`sk`) and its value (`sm`). */
+	sk: FilterScoreKeySchema.optional().catch(undefined),
+	sm: z.coerce.number().int().min(1).max(400).optional().catch(undefined),
 	/** Geology map layer on. */
 	geo: z.literal(true).optional().catch(undefined),
 	/** "Relevo 3D" on: 3D terrain and a tilted map. */
@@ -325,6 +345,13 @@ export const ExplorerSearchSchema = z.object({
 	model: z.coerce.number().int().nonnegative().optional().catch(undefined),
 });
 export type ExplorerSearch = z.infer<typeof ExplorerSearchSchema>;
+
+/** The URL's `sk` + `sm` as a filter; either alone filters nothing. */
+export const minScoreOf = ({
+	sk,
+	sm,
+}: Pick<ExplorerSearch, "sk" | "sm">): MinScore | undefined =>
+	sk && sm ? { key: sk, min: sm } : undefined;
 
 /** "Go to a point" form in the sidebar; the radius sets how much area to show. */
 export const LocationFormSchema = z.object({
