@@ -27,7 +27,9 @@ export const FOSSIL_MAXZOOM = 9;
 /** SGB's mineral occurrences (mines, garimpos, …), drawn by SGB per tile. */
 export const MINERALS_SERVICE =
 	"https://geoportal.sgb.gov.br/server/rest/services/geologia/ocorrencias/MapServer";
-export const MINERALS_TILES = `${MINERALS_SERVICE}/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`;
+export const MINERALS_EXPORT = `${MINERALS_SERVICE}/export?bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image`;
+/** Through a protocol that retries SGB's intermittent failures (overlay-layers.ts). */
+export const MINERALS_TILES = "sgb-minerals://{bbox-epsg-3857}";
 /** Below this the points merge into a solid carpet. */
 export const MINERALS_MINZOOM = 6;
 

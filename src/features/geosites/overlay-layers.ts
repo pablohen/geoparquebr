@@ -7,6 +7,7 @@ import mlcontour from "maplibre-contour";
 import type { ExpressionSpecification, Map as MapLibreMap } from "maplibre-gl";
 import { addProtocol } from "maplibre-gl";
 import { GEOPARK_OUTLINES_URL } from "~/features/geoparks/outlines";
+import { fetchTileWithRetry } from "~/lib/fetch-retry";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES } from "./map-sources";
 import {
@@ -15,6 +16,7 @@ import {
 	DENSITY_STOPS,
 	FOSSIL_DENSITY_TILES,
 	FOSSIL_MAXZOOM,
+	MINERALS_EXPORT,
 	MINERALS_MINZOOM,
 	MINERALS_TILES,
 	type Overlay,
@@ -28,6 +30,20 @@ const dem = new mlcontour.DemSource({
 	worker: true,
 });
 dem.setupMaplibre({ addProtocol } as Parameters<typeof dem.setupMaplibre>[0]);
+
+/**
+ * SGB's export endpoint fails some requests of a burst (500s, empty 200s);
+ * retry them instead of leaving blank tiles.
+ */
+addProtocol("sgb-minerals", async ({ url }, abort) => {
+	const bbox = url.slice("sgb-minerals://".length);
+	return {
+		data: await fetchTileWithRetry(
+			`${MINERALS_EXPORT}&bbox=${bbox}`,
+			abort.signal,
+		),
+	};
+});
 
 /** Layer ids per overlay, for toggling. */
 const LAYERS: Record<Overlay, string[]> = {
