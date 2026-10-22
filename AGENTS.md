@@ -23,6 +23,7 @@ Use **pnpm**, never npm or yarn.
 | Tests (unit + MongoDB integration) | `pnpm test` (`pnpm test:watch` while developing) |
 | Sync geosites from GEOSSIT + attach 3D models | `pnpm db:seed` (reads `.env`; production also syncs weekly via Vercel Cron) |
 | Rebuild geopark outlines for the map | `pnpm geo:outlines` (IBGE shapefiles; commit `public/data/geopark-outlines.geojson`) |
+| Rebuild state outlines + municipality centres for the sync | `pnpm geo:places` (IBGE shapefiles; commit `src/features/geosites/brazil-places.json`) |
 | Rebuild the fossil genus index (`/fossils`) | `pnpm db:fossils` (after `db:seed`; production also refreshes it daily via Vercel Cron) |
 | Regenerate share card + app icons | `pnpm brand:images` (commit the PNGs) |
 | Download + optimize CC BY 3D models | `pnpm models:fetch` (needs `SKETCHFAB_TOKEN`) |
@@ -65,6 +66,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - GeoJSON coordinates are **`[longitude, latitude]`**, the reverse of most map UIs. `PositionSchema` enforces the ranges.
 - The map viewport is the URL's `bbox` (`[west, south, east, north]`). Distances are in **metres** (`distanceMeters`, from the box centre); radii in forms and lookups are **kilometres**.
 - `_id` and `Date` never leave the server. Map documents through `toDto` in `geosites.server.ts`, which returns `id: string` and ISO-string dates.
+- **Misplaced GEOSSIT points** (0,0, whole-degree placeholders, wrong state) move to their municipality's centre at sync time with `locationIsApproximate: true` (`placement.ts`). Never run point-based lookups (map age, fossils, strata) or itineraries for them, and say so in the UI.
 - Geosites with `locationIsSensitive: true` (fragile caves, fossil beds) get their coordinates rounded to about 1 km in `toDto`. Never add a code path that returns their exact coordinates to the client.
 - The list query is `$geoNear` (first stage, on `publicLocation`, needs `public_location_2dsphere`) with `$geoWithin` on a densified box polygon in its `query`. **Any query a client can steer (boxes, centres, distances) must use `publicLocation`, never `location`:** matching or measuring on exact points leaks sensitive sites. Return summaries only; the drawer fetches the full geosite by slug.
 - **Distances to sensitive sites** are measured between public (rounded) points and rounded to 100 m, as in `rankNearby`. Never return a distance measured from or to exact sensitive coordinates: a few of them pin the site down.

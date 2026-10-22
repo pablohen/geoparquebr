@@ -52,6 +52,8 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 
 **Sensitive locations.** `locationIsSensitive` is set for speleological and paleontological sites and for anything with high degradation risk. Their coordinates are rounded to about 1 km in API responses.
 
+**Misplaced points.** A few GEOSSIT records sit at 0,0, on whole-degree placeholders (−15, −48) or in the wrong state (Pico das Agulhas Negras lands in the South Atlantic). The sync checks each point against IBGE's outline of the state it names ([`placement.ts`](../src/features/geosites/placement.ts), with `brazil-places.json` built by `pnpm geo:places`): a point that isn't within 5 km of its state, or is a placeholder, moves to its municipality's centre and gets `locationIsApproximate`. Those geosites get no map-derived age, fossil records or strata (the centre says nothing about the site's rock), stay out of suggested itineraries, and the UI says where the point comes from. A misplaced point in a municipality IBGE doesn't know is skipped. The sync report lists them; they're GEOSSIT's errors to fix upstream.
+
 ## Collection: `geosites`
 
 ### Fields (`GeositeInputSchema`)
@@ -76,6 +78,7 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 | `models` | `Model3D[]` | max 20; see [3D models](3d-models.md) |
 | `coverImageUrl` | url? | |
 | `locationIsSensitive` | boolean | coordinates rounded to ~1 km in API responses |
+| `locationIsApproximate` | boolean | GEOSSIT's point was misplaced; `location` is the municipality's centre |
 | `publicLocation` | GeoJSON Point | stored only: `location` rounded when sensitive, written by the sync; client-steerable geo queries use it. Never returned |
 | `source` | object? | `{ system: "geossit", id, url, authors?, updatedAt? }` |
 
@@ -86,7 +89,7 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 ### API shapes (DTOs)
 
 - `GeositeSchema` = input + `id: string`, with `createdAt`/`updatedAt` as ISO strings. The drawer loads it via `getGeositeBySlug`.
-- `GeositeSummarySchema` is the light list/map record (id, slug, name, municipality, state, categories, relevance, geoparkId, location, locationIsSensitive) plus `distanceMeters` from the centre of the queried box.
+- `GeositeSummarySchema` is the light list/map record (id, slug, name, municipality, state, categories, relevance, geoparkId, location, locationIsSensitive, locationIsApproximate) plus `distanceMeters` from the centre of the queried box.
 
 `toDto()` and the summary mapper are the only paths from document to client, and they're where sensitive coordinates get rounded.
 
