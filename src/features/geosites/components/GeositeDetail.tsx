@@ -18,6 +18,7 @@ import {
 import { ArrowSquareOut, Bone, Cube, Info } from "@phosphor-icons/react";
 import { ClientOnly, Link } from "@tanstack/react-router";
 import {
+	Fragment,
 	lazy,
 	type ReactNode,
 	Suspense,
@@ -36,6 +37,7 @@ import {
 } from "~/features/geology/time-scale";
 import { scoreAnchor, themeAnchor } from "~/features/glossary/glossary";
 import { StateLink } from "~/features/states/components/StateLink";
+import { unitNames, unitSlug } from "~/features/units/units";
 import { imageFailed } from "~/lib/image";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
@@ -236,6 +238,28 @@ function Overview({
 							}
 						>
 							{formatGeologicAge(geosite.geologicAge)}
+							{unitNames(geosite.geologicAge.formation).length > 0 && (
+								<Text size="xs" mt={2}>
+									{m.detail_unit_pages()}{" "}
+									{unitNames(geosite.geologicAge.formation).map((name, i) => (
+										<Fragment key={name}>
+											{i > 0 && " · "}
+											<Anchor
+												size="xs"
+												renderRoot={(props) => (
+													<Link
+														{...props}
+														to="/units/$slug"
+														params={{ slug: unitSlug(name) }}
+													/>
+												)}
+											>
+												{name}
+											</Anchor>
+										</Fragment>
+									))}
+								</Text>
+							)}
 							{geosite.geologicAge.mapScale && (
 								<Text size="xs" c="dimmed" mt={2}>
 									{m.detail_mapped_rock_note({

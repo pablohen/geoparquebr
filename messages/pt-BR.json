@@ -71,6 +71,7 @@
 	"detail_tab_model": "Modelo 3D",
 	"detail_tab_overview": "Visão geral",
 	"detail_tab_overview_short": "Geral",
+	"detail_unit_pages": "Página da unidade:",
 	"drawer_not_found": "Geossítio não encontrado.",
 	"embed_button": "Incorporar",
 	"embed_copied": "Código copiado",
@@ -650,5 +651,46 @@
 	"trip_title": "Meu roteiro",
 	"trip_total": "Total em linha reta: {distance}",
 	"trip_use_shared": "Usar este roteiro",
+	"unit_age": "Idade no mapa",
+	"unit_age_none": "O mapa só mostra esta unidade junto de outras nos geossítios, então a idade dela não pode ser separada.",
+	"unit_age_note": "Pelo mapa geológico do SGB na escala 1:{scale}, nos geossítios onde é a única unidade mapeada.",
+	"unit_all_units": "Todas as unidades",
+	"unit_alongside": "contato com {names}",
+	"unit_eyebrow": "Unidade de rocha",
+	"unit_geosites": "Geossítios sobre esta unidade",
+	"unit_map_note": "Na escala de 1:1.000.000, a rocha mapeada num ponto pode não ser a que o geossítio mostra.",
+	"unit_meta_description": [
+		{
+			"declarations": [
+				"input count",
+				"input name",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{name} aparece no mapa geológico em {count} geossítios do GEOSSIT. Veja onde, a idade e os fósseis registrados por perto.",
+				"count=*, countPlural=one": "{name} aparece no mapa geológico em {count} geossítio do GEOSSIT. Veja onde, a idade e os fósseis registrados por perto.",
+				"count=*, countPlural=other": "{name} aparece no mapa geológico em {count} geossítios do GEOSSIT. Veja onde, a idade e os fósseis registrados por perto."
+			}
+		}
+	],
+	"unit_not_found": "Unidade não encontrada",
+	"unit_what": "O que é uma formação?",
+	"units_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} unidades",
+				"count=*, countPlural=one": "{count} unidade",
+				"count=*, countPlural=other": "{count} unidades"
+			}
+		}
+	],
+	"units_intro": "As formações, grupos e outras unidades que o mapa geológico do SGB mostra nos geossítios, cada uma com seus geossítios e os fósseis registrados por perto.",
+	"units_link": "Unidades de rocha",
+	"units_none": "Nenhuma unidade com esse nome.",
+	"units_search": "Buscar unidade",
+	"units_title": "Unidades de rocha",
 	"viewer_load_failed": "Falha ao carregar o modelo 3D."
 }

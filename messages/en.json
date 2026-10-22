@@ -71,6 +71,7 @@
 	"detail_tab_model": "3D model",
 	"detail_tab_overview": "Overview",
 	"detail_tab_overview_short": "Overview",
+	"detail_unit_pages": "Unit page:",
 	"drawer_not_found": "Geosite not found.",
 	"embed_button": "Embed",
 	"embed_copied": "Code copied",
@@ -650,5 +651,46 @@
 	"trip_title": "My trip",
 	"trip_total": "Straight-line total: {distance}",
 	"trip_use_shared": "Use this trip",
+	"unit_age": "Age on the map",
+	"unit_age_none": "The map only shows this unit alongside others at the geosites, so its own age can't be told apart.",
+	"unit_age_note": "From SGB's geological map at 1:{scale}, at the geosites where it is the only unit mapped.",
+	"unit_all_units": "All units",
+	"unit_alongside": "in contact with {names}",
+	"unit_eyebrow": "Rock unit",
+	"unit_geosites": "Geosites on this unit",
+	"unit_map_note": "At 1:1,000,000, the rock mapped at a point may not be the one the geosite shows.",
+	"unit_meta_description": [
+		{
+			"declarations": [
+				"input count",
+				"input name",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{name} is mapped at {count} GEOSSIT geosites. See where, its age and the fossils recorded nearby.",
+				"count=*, countPlural=one": "{name} is mapped at {count} GEOSSIT geosite. See where, its age and the fossils recorded nearby.",
+				"count=*, countPlural=other": "{name} is mapped at {count} GEOSSIT geosites. See where, its age and the fossils recorded nearby."
+			}
+		}
+	],
+	"unit_not_found": "Unit not found",
+	"unit_what": "What is a formation?",
+	"units_count": [
+		{
+			"declarations": ["input count", "local countPlural = count: plural"],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{count} units",
+				"count=*, countPlural=one": "{count} unit",
+				"count=*, countPlural=other": "{count} units"
+			}
+		}
+	],
+	"units_intro": "The formations, groups and other units SGB's geological map shows at the geosites, each with its geosites and the fossils recorded nearby.",
+	"units_link": "Rock units",
+	"units_none": "No unit with that name.",
+	"units_search": "Find a unit",
+	"units_title": "Rock units",
 	"viewer_load_failed": "Couldn't load the 3D model."
 }

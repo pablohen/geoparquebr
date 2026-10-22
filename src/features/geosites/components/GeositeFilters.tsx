@@ -147,6 +147,12 @@ export function GeositeFilters({ value, onChange }: Props) {
 				</Anchor>
 				<Anchor
 					size="xs"
+					renderRoot={(props) => <Link {...props} to="/units" />}
+				>
+					{m.units_link()}
+				</Anchor>
+				<Anchor
+					size="xs"
 					renderRoot={(props) => <Link {...props} to="/glossary" />}
 				>
 					{m.glossary_link()}

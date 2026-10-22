@@ -13,6 +13,7 @@ import {
 	Clock,
 	MapPin,
 	Ranking,
+	Stack as Stack3,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { periodLabel } from "~/features/geology/labels";
@@ -74,6 +75,15 @@ export function StatsView({ stats }: { stats: GeositeStats }) {
 						<Group gap={4}>
 							<MapPin size={14} aria-hidden />
 							{m.states_link()}
+						</Group>
+					</Anchor>
+					<Anchor
+						size="sm"
+						renderRoot={(props) => <Link {...props} to="/units" />}
+					>
+						<Group gap={4}>
+							<Stack3 size={14} aria-hidden />
+							{m.units_link()}
 						</Group>
 					</Anchor>
 					<Anchor

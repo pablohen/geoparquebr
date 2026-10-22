@@ -13,6 +13,7 @@ import {
 	STATS_PATH,
 	TIMELINE_PATH,
 } from "~/features/stats/schemas";
+import { UNITS_PATH, unitPath } from "~/features/units/units";
 
 export const Route = createFileRoute("/sitemap.xml")({
 	server: {
@@ -22,16 +23,19 @@ export const Route = createFileRoute("/sitemap.xml")({
 				const [
 					{ listGeositeSlugs, listGeositeStates },
 					{ listFossilGenusPages },
+					{ listUnits },
 				] = await Promise.all([
 					import("~/features/geosites/geosites.server"),
 					import("~/features/fossils/fossils.server"),
+					import("~/features/units/units.server"),
 				]);
 				const geoparks = (Object.keys(GEOPARKS) as GeoparkId[]).map(
 					geoparkPath,
 				);
-				const [genera, states] = await Promise.all([
+				const [genera, states, units] = await Promise.all([
 					listFossilGenusPages(),
 					listGeositeStates(),
+					listUnits(),
 				]);
 				const xml = sitemapXml(await listGeositeSlugs(), [
 					GEOPARKS_INDEX_PATH,
@@ -45,6 +49,8 @@ export const Route = createFileRoute("/sitemap.xml")({
 					GLOSSARY_PATH,
 					STATES_PATH,
 					...states.map(statePath),
+					UNITS_PATH,
+					...units.map((u) => unitPath(u.slug)),
 					...genera.map((g) => genusPath(g.slug)),
 				]);
 				return new Response(xml, {
