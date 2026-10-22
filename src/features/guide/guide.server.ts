@@ -24,6 +24,7 @@ const PROJECTION = {
 	description: 1,
 	location: 1,
 	locationIsSensitive: 1,
+	locationIsApproximate: 1,
 	source: 1,
 } as const;
 
@@ -40,7 +41,7 @@ async function toEntry(d: GeositeDoc, locale: Locale): Promise<GuideEntry> {
 		...(d.geologicAge && { geologicAge: d.geologicAge }),
 		text: d.description ?? d.summary,
 		point: publicPoint(d),
-		approximate: d.locationIsSensitive,
+		approximate: d.locationIsSensitive || !!d.locationIsApproximate,
 		...(d.source?.url && { sourceUrl: d.source.url }),
 		pageUrl,
 		qrSvg: await QRCode.toString(pageUrl, {

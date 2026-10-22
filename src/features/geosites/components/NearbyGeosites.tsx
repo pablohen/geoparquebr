@@ -41,7 +41,9 @@ export function NearbyGeosites({ slug, onSelect }: Props) {
 				{query.data.map((g) => (
 					<NearbyItem key={g.id} geosite={g} onSelect={onSelect} />
 				))}
-				{query.data.some((g) => g.locationIsSensitive) && (
+				{query.data.some(
+					(g) => g.locationIsSensitive || g.locationIsApproximate,
+				) && (
 					<Text size="xs" c="dimmed" mt={4} px="sm">
 						{m.nearby_approximate()}
 					</Text>
@@ -95,7 +97,7 @@ function NearbyItem({
 		rightSection: (
 			<Group gap={4} wrap="nowrap">
 				<Text size="xs" c="dimmed" ff="monospace">
-					{g.locationIsSensitive && "~"}
+					{(g.locationIsSensitive || g.locationIsApproximate) && "~"}
 					{formatDistance(g.distanceMeters)}
 				</Text>
 				<CaretRight size={14} />

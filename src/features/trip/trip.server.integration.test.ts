@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { geositesCollection } from "~/features/geosites/geosites.server";
 import { closeDb, getDb } from "~/lib/db.server";
 import { testDbName } from "~/lib/test-db";
-import { findItineraries } from "./trip.server";
+import { findItineraries, findTripStops } from "./trip.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
 
@@ -31,6 +31,12 @@ describe.skipIf(!enabled)("trip.server itineraries (MongoDB)", () => {
 				location: { type: "Point", coordinates: [-38.3, -6.8] },
 			}),
 			geosite("ce", 390, { state: "CE" }),
+			// GEOSSIT's point was misplaced; this is Sousa's centre.
+			geosite("centre", 400, {
+				location: { type: "Point", coordinates: [-38.25, -6.75] },
+				locationIsSensitive: false,
+				locationIsApproximate: true,
+			}),
 		] as never[]);
 	});
 
@@ -46,5 +52,15 @@ describe.skipIf(!enabled)("trip.server itineraries (MongoDB)", () => {
 		expect(a?.approximate).toBe(true);
 		expect(a?.point).not.toEqual(exact);
 		expect(JSON.stringify(oneDay)).not.toContain("2345678");
+	});
+
+	it("leaves geosites at their municipality's centre out of itineraries", async () => {
+		const { oneDay } = await findItineraries({ uf: "PB" });
+		expect(oneDay.map((s) => s.slug)).not.toContain("centre");
+	});
+
+	it("marks them approximate as trip stops", async () => {
+		const [stop] = await findTripStops(["centre"]);
+		expect(stop?.approximate).toBe(true);
 	});
 });

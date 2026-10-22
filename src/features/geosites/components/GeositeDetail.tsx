@@ -139,6 +139,7 @@ export function GeositeDetail({
 			<Tabs.Panel value="model">
 				<ModelsPanel
 					slug={geosite.slug}
+					approximate={geosite.locationIsApproximate}
 					models={geosite.models}
 					index={view.model ?? 0}
 					onIndexChange={(i) =>
@@ -147,7 +148,11 @@ export function GeositeDetail({
 				/>
 			</Tabs.Panel>
 			<Tabs.Panel value="fossils">
-				<FossilsPanel slug={geosite.slug} />
+				{geosite.locationIsApproximate ? (
+					<NoLookups />
+				) : (
+					<FossilsPanel slug={geosite.slug} />
+				)}
 			</Tabs.Panel>
 		</Tabs>
 	);
@@ -287,10 +292,12 @@ function Overview({
 					)}
 					<Row label={m.detail_coordinates()}>
 						{lat.toFixed(4)}, {lng.toFixed(4)}
-						{geosite.locationIsSensitive && (
+						{(geosite.locationIsApproximate || geosite.locationIsSensitive) && (
 							<Text span size="xs" c="dimmed">
 								{" "}
-								{m.detail_coordinates_approximate()}
+								{geosite.locationIsApproximate
+									? m.detail_coordinates_municipality()
+									: m.detail_coordinates_approximate()}
 							</Text>
 						)}
 					</Row>
@@ -419,11 +426,14 @@ const STRATA_OPTION = "strata";
 
 function ModelsPanel({
 	slug,
+	approximate,
 	models,
 	index: requested,
 	onIndexChange,
 }: {
 	slug: string;
+	/** At its municipality's centre: no mapped strata to show. */
+	approximate: boolean;
 	models: Model3D[];
 	index: number;
 	onIndexChange: (index: number) => void;
@@ -453,7 +463,13 @@ function ModelsPanel({
 					allowDeselect={false}
 				/>
 			)}
-			{model ? <ModelView model={model} /> : <StrataView slug={slug} />}
+			{model ? (
+				<ModelView model={model} />
+			) : approximate ? (
+				<NoLookups />
+			) : (
+				<StrataView slug={slug} />
+			)}
 		</Stack>
 	);
 }
@@ -582,6 +598,15 @@ function StrataView({ slug }: { slug: string }) {
 				</Text>
 			)}
 		</>
+	);
+}
+
+/** Fossils and strata are looked up around the point; a municipality's centre isn't the site's. */
+function NoLookups() {
+	return (
+		<Text size="sm" c="dimmed">
+			{m.detail_lookups_municipality()}
+		</Text>
 	);
 }
 

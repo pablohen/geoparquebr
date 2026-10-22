@@ -78,6 +78,7 @@ export function toStop(g: {
 	geoparkId?: TripStop["geoparkId"];
 	location: { coordinates: [number, number] };
 	locationIsSensitive: boolean;
+	locationIsApproximate?: boolean;
 }): TripStop {
 	return {
 		slug: g.slug,
@@ -86,6 +87,6 @@ export function toStop(g: {
 		state: g.state,
 		...(g.geoparkId && { geoparkId: g.geoparkId }),
 		point: g.location.coordinates,
-		approximate: g.locationIsSensitive,
+		approximate: g.locationIsSensitive || !!g.locationIsApproximate,
 	};
 }

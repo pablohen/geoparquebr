@@ -21,6 +21,7 @@ export async function findTripStops(slugs: string[]): Promise<TripStop[]> {
 					geoparkId: 1,
 					location: 1,
 					locationIsSensitive: 1,
+					locationIsApproximate: 1,
 				},
 			},
 		)
@@ -37,7 +38,7 @@ export async function findTripStops(slugs: string[]): Promise<TripStop[]> {
 				state: d.state,
 				...(d.geoparkId && { geoparkId: d.geoparkId as GeoparkId }),
 				point: publicPoint(d),
-				approximate: d.locationIsSensitive,
+				approximate: d.locationIsSensitive || !!d.locationIsApproximate,
 			},
 		];
 	});
@@ -54,6 +55,8 @@ export async function findItineraries(
 		.find(
 			{
 				"scores.tourism": { $type: "number" },
+				// A municipality's centre would send visitors to the wrong place.
+				locationIsApproximate: { $ne: true },
 				...("gp" in query ? { geoparkId: query.gp } : { state: query.uf }),
 			},
 			{
@@ -65,6 +68,7 @@ export async function findItineraries(
 					geoparkId: 1,
 					location: 1,
 					locationIsSensitive: 1,
+					locationIsApproximate: 1,
 					scores: 1,
 				},
 			},
@@ -78,7 +82,7 @@ export async function findItineraries(
 			state: d.state,
 			...(d.geoparkId && { geoparkId: d.geoparkId as GeoparkId }),
 			point: publicPoint(d),
-			approximate: d.locationIsSensitive,
+			approximate: d.locationIsSensitive || !!d.locationIsApproximate,
 			tourism: d.scores?.tourism ?? 0,
 		})),
 	);

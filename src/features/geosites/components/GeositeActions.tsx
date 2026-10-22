@@ -44,14 +44,18 @@ export function GeositeActions({ geosite, context }: Props) {
 				variant="default"
 				leftSection={<NavigationArrow size={14} />}
 				title={
-					geosite.locationIsSensitive
-						? m.actions_directions_approximate_title()
-						: undefined
+					geosite.locationIsApproximate
+						? m.actions_directions_municipality_title()
+						: geosite.locationIsSensitive
+							? m.actions_directions_approximate_title()
+							: undefined
 				}
 			>
-				{geosite.locationIsSensitive
-					? m.actions_directions_approximate()
-					: m.actions_directions()}
+				{geosite.locationIsApproximate
+					? m.actions_directions_municipality()
+					: geosite.locationIsSensitive
+						? m.actions_directions_approximate()
+						: m.actions_directions()}
 			</Button>
 			{context === "page" ? (
 				<>
