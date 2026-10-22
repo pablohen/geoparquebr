@@ -82,6 +82,7 @@ sequenceDiagram
 | `/geoparks/compare` | the geoparks side by side: counts, relevance, themes, rock ages and fossil genera |
 | `/rankings` | the top 25 geosites by a GEOSSIT score (scientific, tourism, didactic or vulnerability), filterable by geopark and state (`?by=&gp=&uf=`); ties share a place |
 | `/glossary` | plain-language definitions of the app's terms, themes and scores, with anchors that theme badges and the score section link to |
+| `/states`, `/states/$uf` | states with GEOSSIT geosites; one page per state (`/states/pe`) with counts by theme and period, the top scientific values, its geoparks, fossil genera and every geosite, plus a map link framed on the geosites' public points |
 | `/my-geosites` | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`) |
 | `/geoparks/$geoparkId/guide`, `/trip/guide` | printable field guides (`src/features/guide/`): each geosite's full description, age, public coordinates, GEOSSIT source and a QR code for its page (SVG made on the server with `qrcode`); print CSS hides the app chrome and forces light colours (`noindex`) |
 | `/embed/geoparks/$geoparkId`, `/embed/geosites/$slug` | embeddable maps for other sites' `<iframe>`s (`src/features/embed/`): public points, a credit bar linking back, cooperative gestures, no app chrome, no service worker, `noindex`; the "Incorporar" button gives the code |
