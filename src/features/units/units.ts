@@ -92,3 +92,19 @@ export function unitAge(rows: UnitRow[]) {
 		mapScale: alone.find((a) => a.mapScale)?.mapScale,
 	};
 }
+
+/**
+ * Units whose name contains every word of the query, accent-free, most
+ * geosites first; at most `limit`. `units` comes sorted by geosite count.
+ */
+export function matchUnits<U extends { slug: string }>(
+	units: U[],
+	query: string,
+	limit = 5,
+): U[] {
+	const words = unitSlug(query).split("-").filter(Boolean);
+	if (words.length === 0) return [];
+	return units
+		.filter((u) => words.every((w) => u.slug.includes(w)))
+		.slice(0, limit);
+}

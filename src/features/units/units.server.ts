@@ -4,6 +4,7 @@ import { geositesCollection } from "~/features/geosites/geosites.server";
 import type { UnitPage, UnitSummary } from "./schemas";
 import {
 	groupByUnit,
+	matchUnits,
 	type UnitRow,
 	unitAge,
 	unitNames,
@@ -62,4 +63,9 @@ export async function findUnit(slug: string): Promise<UnitPage | null> {
 		})),
 		genera: await generaNearGeosites(group.rows.map((r) => r.slug)),
 	};
+}
+
+/** Units for the header search, most geosites first. */
+export async function searchUnits(q: string): Promise<UnitSummary[]> {
+	return matchUnits(await listUnits(), q);
 }

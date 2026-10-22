@@ -13,6 +13,7 @@ import {
 	MapPin,
 	MapTrifold,
 	Mountains,
+	Stack as Stack3,
 } from "@phosphor-icons/react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -20,6 +21,10 @@ import { searchFossilGeneraFn } from "~/features/fossils/fossils.functions";
 import { GEOPARKS } from "~/features/geoparks/geoparks";
 import { matchGeoparks } from "~/features/geoparks/search";
 import { geoparkIdLabel } from "~/features/geosites/labels";
+import { regionLabel } from "~/features/states/labels";
+import { matchRegions, matchStates } from "~/features/states/search";
+import { stateName } from "~/features/states/states";
+import { searchUnitsFn } from "~/features/units/units.functions";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
@@ -36,6 +41,9 @@ const GEOPARK = "geopark:";
 const GEOSITE = "geosite:";
 const PLACE = "place:";
 const FOSSIL = "fossil:";
+const STATE = "state:";
+const REGION = "region:";
+const UNIT = "unit:";
 
 export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	const isMobile = useIsMobile();
@@ -53,16 +61,23 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 	const fossilResults = useServerQuery(key && `search:fossils:${key}`, () =>
 		searchFossilGeneraFn({ data: { q } }),
 	);
+	const unitResults = useServerQuery(key && `search:units:${key}`, () =>
+		searchUnitsFn({ data: { q } }),
+	);
 	const pending =
 		geositeResults.status === "pending" ||
 		placeResults.status === "pending" ||
-		fossilResults.status === "pending";
+		fossilResults.status === "pending" ||
+		unitResults.status === "pending";
 
 	const geosites = geositeResults.data ?? [];
 	const places = placeResults.data ?? [];
 	const fossils = fossilResults.data ?? [];
+	const units = unitResults.data ?? [];
 	// Matched locally, so they show before the server answers.
 	const geoparks = enabled ? matchGeoparks(q) : [];
+	const states = enabled ? matchStates(q) : [];
+	const regions = enabled ? matchRegions(q) : [];
 	const data = [
 		{
 			group: m.search_group_geoparks(),
@@ -72,11 +87,28 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			})),
 		},
 		{
+			group: m.search_group_areas(),
+			items: [
+				...regions.map((r) => ({
+					value: `${REGION}${r}`,
+					label: m.region_of_state({ name: regionLabel(r) }),
+				})),
+				...states.map((uf) => ({
+					value: `${STATE}${uf}`,
+					label: stateName(uf),
+				})),
+			],
+		},
+		{
 			group: m.search_group_geosites(),
 			items: geosites.map((g) => ({
 				value: `${GEOSITE}${g.slug}`,
 				label: g.name,
 			})),
+		},
+		{
+			group: m.search_group_units(),
+			items: units.map((u) => ({ value: `${UNIT}${u.slug}`, label: u.name })),
 		},
 		{
 			group: m.search_group_fossils(),
@@ -95,6 +127,14 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 		...geoparks.map((id): [string, string] => [
 			`${GEOPARK}${id}`,
 			m.geopark_designated({ year: GEOPARKS[id].designated }),
+		]),
+		...states.map((uf): [string, string] => [
+			`${STATE}${uf}`,
+			m.search_state({ uf }),
+		]),
+		...units.map((u): [string, string] => [
+			`${UNIT}${u.slug}`,
+			m.timeline_geosites_count({ count: u.geositeCount }),
 		]),
 		...geosites.map((g): [string, string] => [
 			`${GEOSITE}${g.slug}`,
@@ -119,6 +159,10 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 			<Mountains size={16} weight="duotone" />
 		) : option.value.startsWith(FOSSIL) ? (
 			<Bone size={16} weight="duotone" />
+		) : option.value.startsWith(UNIT) ? (
+			<Stack3 size={16} weight="duotone" />
+		) : option.value.startsWith(STATE) || option.value.startsWith(REGION) ? (
+			<MapTrifold size={16} />
 		) : (
 			<MapPin size={16} />
 		);
@@ -180,6 +224,21 @@ export function SearchBox({ onSelectGeosite, onSelectPlace }: Props) {
 					navigate({
 						to: "/fossils/$genus",
 						params: { genus: selected.slice(FOSSIL.length) },
+					});
+				else if (selected.startsWith(UNIT))
+					navigate({
+						to: "/units/$slug",
+						params: { slug: selected.slice(UNIT.length) },
+					});
+				else if (selected.startsWith(STATE))
+					navigate({
+						to: "/states/$uf",
+						params: { uf: selected.slice(STATE.length).toLowerCase() },
+					});
+				else if (selected.startsWith(REGION))
+					navigate({
+						to: "/regions/$region",
+						params: { region: selected.slice(REGION.length) },
 					});
 				else {
 					const place = places.find((p) => `${PLACE}${p.id}` === selected);

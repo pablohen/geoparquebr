@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	groupByUnit,
+	matchUnits,
 	type UnitRow,
 	unitAge,
 	unitNames,
@@ -88,5 +89,28 @@ describe("unitAge", () => {
 
 	it("has no age for a unit only seen on contacts", () => {
 		expect(unitAge([row("c", "Formação Sousa / Grupo X")])).toBeUndefined();
+	});
+});
+
+describe("matchUnits", () => {
+	const units = [
+		{ slug: "formacao-sousa", n: 10 },
+		{ slug: "formacao-sao-desiderio", n: 10 },
+		{ slug: "grupo-rio-do-peixe", n: 2 },
+	];
+
+	it("matches every word, ignoring accents, in the given order", () => {
+		expect(matchUnits(units, "Desidério").map((u) => u.slug)).toEqual([
+			"formacao-sao-desiderio",
+		]);
+		expect(matchUnits(units, "formação").map((u) => u.slug)).toEqual([
+			"formacao-sousa",
+			"formacao-sao-desiderio",
+		]);
+		expect(matchUnits(units, "rio peixe")).toHaveLength(1);
+	});
+
+	it("needs a query", () => {
+		expect(matchUnits(units, "  ")).toEqual([]);
 	});
 });
