@@ -2,6 +2,8 @@
  * Server-only geopark queries. Geosites belong to a geopark through GEOSSIT's
  * municipality (see GEOPARK_MUNICIPALITIES in geossit.server.ts).
  */
+
+import { pinPeriod } from "~/features/geosites/geologic-age";
 import {
 	geositesCollection,
 	publicPoint,
@@ -28,20 +30,29 @@ export async function findGeoparkGeosites(
 					location: 1,
 					locationIsSensitive: 1,
 					locationIsApproximate: 1,
+					scores: 1,
+					"geologicAge.minMa": 1,
+					"geologicAge.maxMa": 1,
 				},
 			},
 		)
 		.sort({ name: 1 })
 		.toArray();
-	return docs.map(({ _id, location, locationIsSensitive, ...rest }) => ({
-		...rest,
-		id: _id.toHexString(),
-		locationIsSensitive,
-		location: {
-			...location,
-			coordinates: publicPoint({ location, locationIsSensitive }),
-		},
-	}));
+	return docs.map(
+		({ _id, location, locationIsSensitive, geologicAge, scores, ...rest }) => ({
+			...rest,
+			id: _id.toHexString(),
+			...(geologicAge?.minMa !== undefined && { minMa: geologicAge.minMa }),
+			...(geologicAge?.maxMa !== undefined && { maxMa: geologicAge.maxMa }),
+			...(scores && { scores }),
+			period: pinPeriod(geologicAge),
+			locationIsSensitive,
+			location: {
+				...location,
+				coordinates: publicPoint({ location, locationIsSensitive }),
+			},
+		}),
+	);
 }
 
 /** How many geosites each geopark has; geoparks with none are omitted. */

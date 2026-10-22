@@ -4,6 +4,7 @@
  * list responses only match their exact viewport).
  */
 import { z } from "zod";
+import { periodRangeMa } from "~/features/geology/time-scale";
 import { GeoparkGeositeSchema } from "~/features/geoparks/schemas";
 import {
 	GeoparkIdSchema,
@@ -47,17 +48,19 @@ export const savedGeoparks = createLocalStore(
 
 /**
  * The viewport list from saved geoparks, for when the network is gone:
- * geosites inside the box that pass the category, relevance and geopark
- * filters, nearest to the box centre first. The age filter needs data the
- * device doesn't keep, so with it set this returns nothing rather than guess.
+ * geosites inside the box that pass the same filters as the server's list,
+ * nearest to the box centre first. Ages overlap a period by the server's
+ * rule (`ageOverlaps`); geosites without an age or that score drop out.
+ * Geoparks saved before ages and scores were kept have neither, so those
+ * filters list nothing from them until they're saved again.
  */
 export function savedGeositesInBounds(
 	saved: SavedGeoparks,
 	query: GeositesInBoundsQuery,
 ): GeositeSummary[] {
-	// Saved summaries carry neither ages nor scores to filter on.
-	if (query.age || query.minScore) return [];
 	const [w, s, e, n] = query.bbox;
+	const [young, old] = query.age ? periodRangeMa(query.age) : [0, 0];
+	const { minScore } = query;
 	const centre = bboxCenter(query.bbox);
 	return Object.entries(saved)
 		.filter(([id]) => !query.geoparkId || id === query.geoparkId)
@@ -77,7 +80,13 @@ export function savedGeositesInBounds(
 				(!query.states?.length || query.states.some((uf) => uf === g.state)) &&
 				(!query.categories?.length ||
 					g.categories.some((c) => query.categories?.includes(c))) &&
-				(!query.relevance || g.relevance === query.relevance)
+				(!query.relevance || g.relevance === query.relevance) &&
+				(!query.age ||
+					(g.maxMa !== undefined &&
+						g.minMa !== undefined &&
+						g.maxMa > young &&
+						g.minMa < old)) &&
+				(!minScore || (g.scores?.[minScore.key] ?? -1) >= minScore.min)
 			);
 		})
 		.map((g) => ({

@@ -29,7 +29,17 @@ const saved: SavedGeoparks = {
 		savedAt: "2026-10-21T10:00:00.000Z",
 		failed: 0,
 		geosites: [
-			site("perto", [-39.5, -7.2]),
+			// Crato Formation: Aptian, Early Cretaceous.
+			site("perto", [-39.5, -7.2], {
+				minMa: 113,
+				maxMa: 125,
+				scores: {
+					scientific: 355,
+					tourism: 275,
+					didactic: 305,
+					vulnerability: 295,
+				},
+			}),
 			site("longe", [-39.9, -7.4], {
 				categories: ["speleological"],
 				relevance: "international",
@@ -73,13 +83,23 @@ describe("savedGeositesInBounds", () => {
 		);
 	});
 
-	it("returns nothing with an age filter it can't apply", () => {
-		expect(
+	// Regression: offline, the age and score filters always listed nothing.
+	it("applies the age filter by overlap, dropping undated geosites", () => {
+		const slugs = (
+			age: ["cretaceous", "cretaceous"] | ["jurassic", "jurassic"],
+		) => savedGeositesInBounds(saved, { bbox: box, age }).map((g) => g.slug);
+		expect(slugs(["cretaceous", "cretaceous"])).toEqual(["perto"]);
+		expect(slugs(["jurassic", "jurassic"])).toEqual([]);
+	});
+
+	it("applies the minimum score filter", () => {
+		const slugs = (min: number) =>
 			savedGeositesInBounds(saved, {
 				bbox: box,
-				age: ["cretaceous", "cretaceous"],
-			}),
-		).toEqual([]);
+				minScore: { key: "tourism", min },
+			}).map((g) => g.slug);
+		expect(slugs(275)).toEqual(["perto"]);
+		expect(slugs(276)).toEqual([]);
 	});
 });
 
