@@ -13,7 +13,7 @@ import {
 	useComputedColorScheme,
 	useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMounted } from "@mantine/hooks";
 import { Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
@@ -369,7 +369,11 @@ function ColorSchemeToggle() {
 	const computed = useComputedColorScheme("light", {
 		getInitialValueInEffect: true,
 	});
-	const next = computed === "dark" ? "light" : "dark";
+	// The scheme comes from localStorage, which the server can't see: render
+	// the light-mode button until mounted, as the server did.
+	const mounted = useMounted();
+	const dark = mounted && computed === "dark";
+	const next = dark ? "light" : "dark";
 	return (
 		<ActionIcon
 			variant="default"
@@ -379,7 +383,7 @@ function ColorSchemeToggle() {
 				next === "dark" ? m.explorer_theme_dark() : m.explorer_theme_light()
 			}
 		>
-			{computed === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+			{dark ? <Sun size={18} /> : <Moon size={18} />}
 		</ActionIcon>
 	);
 }
