@@ -55,29 +55,31 @@ GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostra
 
 ### Fields (`GeositeInputSchema`)
 
-| Field                   | Type          | Rules                                                                                                                                            |
-| ----------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `slug`                  | string        | kebab-case, 3–96 chars, **unique**                                                                                                               |
-| `name`                  | string        | 2–240 chars                                                                                                                                      |
-| `summary`               | string        | ≤ 500 chars                                                                                                                                      |
-| `description`           | string?       | ≤ 20 000 chars                                                                                                                                   |
-| `geoparkId`             | enum?         | `araripe`, `serido`, `caminhos-dos-canions-do-sul`, `quarta-colonia`, `cacapava`, `uberaba`                                                      |
-| `geoparkProposal`       | string?       | aspiring-geopark name from GEOSSIT                                                                                                               |
-| `municipality`          | string        |                                                                                                                                                  |
-| `state`                 | string        | 2-letter UF, upper-cased                                                                                                                         |
-| `categories`            | enum[]        | see `GEOSITE_CATEGORIES` (17 values)                                                                                                             |
-| `relevance`             | enum          | `international`, `national`, `geodiversity`                                                                                                      |
-| `scores`                | object?       | `{ scientific, tourism, didactic, vulnerability }`, integers 0–400                                                                               |
-| `degradationRisk`       | enum?         | `low`, `medium`, `high`                                                                                                                          |
-| `geology`               | object?       | `{ setting?, province? }`                                                                                                                        |
-| `geologicAge`           | object?       | `period`, `formation?`, `minMa?`, `maxMa?`, `mapScale?`, `reference?`; derived from SGB's map at seed time, or curated with a source (see above) |
-| `location`              | GeoJSON Point | `{ type: "Point", coordinates: [lng, lat] }`                                                                                                     |
-| `models`                | `Model3D[]`   | max 20; see [3D models](3d-models.md)                                                                                                            |
-| `coverImageUrl`         | url?          |                                                                                                                                                  |
-| `locationIsSensitive`   | boolean       | coordinates rounded to ~1 km in API responses                                                                                                    |
-| `locationIsApproximate` | boolean       | GEOSSIT's point was misplaced; `location` is the municipality's centre                                                                           |
-| `publicLocation`        | GeoJSON Point | stored only: `location` rounded when sensitive, written by the sync; client-steerable geo queries use it. Never returned                         |
-| `source`                | object?       | `{ system: "geossit", id, url, authors?, updatedAt? }`                                                                                           |
+| Field                   | Type                                                | Rules                                                                                                                                            |
+| ----------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `slug`                  | string                                              | kebab-case, 3–96 chars, **unique**                                                                                                               |
+| `name`                  | string                                              | 2–240 chars                                                                                                                                      |
+| `summary`               | string                                              | ≤ 500 chars                                                                                                                                      |
+| `description`           | string?                                             | ≤ 20 000 chars                                                                                                                                   |
+| `geoparkId`             | enum?                                               | `araripe`, `serido`, `caminhos-dos-canions-do-sul`, `quarta-colonia`, `cacapava`, `uberaba`                                                      |
+| `geoparkProposal`       | string?                                             | aspiring-geopark name from GEOSSIT                                                                                                               |
+| `municipality`          | string                                              |                                                                                                                                                  |
+| `state`                 | string                                              | 2-letter UF, upper-cased                                                                                                                         |
+| `categories`            | enum[]                                              | see `GEOSITE_CATEGORIES` (17 values)                                                                                                             |
+| `relevance`             | enum                                                | `international`, `national`, `geodiversity`                                                                                                      |
+| `scores`                | object?                                             | `{ scientific, tourism, didactic, vulnerability }`, integers 0–400                                                                               |
+| `degradationRisk`       | enum?                                               | `low`, `medium`, `high`                                                                                                                          |
+| `geology`               | object?                                             | `{ setting?, province? }`                                                                                                                        |
+| `geologicAge`           | object?                                             | `period`, `formation?`, `minMa?`, `maxMa?`, `mapScale?`, `reference?`; derived from SGB's map at seed time, or curated with a source (see above) |
+| `location`              | GeoJSON Point                                       | `{ type: "Point", coordinates: [lng, lat] }`                                                                                                     |
+| `models`                | `Model3D[]`                                         | max 20; see [3D models](3d-models.md)                                                                                                            |
+| `coverImageUrl`         | url?                                                |                                                                                                                                                  |
+| `locationIsSensitive`   | boolean                                             | coordinates rounded to ~1 km in API responses                                                                                                    |
+| `locationIsApproximate` | boolean                                             | GEOSSIT's point was misplaced; `location` is the municipality's centre                                                                           |
+| `locationIssue`         | `"placeholder"` or `"outside-state"`, optional      | why the point was moved (the data-quality page)                                                                                                  |
+| `protectedAreas`        | `{ id, name, category, sphere, group }[]`, optional | CNUC protected areas around the public point (sync, `pnpm geo:protected`)                                                                        |
+| `publicLocation`        | GeoJSON Point                                       | stored only: `location` rounded when sensitive, written by the sync; client-steerable geo queries use it. Never returned                         |
+| `source`                | object?                                             | `{ system: "geossit", id, url, authors?, updatedAt? }`                                                                                           |
 
 ### Document shape (in MongoDB)
 
