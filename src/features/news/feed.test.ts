@@ -47,4 +47,33 @@ describe("newsFeedXml", () => {
 	it("is a valid empty channel without runs", () => {
 		expect(newsFeedXml([], t)).toMatch(/<channel>[\s\S]*<\/channel><\/rss>$/);
 	});
+
+	it("puts extra items, like the geosite of the day, before the runs", () => {
+		const xml = newsFeedXml(
+			[
+				{
+					id: "run1",
+					at: "2026-10-19T06:00:00.000Z",
+					added: [],
+					changed: [],
+					removed: [{ name: "Gone" }],
+				},
+			],
+			t,
+			[
+				{
+					id: "geosite-of-the-day-2026-10-22",
+					title: "Geossítio do dia: Pedra & cia",
+					link: "https://example.org/geosites/pedra",
+					at: "2026-10-22T03:00:00.000Z",
+					description: "Resumo <curto>",
+				},
+			],
+		);
+		expect(xml.indexOf("geosite-of-the-day-2026-10-22")).toBeLessThan(
+			xml.indexOf("run1"),
+		);
+		expect(xml).toContain("<title>Geossítio do dia: Pedra &amp; cia</title>");
+		expect(xml).toContain("<description>Resumo &lt;curto&gt;</description>");
+	});
 });

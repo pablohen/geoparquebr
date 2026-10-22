@@ -23,8 +23,26 @@ export type FeedText = {
 	fieldLabel: (field: ChangeRun["changed"][number]["fields"][number]) => string;
 };
 
-/** One item per sync run, newest first; its body lists the geosites. */
-export function newsFeedXml(runs: ChangeRun[], t: FeedText): string {
+/** An item that isn't a sync run, such as the geosite of the day. */
+export type ExtraFeedItem = {
+	id: string;
+	title: string;
+	/** Absolute URL. */
+	link: string;
+	/** ISO date. */
+	at: string;
+	description: string;
+};
+
+/**
+ * One item per sync run, newest first; its body lists the geosites. `extra`
+ * items (plain text) go first.
+ */
+export function newsFeedXml(
+	runs: ChangeRun[],
+	t: FeedText,
+	extra: ExtraFeedItem[] = [],
+): string {
 	const list = (items: string[]) =>
 		items.length > 0
 			? `<ul>${items.map((i) => `<li>${i}</li>`).join("")}</ul>`
@@ -59,6 +77,18 @@ export function newsFeedXml(runs: ChangeRun[], t: FeedText): string {
 		].join("");
 	});
 
+	const extraItems = extra.map((e) =>
+		[
+			"<item>",
+			`<title>${escapeXml(e.title)}</title>`,
+			`<link>${escapeXml(e.link)}</link>`,
+			`<guid isPermaLink="false">${escapeXml(e.id)}</guid>`,
+			`<pubDate>${new Date(e.at).toUTCString()}</pubDate>`,
+			`<description>${escapeXml(e.description)}</description>`,
+			"</item>",
+		].join(""),
+	);
+
 	return [
 		'<?xml version="1.0" encoding="UTF-8"?>',
 		'<rss version="2.0"><channel>',
@@ -66,6 +96,7 @@ export function newsFeedXml(runs: ChangeRun[], t: FeedText): string {
 		`<link>${escapeXml(t.link)}</link>`,
 		`<description>${escapeXml(t.description)}</description>`,
 		`<language>${t.language}</language>`,
+		...extraItems,
 		...items,
 		"</channel></rss>",
 	].join("\n");

@@ -17,6 +17,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
+import { GeositeOfTheDay } from "~/features/daily/components/GeositeOfTheDay";
 import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
 import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
 import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
@@ -204,6 +205,9 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 					{filters}
 				</AppShell.Section>
 				<AppShell.Section px="md" pt="sm">
+					<GeositeOfTheDay onSelect={select} />
+				</AppShell.Section>
+				<AppShell.Section px="md" pt="sm">
 					<Text size="xs" c="dimmed" tt="uppercase" fw={600}>
 						{nearActive
 							? m.near_count({ count: geosites.length })
@@ -303,6 +307,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 						}
 						controls={
 							<>
+								<GeositeOfTheDay onSelect={select} />
 								{filters}
 								{locationForm}
 							</>
