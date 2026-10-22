@@ -64,6 +64,15 @@ describe("savedGeositesInBounds", () => {
 		).toEqual([]);
 	});
 
+	it("applies the state filter", () => {
+		expect(
+			savedGeositesInBounds(saved, { bbox: box, states: ["CE"] }).length,
+		).toBe(2);
+		expect(savedGeositesInBounds(saved, { bbox: box, states: ["PB"] })).toEqual(
+			[],
+		);
+	});
+
 	it("returns nothing with an age filter it can't apply", () => {
 		expect(
 			savedGeositesInBounds(saved, {

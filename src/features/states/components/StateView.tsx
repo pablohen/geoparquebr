@@ -82,7 +82,7 @@ export function StateView({ page }: { page: StatePage }) {
 						variant="light"
 						leftSection={<MapTrifold size={16} />}
 						renderRoot={(props) => (
-							<Link {...props} to="/" search={{ bbox: [...bbox] }} />
+							<Link {...props} to="/" search={{ bbox: [...bbox], uf: [uf] }} />
 						)}
 					>
 						{m.geopark_view_map()}
@@ -148,7 +148,7 @@ export function StateView({ page }: { page: StatePage }) {
 						key,
 						count,
 						label: (
-							<MapLink bbox={bbox} search={{ cat: [key] }}>
+							<MapLink bbox={bbox} search={{ uf: [uf], cat: [key] }}>
 								{categoryLabel(key)}
 							</MapLink>
 						),
@@ -167,7 +167,7 @@ export function StateView({ page }: { page: StatePage }) {
 								count,
 								color: PERIOD_COLOR[key],
 								label: (
-									<MapLink bbox={bbox} search={{ age: [key, key] }}>
+									<MapLink bbox={bbox} search={{ uf: [uf], age: [key, key] }}>
 										{periodLabel(key)}
 									</MapLink>
 								),

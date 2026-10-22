@@ -22,7 +22,7 @@ import { m } from "~/paraglide/messages.js";
 import { getLocale } from "~/paraglide/runtime.js";
 import { regionLabel } from "../labels";
 import type { RegionPage } from "../schemas";
-import { stateName } from "../states";
+import { REGIONS, stateName } from "../states";
 
 const PERIOD_COLOR = Object.fromEntries(
 	GEOLOGIC_PERIODS.map((p) => [p.id, p.color]),
@@ -58,7 +58,11 @@ export function RegionView({ page }: { page: RegionPage }) {
 						variant="light"
 						leftSection={<MapTrifold size={16} />}
 						renderRoot={(props) => (
-							<Link {...props} to="/" search={{ bbox: [...bbox] }} />
+							<Link
+								{...props}
+								to="/"
+								search={{ bbox: [...bbox], uf: [...REGIONS[region]] }}
+							/>
 						)}
 					>
 						{m.geopark_view_map()}
@@ -128,7 +132,10 @@ export function RegionView({ page }: { page: RegionPage }) {
 						key,
 						count,
 						label: (
-							<MapLink bbox={bbox} search={{ cat: [key] }}>
+							<MapLink
+								bbox={bbox}
+								search={{ uf: [...REGIONS[region]], cat: [key] }}
+							>
 								{categoryLabel(key)}
 							</MapLink>
 						),
@@ -147,7 +154,10 @@ export function RegionView({ page }: { page: RegionPage }) {
 								count,
 								color: PERIOD_COLOR[key],
 								label: (
-									<MapLink bbox={bbox} search={{ age: [key, key] }}>
+									<MapLink
+										bbox={bbox}
+										search={{ uf: [...REGIONS[region]], age: [key, key] }}
+									>
 										{periodLabel(key)}
 									</MapLink>
 								),

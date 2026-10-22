@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import { GEOLOGIC_PERIOD_IDS } from "~/features/geology/time-scale";
+import { UFS } from "~/features/states/states";
 import { OverlaySchema } from "./overlays";
 
 // ---------------------------------------------------------------------------
@@ -275,8 +276,13 @@ export const MinScoreSchema = z.object({
 });
 export type MinScore = z.infer<typeof MinScoreSchema>;
 
+/** A state's two-letter code, as GEOSSIT and IBGE write it. */
+export const UfSchema = z.enum(UFS);
+
 /** Optional filters shared by the URL, the filter UI and the query. */
 export const GeositeFiltersSchema = z.object({
+	/** Geosites in these states (one state, or a region's). */
+	states: z.array(UfSchema).optional(),
 	categories: z.array(GeositeCategorySchema).optional(),
 	relevance: RelevanceSchema.optional(),
 	geoparkId: GeoparkIdSchema.optional(),
@@ -336,6 +342,8 @@ export const ExplorerSearchSchema = z.object({
 	cat: z.array(GeositeCategorySchema).min(1).optional().catch(undefined),
 	rel: RelevanceSchema.optional().catch(undefined),
 	gp: GeoparkIdSchema.optional().catch(undefined),
+	/** States (one, or a region's), drawn outlined on the map. */
+	uf: z.array(UfSchema).min(1).optional().catch(undefined),
 	/** Geological age filter, [youngest, oldest] period. */
 	age: AgeRangeSchema.optional().catch(undefined),
 	/** Minimum GEOSSIT score: the criterion (`sk`) and its value (`sm`). */

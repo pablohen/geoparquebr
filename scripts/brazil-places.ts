@@ -2,7 +2,8 @@
  * Builds src/features/geosites/brazil-places.json: each state's outline and
  * each municipality's centre, from IBGE's official boundaries (geoftp). The
  * GEOSSIT sync uses them to catch points that lie outside their state
- * (`placement.ts`). Re-run when IBGE publishes a new edition.
+ * (`placement.ts`); the outlines also go to public/data/state-outlines.geojson
+ * for the map's state filter. Re-run when IBGE publishes a new edition.
  * Usage: pnpm geo:places
  */
 import { writeFileSync } from "node:fs";
@@ -17,6 +18,7 @@ import {
 const EDITION = 2025;
 const BASE = `https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_${EDITION}`;
 const OUT = "src/features/geosites/brazil-places.json";
+const MAP_OUT = "public/data/state-outlines.geojson";
 /** ~1 km; `STATE_TOLERANCE_KM` absorbs it. */
 const TOLERANCE = 0.01;
 
@@ -166,3 +168,17 @@ for (const uf of Object.keys(places.states).sort()) {
 
 writeFileSync(OUT, `${JSON.stringify(places)}\n`);
 console.log(`→ ${OUT}`);
+
+// The same outlines for the map's state filter (`?uf=`).
+writeFileSync(
+	MAP_OUT,
+	`${JSON.stringify({
+		type: "FeatureCollection",
+		features: Object.entries(places.states).map(([uf, coordinates]) => ({
+			type: "Feature",
+			properties: { uf },
+			geometry: { type: "MultiPolygon", coordinates },
+		})),
+	})}\n`,
+);
+console.log(`→ ${MAP_OUT}`);

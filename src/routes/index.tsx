@@ -48,8 +48,9 @@ export const Route = createFileRoute("/")({
 	}),
 	// Only the viewport and filters change the list; the drawer state
 	// (site/tab/model) is fetched separately and must not re-run this.
-	loaderDeps: ({ search: { bbox, cat, rel, gp, age, sk, sm } }) => ({
+	loaderDeps: ({ search: { bbox, uf, cat, rel, gp, age, sk, sm } }) => ({
 		bbox,
+		uf,
 		cat,
 		rel,
 		gp,
@@ -60,6 +61,7 @@ export const Route = createFileRoute("/")({
 		listGeositesOrEmptyOffline({
 			data: {
 				bbox: deps.bbox,
+				states: deps.uf,
 				categories: deps.cat,
 				relevance: deps.rel,
 				geoparkId: deps.gp,

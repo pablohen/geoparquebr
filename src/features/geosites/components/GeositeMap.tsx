@@ -12,12 +12,13 @@ import {
 } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef } from "react";
+import type { Uf } from "~/features/states/states";
 import { type TripPin, tripFeatures } from "~/features/trip/map";
 import { type BBox, bboxCenter, flatBBox, roundBBox } from "~/lib/geo";
 import { autoHideAttribution } from "~/lib/map-attribution";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES, STYLE_URL } from "../map-sources";
-import { applyOverlays } from "../overlay-layers";
+import { applyOverlays, applyStateOutline } from "../overlay-layers";
 import type { Overlay } from "../overlays";
 import type { GeositeSummary } from "../schemas";
 import { MIXED_COLOR, periodPinColor } from "./pinColors";
@@ -78,6 +79,8 @@ type Props = {
 	pinsByAge?: boolean;
 	/** Optional overlays ("Camadas"). */
 	overlays?: Overlay[];
+	/** States the list is filtered to, outlined. */
+	states?: Uf[];
 };
 
 const SOURCE_ID = "geosites";
@@ -162,6 +165,7 @@ export default function GeositeMap({
 	userPoint,
 	pinsByAge,
 	overlays,
+	states,
 }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<MapLibreMap | null>(null);
@@ -178,6 +182,7 @@ export default function GeositeMap({
 		trip,
 		pinsByAge,
 		overlays,
+		states,
 	});
 	latest.current = {
 		geosites,
@@ -190,6 +195,7 @@ export default function GeositeMap({
 		trip,
 		pinsByAge,
 		overlays,
+		states,
 	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the map is created once; later bbox changes are handled below.
@@ -338,6 +344,7 @@ export default function GeositeMap({
 
 			// Overlays go under the geosite pins.
 			applyOverlays(map, latest.current.overlays ?? [], CLUSTERS);
+			applyStateOutline(map, latest.current.states ?? [], CLUSTERS);
 
 			// The trip, above the geosites: a dashed route and numbered stops.
 			map.addSource(TRIP, {
@@ -486,6 +493,12 @@ export default function GeositeMap({
 		// Before load, the "load" handler applies them.
 		if (map?.getLayer(CLUSTERS)) applyOverlays(map, overlays ?? [], CLUSTERS);
 	}, [overlays]);
+
+	useEffect(() => {
+		const map = mapRef.current;
+		// Before load, the "load" handler draws it.
+		if (map?.getLayer(CLUSTERS)) applyStateOutline(map, states ?? [], CLUSTERS);
+	}, [states]);
 
 	useEffect(() => {
 		const map = mapRef.current;

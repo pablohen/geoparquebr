@@ -9,8 +9,11 @@ import {
 	type GeositeCategory,
 	type Relevance,
 } from "~/features/geosites/schemas";
+import type { Uf } from "~/features/states/states";
 
 type MapSearch = {
+	/** Only these states' geosites, outlined on the map. */
+	uf?: Uf[];
 	cat?: [GeositeCategory];
 	rel?: Relevance;
 	gp?: GeoparkId;

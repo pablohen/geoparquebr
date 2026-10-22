@@ -107,7 +107,12 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	};
 
 	const filtered = Boolean(
-		search.cat || search.rel || search.gp || search.age || minScoreOf(search),
+		search.uf ||
+			search.cat ||
+			search.rel ||
+			search.gp ||
+			search.age ||
+			minScoreOf(search),
 	);
 	const locationForm = (
 		<LocationForm
@@ -123,6 +128,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	const filters = (
 		<GeositeFilters
 			value={{
+				uf: search.uf,
 				cat: search.cat,
 				rel: search.rel,
 				gp: search.gp,
@@ -254,6 +260,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								userPoint={nearActive ? near : undefined}
 								pinsByAge={search.pins === "age"}
 								overlays={search.ov}
+								states={search.uf}
 							/>
 						</Suspense>
 					</ClientOnly>

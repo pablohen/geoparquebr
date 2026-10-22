@@ -64,6 +64,7 @@ const sites = [
 		},
 	}),
 	geosite(2, "leste", [-38.6, -7.0], {
+		state: "PB",
 		categories: ["speleological"],
 		relevance: "international",
 		geoparkId: "araripe",
@@ -129,6 +130,14 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 				(g) => g.slug,
 			),
 		).toEqual(["leste"]);
+	});
+
+	it("filters by state, for state and region pages", async () => {
+		const only = async (states: ("PB" | "CE" | "RN")[]) =>
+			(await findGeositesInBounds({ bbox: box, states })).map((g) => g.slug);
+		expect(await only(["PB"])).toEqual(["leste"]);
+		expect(await only(["PB", "RN"])).toEqual(["leste"]);
+		expect(await only(["CE"])).not.toContain("leste");
 	});
 
 	it("returns light summaries without heavy fields", async () => {

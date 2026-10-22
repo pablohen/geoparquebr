@@ -74,6 +74,7 @@ export function savedGeositesInBounds(
 				lng <= e &&
 				lat >= s &&
 				lat <= n &&
+				(!query.states?.length || query.states.some((uf) => uf === g.state)) &&
 				(!query.categories?.length ||
 					g.categories.some((c) => query.categories?.includes(c))) &&
 				(!query.relevance || g.relevance === query.relevance)

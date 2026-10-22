@@ -3,11 +3,15 @@ import {
 	Button,
 	Group,
 	MultiSelect,
+	Pill,
 	Select,
 	Stack,
+	Text,
 } from "@mantine/core";
 import { FunnelSimpleX } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { statesLabel } from "~/features/states/labels";
+import type { Uf } from "~/features/states/states";
 import { m } from "~/paraglide/messages.js";
 import { categoryLabel, geoparkIdLabel, relevanceLabel } from "../labels";
 import {
@@ -26,6 +30,8 @@ import { AgeFilter } from "./AgeFilter";
 import { MinScoreFilter } from "./MinScoreFilter";
 
 export type FilterValues = {
+	/** Set from state and region pages; shown as a removable chip. */
+	uf?: Uf[];
 	cat?: GeositeCategory[];
 	rel?: Relevance;
 	gp?: GeoparkId;
@@ -55,11 +61,30 @@ export function GeositeFilters({ value, onChange }: Props) {
 		label: geoparkIdLabel(g),
 	}));
 	const active = Boolean(
-		value.cat?.length || value.rel || value.gp || value.age || value.sk,
+		value.uf?.length ||
+			value.cat?.length ||
+			value.rel ||
+			value.gp ||
+			value.age ||
+			value.sk,
 	);
 
 	return (
 		<Stack gap="xs">
+			{value.uf?.length && (
+				<Group gap={6}>
+					<Text size="xs" fw={500}>
+						{m.filters_states()}
+					</Text>
+					<Pill
+						withRemoveButton
+						removeButtonProps={{ "aria-label": m.filters_states_remove() }}
+						onRemove={() => onChange({ ...value, uf: undefined })}
+					>
+						{statesLabel(value.uf)}
+					</Pill>
+				</Group>
+			)}
 			<MultiSelect
 				size="xs"
 				label={m.filters_themes()}
@@ -179,6 +204,7 @@ export function GeositeFilters({ value, onChange }: Props) {
 					leftSection={<FunnelSimpleX size={14} />}
 					onClick={() =>
 						onChange({
+							uf: undefined,
 							cat: undefined,
 							rel: undefined,
 							gp: undefined,

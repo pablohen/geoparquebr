@@ -235,12 +235,21 @@ export function ageOverlaps(range: AgeRange): Filter<GeositeDoc> {
 export async function findGeositesInBounds(
 	input: GeositesInBoundsQuery,
 ): Promise<GeositeSummary[]> {
-	const { bbox, categories, relevance, geoparkId, age, minScore, limit } =
-		GeositesInBoundsQuerySchema.parse(input);
+	const {
+		bbox,
+		states,
+		categories,
+		relevance,
+		geoparkId,
+		age,
+		minScore,
+		limit,
+	} = GeositesInBoundsQuerySchema.parse(input);
 	const col = await geositesCollection();
 
 	const query: Filter<GeositeDoc> = {
 		publicLocation: { $geoWithin: { $geometry: bboxPolygon(bbox) } },
+		...(states?.length && { state: { $in: states } }),
 		...(categories?.length && { categories: { $in: categories } }),
 		...(relevance && { relevance }),
 		...(geoparkId && { geoparkId }),

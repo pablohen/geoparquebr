@@ -7,6 +7,7 @@ import mlcontour from "maplibre-contour";
 import type { ExpressionSpecification, Map as MapLibreMap } from "maplibre-gl";
 import { addProtocol } from "maplibre-gl";
 import { GEOPARK_OUTLINES_URL } from "~/features/geoparks/outlines";
+import { STATE_OUTLINES_URL, type Uf } from "~/features/states/states";
 import { fetchTileWithRetry } from "~/lib/fetch-retry";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES } from "./map-sources";
@@ -189,6 +190,42 @@ function add(map: MapLibreMap, overlay: Overlay, beforeId?: string) {
 			);
 			return;
 	}
+}
+
+const STATE_OUTLINE = "state-outline";
+
+/**
+ * Outlines the states the map is filtered to (`?uf=`); the file is fetched
+ * the first time a state filter is on.
+ */
+export function applyStateOutline(
+	map: MapLibreMap,
+	states: readonly Uf[],
+	beforeId?: string,
+) {
+	if (!map.getLayer(STATE_OUTLINE)) {
+		if (states.length === 0) return;
+		map.addSource(STATE_OUTLINE, {
+			type: "geojson",
+			data: STATE_OUTLINES_URL,
+			attribution: m.state_outlines_attribution(),
+		});
+		map.addLayer(
+			{
+				id: STATE_OUTLINE,
+				type: "line",
+				source: STATE_OUTLINE,
+				paint: { "line-color": "#a24511", "line-width": 2.5 },
+			},
+			beforeId,
+		);
+	}
+	map.setFilter(STATE_OUTLINE, ["in", ["get", "uf"], ["literal", [...states]]]);
+	map.setLayoutProperty(
+		STATE_OUTLINE,
+		"visibility",
+		states.length > 0 ? "visible" : "none",
+	);
 }
 
 /**

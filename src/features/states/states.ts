@@ -35,6 +35,9 @@ export const STATES = {
 export type Uf = keyof typeof STATES;
 export const UFS = Object.keys(STATES) as [Uf, ...Uf[]];
 
+/** Each state's IBGE outline, `{ uf }` per feature (built by `pnpm geo:places`). */
+export const STATE_OUTLINES_URL = "/data/state-outlines.geojson";
+
 export const STATES_PATH = "/states";
 /** `/states/pe`: the URL uses the lower-case code. */
 export const statePath = (uf: Uf) => `${STATES_PATH}/${uf.toLowerCase()}`;
