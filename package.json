@@ -17,6 +17,7 @@
 		"db:seed": "tsx --env-file=.env scripts/seed.ts",
 		"db:fossils": "tsx --env-file=.env scripts/fossils.ts",
 		"geo:outlines": "tsx scripts/geopark-outlines.ts",
+		"geo:places": "tsx scripts/brazil-places.ts",
 		"models:fetch": "tsx --env-file=.env scripts/fetch-models.ts",
 		"test": "vitest run",
 		"test:watch": "vitest",

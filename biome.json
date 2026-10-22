@@ -6,6 +6,11 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!src/routeTree.gen.ts", "!!**/src/paraglide"]
+		"includes": [
+			"**",
+			"!src/routeTree.gen.ts",
+			"!src/features/geosites/brazil-places.json",
+			"!!**/src/paraglide"
+		]
 	}
 }
