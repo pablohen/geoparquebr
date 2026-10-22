@@ -192,6 +192,7 @@ const SUMMARY_FIELDS = {
 	geoparkId: 1,
 	location: 1,
 	locationIsSensitive: 1,
+	locationIsApproximate: 1,
 	distanceMeters: 1,
 	"geologicAge.minMa": 1,
 	"geologicAge.maxMa": 1,
@@ -338,17 +339,30 @@ export async function searchGeosites(
 /**
  * Exact coordinates for server-side lookups (fossils, strata). Never return
  * these to the client: sensitive geosites are only exposed rounded.
+ * `approximate` points are a municipality's centre, too vague for lookups.
  */
-export async function findGeositeLocation(
-	slug: string,
-): Promise<{ point: [number, number]; sensitive: boolean } | null> {
+export async function findGeositeLocation(slug: string): Promise<{
+	point: [number, number];
+	sensitive: boolean;
+	approximate: boolean;
+} | null> {
 	const col = await geositesCollection();
 	const doc = await col.findOne(
 		{ slug },
-		{ projection: { location: 1, locationIsSensitive: 1 } },
+		{
+			projection: {
+				location: 1,
+				locationIsSensitive: 1,
+				locationIsApproximate: 1,
+			},
+		},
 	);
 	return doc
-		? { point: doc.location.coordinates, sensitive: doc.locationIsSensitive }
+		? {
+				point: doc.location.coordinates,
+				sensitive: doc.locationIsSensitive,
+				approximate: doc.locationIsApproximate ?? false,
+			}
 		: null;
 }
 

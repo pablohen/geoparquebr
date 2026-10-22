@@ -28,6 +28,7 @@ const geosite: Geosite = {
 	location: { type: "Point", coordinates: [-39.69, -7.12] },
 	models: [],
 	locationIsSensitive: true,
+	locationIsApproximate: false,
 	geoparkId: "araripe",
 	createdAt: "2026-01-01T00:00:00.000Z",
 	updatedAt: "2026-01-01T00:00:00.000Z",

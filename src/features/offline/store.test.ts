@@ -20,6 +20,7 @@ const site = (
 	relevance: "national",
 	location: { type: "Point", coordinates },
 	locationIsSensitive: false,
+	locationIsApproximate: false,
 	...extra,
 });
 

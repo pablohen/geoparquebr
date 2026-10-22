@@ -216,6 +216,11 @@ export const GeositeInputSchema = z.object({
 	coverImageUrl: z.url().optional(),
 	/** Some caves and fossil beds must not be pinpointed publicly. */
 	locationIsSensitive: z.boolean().default(false),
+	/**
+	 * GEOSSIT's point was missing or outside the geosite's state, so
+	 * `location` is its municipality's centre (`placement.ts`).
+	 */
+	locationIsApproximate: z.boolean().default(false),
 });
 export type GeositeInput = z.input<typeof GeositeInputSchema>;
 
@@ -300,6 +305,7 @@ export const GeositeSummarySchema = GeositeSchema.pick({
 	geoparkId: true,
 	location: true,
 	locationIsSensitive: true,
+	locationIsApproximate: true,
 }).extend({
 	/** Distance from the centre of the queried bounding box. */
 	distanceMeters: z.number().nonnegative(),

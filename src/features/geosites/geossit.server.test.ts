@@ -5,6 +5,7 @@ import {
 	mapGeossitFeatures,
 	normalize,
 } from "./geossit.server";
+import type { BrazilPlaces } from "./placement";
 
 /** A raw GEOSSIT GeoJSON feature, as served with f=geojson. */
 function feature(
@@ -217,6 +218,49 @@ describe("mapGeossitFeatures", () => {
 			feature({ quantificacao_didatica__0_400_: null }),
 		]).geosites;
 		expect(g?.scores).toBeUndefined();
+	});
+
+	// Regression: GEOSSIT puts a few geosites at 0,0, on whole-degree
+	// placeholders or in the wrong state (October 2026).
+	describe("with IBGE places", () => {
+		const places: BrazilPlaces = {
+			edition: 2025,
+			states: {
+				CE: [
+					[
+						[
+							[-41.5, -8],
+							[-37, -8],
+							[-37, -2.7],
+							[-41.5, -2.7],
+							[-41.5, -8],
+						],
+					],
+				],
+			},
+			municipalities: { CE: { "nova olinda": [-39.7, -7.1] } },
+		};
+
+		it("keeps a point inside its state", () => {
+			const [g] = mapGeossitFeatures([feature()], places).geosites;
+			expect(g?.location.coordinates).toEqual([-39.695, -7.122]);
+			expect(g?.locationIsApproximate).toBe(false);
+		});
+
+		it("moves a point at 0,0 to its municipality's centre", () => {
+			const [g] = mapGeossitFeatures([feature({}, [0, 0])], places).geosites;
+			expect(g?.location.coordinates).toEqual([-39.7, -7.1]);
+			expect(g?.locationIsApproximate).toBe(true);
+		});
+
+		it("skips a misplaced point it can't place", () => {
+			const { geosites, skipped } = mapGeossitFeatures(
+				[feature({ municipio: "Atlantida" }, [-30, -20])],
+				places,
+			);
+			expect(geosites).toEqual([]);
+			expect(skipped[0]?.reason).toMatch(/Atlantida/);
+		});
 	});
 
 	it("skips invalid records individually and reports why", () => {

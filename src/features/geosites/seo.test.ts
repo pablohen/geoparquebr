@@ -24,6 +24,7 @@ const base: Geosite = {
 	location: { type: "Point", coordinates: [-39.69, -7.12] },
 	models: [],
 	locationIsSensitive: true,
+	locationIsApproximate: false,
 	geoparkId: "araripe",
 	coverImageUrl: "https://www.sgb.gov.br/geossit/img/x.jpg",
 	source: {

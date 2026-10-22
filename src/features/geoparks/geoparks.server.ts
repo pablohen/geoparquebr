@@ -27,6 +27,7 @@ export async function findGeoparkGeosites(
 					relevance: 1,
 					location: 1,
 					locationIsSensitive: 1,
+					locationIsApproximate: 1,
 				},
 			},
 		)

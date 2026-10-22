@@ -89,6 +89,8 @@ export type FossilRefreshReport = {
  * then the longest unrefreshed. With `deadline` (epoch ms) it starts no new
  * batch after that time, so the daily cron can work through them in slices.
  * A geosite whose lookups or name matches fail keeps its previous records.
+ * Geosites at their municipality's centre get none: records around that
+ * point aren't the site's.
  */
 export async function refreshFossilSites({
 	log = () => {},
@@ -98,12 +100,16 @@ export async function refreshFossilSites({
 	deadline?: number;
 } = {}): Promise<FossilRefreshReport> {
 	const geosites = await (await geositesCollection())
-		.find({}, { projection: { slug: 1, location: 1 } })
+		.find(
+			{ locationIsApproximate: { $ne: true } },
+			{ projection: { slug: 1, location: 1 } },
+		)
 		.toArray();
 	if (geosites.length === 0)
 		throw new Error("No geosites stored; run pnpm db:seed first");
 
 	const sites = await fossilSitesCollection();
+	await sites.deleteMany({ _id: { $nin: geosites.map((g) => g.slug) } });
 	await sites.createIndex({ refreshedAt: 1 }, { name: "refreshed_at" });
 	const refreshedAt = new Map(
 		(await sites.find({}, { projection: { refreshedAt: 1 } }).toArray()).map(

@@ -150,6 +150,7 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		expect(await findGeositeLocation("sensivel")).toEqual({
 			point: [-39.123456, -7.654321],
 			sensitive: true,
+			approximate: false,
 		});
 	});
 

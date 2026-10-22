@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import { GEOPARK_MUNICIPALITIES } from "~/features/geoparks/geoparks";
+import { type BrazilPlaces, placeGeosite } from "./placement";
 import {
 	type DegradationRisk,
 	type GeoparkId,
@@ -206,7 +207,11 @@ function canonicalSgbUrl(raw: string | undefined): string | undefined {
 	}
 }
 
-function toGeositeInput(f: GeossitFeature, slug: string): GeositeInput {
+function toGeositeInput(
+	f: GeossitFeature,
+	slug: string,
+	places: BrazilPlaces | undefined,
+): GeositeInput {
 	const p = f.properties;
 	const theme = p.tematica_principal
 		? THEME_TO_CATEGORY[normalize(p.tematica_principal)]
@@ -219,6 +224,12 @@ function toGeositeInput(f: GeossitFeature, slug: string): GeositeInput {
 		: undefined;
 
 	const state = p.uf.toUpperCase();
+	// GEOSSIT has a few 0,0, whole-degree and mistyped points; those go to
+	// their municipality's centre, flagged.
+	const placement = places
+		? placeGeosite(f.geometry.coordinates, state, p.municipio, places)
+		: ({ status: "ok", point: f.geometry.coordinates } as const);
+	if (placement.status === "unplaceable") throw new Error(placement.reason);
 	const geoparkId = MUNICIPALITY_TO_GEOPARK.get(
 		`${state}:${normalize(p.municipio)}`,
 	);
@@ -265,7 +276,8 @@ function toGeositeInput(f: GeossitFeature, slug: string): GeositeInput {
 						province: p.provincia_geologica,
 					}
 				: undefined,
-		location: { type: "Point", coordinates: f.geometry.coordinates },
+		location: { type: "Point", coordinates: placement.point },
+		locationIsApproximate: placement.status === "approximate",
 		models: [],
 		coverImageUrl: canonicalSgbUrl(p.link_imagem_representativa),
 		// Caves and fossil beds are vulnerable to looting/vandalism; so is
@@ -294,9 +306,13 @@ export type GeossitImportResult = {
 /**
  * Validates and maps raw features. Slugs come from names; names that repeat
  * across the inventory get the GEOSSIT id appended, so slugs stay stable
- * between imports.
+ * between imports. With `places`, points outside their state move to their
+ * municipality's centre (`placeGeosite`); without, every point is trusted.
  */
-export function mapGeossitFeatures(raw: unknown[]): GeossitImportResult {
+export function mapGeossitFeatures(
+	raw: unknown[],
+	places?: BrazilPlaces,
+): GeossitImportResult {
 	const skipped: GeossitImportResult["skipped"] = [];
 	const features: GeossitFeature[] = [];
 	for (const item of raw) {
@@ -324,7 +340,7 @@ export function mapGeossitFeatures(raw: unknown[]): GeossitImportResult {
 				? `${base}-${f.properties.id_geossitio}`.replace(/^-/, "")
 				: base;
 		try {
-			geosites.push(GeositeInputSchema.parse(toGeositeInput(f, slug)));
+			geosites.push(GeositeInputSchema.parse(toGeositeInput(f, slug, places)));
 		} catch (err) {
 			skipped.push({
 				id: f.properties.id_geossitio,

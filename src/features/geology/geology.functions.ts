@@ -1,6 +1,8 @@
 /**
  * Per-geosite geology lookups. Clients pass a slug, never coordinates: the
  * server resolves exact coordinates itself, so sensitive locations stay private.
+ * Geosites at their municipality's centre (`locationIsApproximate`) get no
+ * lookups: records around that point aren't the site's.
  */
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -60,7 +62,13 @@ async function settle(
 export const getGeositeFossils = createServerFn({ method: "GET" })
 	.validator(SlugInput)
 	.handler(async ({ data }): Promise<GeositeFossils> => {
-		const { point, sensitive } = await locate(data.slug);
+		const { point, sensitive, approximate } = await locate(data.slug);
+		if (approximate)
+			return {
+				radiusKm: FOSSIL_SEARCH_RADIUS_KM,
+				sgb: { status: "unavailable" },
+				gbif: { status: "unavailable" },
+			};
 		const lookups = fossilLookups(data.slug, point);
 		const [sgb, gbif] = await Promise.all([
 			settle(lookups.sgb, sensitive),
@@ -73,7 +81,8 @@ export const getGeositeFossils = createServerFn({ method: "GET" })
 export const getGeositeStrata = createServerFn({ method: "GET" })
 	.validator(SlugInput)
 	.handler(async ({ data }): Promise<GeositeStrata> => {
-		const { point } = await locate(data.slug);
+		const { point, approximate } = await locate(data.slug);
+		if (approximate) return { status: "unavailable" };
 		const radiusKm = STRATA_SEARCH_RADIUS_KM;
 		try {
 			const { scale, units } = await cached(

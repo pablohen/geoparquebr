@@ -13,6 +13,7 @@ const site = (slug: string, coordinates: [number, number]): GeositeSummary =>
 		relevance: "national",
 		location: { type: "Point", coordinates },
 		locationIsSensitive: false,
+		locationIsApproximate: false,
 		distanceMeters: 0,
 	}) as GeositeSummary;
 

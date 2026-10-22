@@ -31,6 +31,7 @@ const site: GeoparkGeosite = {
 	relevance: "international",
 	location: { type: "Point", coordinates: [-39.69, -7.12] },
 	locationIsSensitive: true,
+	locationIsApproximate: false,
 };
 
 describe("geopark SEO", () => {

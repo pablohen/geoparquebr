@@ -23,6 +23,7 @@ function summary(
 		relevance: "national",
 		location: { type: "Point", coordinates },
 		locationIsSensitive,
+		locationIsApproximate: false,
 		// What $geoNear reports: exact, and must not leak.
 		distanceMeters: 1234.5678,
 	};

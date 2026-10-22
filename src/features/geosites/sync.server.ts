@@ -6,6 +6,7 @@
  * Safe to run unattended: it writes nothing when GEOSSIT returns far fewer
  * records than are stored (a truncated response would otherwise prune most
  * geosites) or when most age lookups fail (it would wipe stored ages).
+ * Points outside their state move to their municipality's centre.
  */
 import { diffGeosites } from "~/features/news/changes";
 import { recordChanges } from "~/features/news/news.server";
@@ -18,6 +19,7 @@ import {
 } from "./geosites.server";
 import { fetchGeossitFeatures, mapGeossitFeatures } from "./geossit.server";
 import { modelsFor } from "./model-catalog.server";
+import type { BrazilPlaces } from "./placement";
 
 /** Below this share of the stored geosites, a GEOSSIT response is suspect. */
 export const MIN_SHARE_OF_STORED = 0.8;
@@ -33,6 +35,8 @@ export type SyncReport = {
 	deleted: number;
 	inGeoparks: number;
 	models: number;
+	/** Geosites placed at their municipality's centre (`placement.ts`). */
+	approximate: string[];
 	dated: number;
 	ageLookupsFailed: number;
 	/** Geosites added, changed (reader-facing fields) and removed. */
@@ -62,15 +66,25 @@ export async function syncGeosites({
 
 	log("Fetching GEOSSIT…");
 	const raw = await fetchGeossitFeatures();
-	const { geosites, skipped } = mapGeossitFeatures(raw);
+	// Half a megabyte of outlines, so only the sync loads it.
+	const { default: places } = await import("./brazil-places.json");
+	const { geosites, skipped } = mapGeossitFeatures(
+		raw,
+		places as unknown as BrazilPlaces,
+	);
 	assertPlausibleImport(
 		geosites.length,
 		await col.countDocuments({ "source.system": "geossit" }),
 	);
 
-	// GEOSSIT has no ages; take the unit SGB's map shows at each site.
+	// GEOSSIT has no ages; take the unit SGB's map shows at each site. A
+	// municipality's centre says nothing about the site's rock, so those
+	// geosites only get a curated age.
 	log("Looking up geological ages (SGB map)…");
-	const aged = await withGeologicAges(geosites);
+	const aged = await withGeologicAges(
+		geosites.filter((g) => !g.locationIsApproximate),
+	);
+	aged.geosites.push(...geosites.filter((g) => g.locationIsApproximate));
 	if (aged.failed > geosites.length * MAX_FAILED_AGE_SHARE)
 		throw new Error(
 			`SGB age lookup failed for ${aged.failed}/${geosites.length} geosites; nothing was written`,
@@ -105,6 +119,9 @@ export async function syncGeosites({
 		...result,
 		inGeoparks: records.filter((g) => g.geoparkId).length,
 		models: records.reduce((n, g) => n + g.models.length, 0),
+		approximate: records
+			.filter((g) => g.locationIsApproximate)
+			.map((g) => g.slug),
 		dated: records.filter((g) => g.geologicAge?.maxMa).length,
 		ageLookupsFailed: aged.failed,
 		changes: {
@@ -120,5 +137,7 @@ export const formatSyncReport = (r: SyncReport) =>
 	`GEOSSIT: ${r.fetched} fetched, ${r.valid} valid, ${r.skipped.length} skipped → ` +
 	`${r.inserted} inserted, ${r.updated} updated, ${r.deleted} deleted. ` +
 	`${r.inGeoparks} in UNESCO geoparks; ${r.models} 3D model attachments. ` +
+	`${r.approximate.length} at their municipality's centre` +
+	(r.approximate.length ? ` (${r.approximate.join(", ")}). ` : ". ") +
 	`Ages: ${r.dated} dated, ${r.ageLookupsFailed} lookups failed. ` +
 	`Changes: ${r.changes.added} added, ${r.changes.changed} changed, ${r.changes.removed} removed.`;
