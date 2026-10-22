@@ -6,6 +6,7 @@
  */
 import { z } from "zod";
 import { GEOLOGIC_PERIOD_IDS } from "~/features/geology/time-scale";
+import { OverlaySchema } from "./overlays";
 
 // ---------------------------------------------------------------------------
 // GeoJSON
@@ -336,6 +337,8 @@ export const ExplorerSearchSchema = z.object({
 	sm: z.coerce.number().int().min(1).max(400).optional().catch(undefined),
 	/** Geology map layer on. */
 	geo: z.literal(true).optional().catch(undefined),
+	/** Optional overlays ("Camadas"). */
+	ov: z.array(OverlaySchema).min(1).optional().catch(undefined),
 	/** Pins coloured by geological period instead of one colour. */
 	pins: z.literal("age").optional().catch(undefined),
 	/** "Relevo 3D" on: 3D terrain and a tilted map. */

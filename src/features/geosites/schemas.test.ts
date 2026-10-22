@@ -56,6 +56,14 @@ describe("ExplorerSearchSchema", () => {
 		expect(ExplorerSearchSchema.parse({ model: "2" }).model).toBe(2);
 	});
 
+	it("keeps known overlays and drops a bad list", () => {
+		expect(
+			ExplorerSearchSchema.parse({ ov: ["fossils", "minerals"] }).ov,
+		).toEqual(["fossils", "minerals"]);
+		expect(ExplorerSearchSchema.parse({ ov: ["nope"] }).ov).toBeUndefined();
+		expect(ExplorerSearchSchema.parse({ ov: [] }).ov).toBeUndefined();
+	});
+
 	it("reads a minimum score only when both its parts are valid", () => {
 		const both = ExplorerSearchSchema.parse({ sk: "tourism", sm: "250" });
 		expect(minScoreOf(both)).toEqual({ key: "tourism", min: 250 });

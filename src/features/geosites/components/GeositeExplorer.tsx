@@ -47,6 +47,7 @@ import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
 import { MobileListSheet } from "./MobileListSheet";
 import { NearMeControl } from "./NearMeControl";
+import { OverlaysControl } from "./OverlaysControl";
 import { TerrainControl } from "./TerrainControl";
 
 // MapLibre touches `window` at import time, so it only loads in the browser.
@@ -252,6 +253,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								trip={tripPins}
 								userPoint={nearActive ? near : undefined}
 								pinsByAge={search.pins === "age"}
+								overlays={search.ov}
 							/>
 						</Suspense>
 					</ClientOnly>
@@ -271,6 +273,10 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								if (!on) setIdentifyPoint(undefined);
 							}}
 							onOpacityChange={setGeologyOpacity}
+						/>
+						<OverlaysControl
+							on={search.ov ?? []}
+							onChange={(ov) => onSearchChange({ ov })}
 						/>
 						<AgeColorControl
 							on={search.pins === "age"}

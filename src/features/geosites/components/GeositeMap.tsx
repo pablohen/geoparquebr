@@ -17,6 +17,8 @@ import { type BBox, bboxCenter, flatBBox, roundBBox } from "~/lib/geo";
 import { autoHideAttribution } from "~/lib/map-attribution";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES, STYLE_URL } from "../map-sources";
+import { applyOverlays } from "../overlay-layers";
+import type { Overlay } from "../overlays";
 import type { GeositeSummary } from "../schemas";
 import { MIXED_COLOR, periodPinColor } from "./pinColors";
 
@@ -74,6 +76,8 @@ type Props = {
 	userPoint?: [number, number];
 	/** Pins coloured by geological period instead of one colour. */
 	pinsByAge?: boolean;
+	/** Optional overlays ("Camadas"). */
+	overlays?: Overlay[];
 };
 
 const SOURCE_ID = "geosites";
@@ -157,6 +161,7 @@ export default function GeositeMap({
 	trip,
 	userPoint,
 	pinsByAge,
+	overlays,
 }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<MapLibreMap | null>(null);
@@ -172,6 +177,7 @@ export default function GeositeMap({
 		terrain,
 		trip,
 		pinsByAge,
+		overlays,
 	});
 	latest.current = {
 		geosites,
@@ -183,6 +189,7 @@ export default function GeositeMap({
 		terrain,
 		trip,
 		pinsByAge,
+		overlays,
 	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the map is created once; later bbox changes are handled below.
@@ -329,6 +336,9 @@ export default function GeositeMap({
 				},
 			});
 
+			// Overlays go under the geosite pins.
+			applyOverlays(map, latest.current.overlays ?? [], CLUSTERS);
+
 			// The trip, above the geosites: a dashed route and numbered stops.
 			map.addSource(TRIP, {
 				type: "geojson",
@@ -470,6 +480,12 @@ export default function GeositeMap({
 				clusterColor(pinsByAge === true),
 			);
 	}, [selectedSlug, pinsByAge]);
+
+	useEffect(() => {
+		const map = mapRef.current;
+		// Before load, the "load" handler applies them.
+		if (map?.getLayer(CLUSTERS)) applyOverlays(map, overlays ?? [], CLUSTERS);
+	}, [overlays]);
 
 	useEffect(() => {
 		const map = mapRef.current;
