@@ -21,3 +21,13 @@
 .skip-link:focus {
 	left: 8px;
 }
+
+/* The trip's elevation profile line: the primary orange, one step lighter on
+   dark so it stays in the chart lightness band (checked with the dataviz
+   validator). */
+:root {
+	--profile-line: var(--mantine-color-laterite-8);
+}
+[data-mantine-color-scheme="dark"] {
+	--profile-line: var(--mantine-color-laterite-7);
+}

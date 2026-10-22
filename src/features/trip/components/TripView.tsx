@@ -40,6 +40,7 @@ import {
 } from "../route";
 import type { TripStop } from "../schemas";
 import { useTrip } from "../store";
+import { ElevationProfile } from "./ElevationProfile";
 
 type Point = [number, number];
 
@@ -188,6 +189,16 @@ export function TripView() {
 							</Button>
 						))}
 					</Group>
+
+					{(trip.length > 1 || (start && trip.length > 0)) && (
+						<ElevationProfile
+							points={start ? [start, ...points] : points}
+							labels={[
+								...(start ? [m.trip_profile_start()] : []),
+								...trip.map((_, i) => String(i + 1)),
+							]}
+						/>
+					)}
 
 					{trip.some((s) => s.approximate) && (
 						<Text size="xs" c="dimmed">
