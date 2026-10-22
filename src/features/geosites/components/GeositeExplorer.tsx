@@ -21,6 +21,7 @@ import { GeositeOfTheDay } from "~/features/daily/components/GeositeOfTheDay";
 import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
 import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
 import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
+import { InstallButton } from "~/features/install/components/InstallButton";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
 import { SearchBox } from "~/features/search/components/SearchBox";
 import { TripMapControl } from "~/features/trip/components/TripMapControl";
@@ -184,6 +185,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								})
 							}
 						/>
+						<InstallButton />
 						<MyGeositesLink />
 						<ColorSchemeToggle />
 						<LanguageSwitcher />
