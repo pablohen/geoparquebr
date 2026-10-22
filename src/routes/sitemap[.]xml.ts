@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CONSERVATION_PATH } from "~/features/conservation/schemas";
 import { FOSSILS_INDEX_PATH, genusPath } from "~/features/fossils/seo";
 import { GEOPARKS, geoparkPath } from "~/features/geoparks/geoparks";
 import { GEOPARKS_INDEX_PATH } from "~/features/geoparks/seo";
@@ -50,6 +51,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 					STATES_PATH,
 					...states.map(statePath),
 					UNITS_PATH,
+					CONSERVATION_PATH,
 					...units.map((u) => unitPath(u.slug)),
 					...genera.map((g) => genusPath(g.slug)),
 				]);

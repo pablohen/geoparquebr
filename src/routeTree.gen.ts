@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConservationRouteImport } from './routes/conservation'
 import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
 import { Route as NewsRouteImport } from './routes/news'
@@ -41,6 +42,11 @@ import { Route as OgGeositesSlugRouteImport } from './routes/og.geosites.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConservationRoute = ConservationRouteImport.update({
+  id: '/conservation',
+  path: '/conservation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GlossaryRoute = GlossaryRouteImport.update({
@@ -181,6 +187,7 @@ const OgGeositesSlugRoute = OgGeositesSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/conservation': typeof ConservationRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/conservation': typeof ConservationRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
@@ -242,6 +250,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/conservation': typeof ConservationRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/conservation'
     | '/glossary'
     | '/my-geosites'
     | '/news'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/conservation'
     | '/glossary'
     | '/my-geosites'
     | '/news'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/conservation'
     | '/glossary'
     | '/my-geosites'
     | '/news'
@@ -365,6 +377,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConservationRoute: typeof ConservationRoute
   GlossaryRoute: typeof GlossaryRoute
   MyGeositesRoute: typeof MyGeositesRoute
   NewsRoute: typeof NewsRoute
@@ -401,6 +414,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/conservation': {
+      id: '/conservation'
+      path: '/conservation'
+      fullPath: '/conservation'
+      preLoaderRoute: typeof ConservationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/glossary': {
@@ -597,6 +617,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConservationRoute: ConservationRoute,
   GlossaryRoute: GlossaryRoute,
   MyGeositesRoute: MyGeositesRoute,
   NewsRoute: NewsRoute,
