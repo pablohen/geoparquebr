@@ -7,11 +7,20 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { BookOpen, ChartBar, Clock, Ranking } from "@phosphor-icons/react";
+import {
+	BookOpen,
+	ChartBar,
+	Clock,
+	MapPin,
+	Ranking,
+} from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { periodLabel } from "~/features/geology/labels";
 import { GEOLOGIC_PERIODS } from "~/features/geology/time-scale";
 import { categoryLabel, relevanceLabel } from "~/features/geosites/labels";
+import { StateLink } from "~/features/states/components/StateLink";
+import { UfSchema } from "~/features/states/schemas";
+import { stateName, type Uf } from "~/features/states/states";
 import { m } from "~/paraglide/messages.js";
 import { getLocale } from "~/paraglide/runtime.js";
 import type { GeositeStats } from "../schemas";
@@ -56,6 +65,15 @@ export function StatsView({ stats }: { stats: GeositeStats }) {
 						<Group gap={4}>
 							<ChartBar size={14} aria-hidden />
 							{m.compare_link()}
+						</Group>
+					</Anchor>
+					<Anchor
+						size="sm"
+						renderRoot={(props) => <Link {...props} to="/states" />}
+					>
+						<Group gap={4}>
+							<MapPin size={14} aria-hidden />
+							{m.states_link()}
 						</Group>
 					</Anchor>
 					<Anchor
@@ -148,7 +166,13 @@ export function StatsView({ stats }: { stats: GeositeStats }) {
 					bars={stats.states.map(({ key, count }) => ({
 						key,
 						count,
-						label: key,
+						label: (
+							<StateLink uf={key}>
+								{UfSchema.safeParse(key).success
+									? `${stateName(key as Uf)} (${key})`
+									: key}
+							</StateLink>
+						),
 					}))}
 				/>
 			</Section>

@@ -35,6 +35,7 @@ import {
 	shade,
 } from "~/features/geology/time-scale";
 import { scoreAnchor, themeAnchor } from "~/features/glossary/glossary";
+import { StateLink } from "~/features/states/components/StateLink";
 import { imageFailed } from "~/lib/image";
 import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
@@ -207,7 +208,8 @@ function Overview({
 			<Table variant="vertical" layout="fixed" withTableBorder>
 				<Table.Tbody>
 					<Row label={m.detail_municipality()}>
-						{geosite.municipality} – {geosite.state}
+						{geosite.municipality} –{" "}
+						<StateLink uf={geosite.state} size="inherit" />
 					</Row>
 					<Row label={m.detail_relevance()}>
 						{relevanceLabel(geosite.relevance)}

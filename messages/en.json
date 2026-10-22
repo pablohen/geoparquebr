@@ -532,6 +532,36 @@
 	],
 	"site_description": "Explore geosites, fossils, strata and caves in Brazil's geoparks and geological heritage.",
 	"site_title": "GeoparqueBR — UNESCO Global Geoparks in Brazil",
+	"state_all_states": "All states",
+	"state_eyebrow": "Geosites in the state",
+	"state_genera": "Fossils recorded near the geosites",
+	"state_geoparks": "UNESCO geoparks",
+	"state_geosites": "All geosites",
+	"state_meta_description": [
+		{
+			"declarations": [
+				"input count",
+				"input name",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{name} has {count} geosites in GEOSSIT. See their themes, rock ages, recorded fossils and the best rated.",
+				"count=*, countPlural=one": "{name} has {count} geosite in GEOSSIT. See its theme, rock age, recorded fossils and rating.",
+				"count=*, countPlural=other": "{name} has {count} geosites in GEOSSIT. See their themes, rock ages, recorded fossils and the best rated."
+			}
+		}
+	],
+	"state_meta_title": "{name}: geosites and geoparks",
+	"state_not_found": "State not found, or no geosites yet",
+	"state_tile_geoparks": "UNESCO geoparks",
+	"state_tile_international": "of international relevance",
+	"state_top": "Highest scientific value",
+	"state_top_more": "See the state's rankings",
+	"states_intro": "GEOSSIT's geosites in each Brazilian state, with their themes, rock ages, recorded fossils and geoparks.",
+	"states_link": "States",
+	"states_title": "Geosites by state",
+	"states_without": "States with no GEOSSIT geosites yet have no page: {names}.",
 	"stats_by_category": "By theme",
 	"stats_by_period": "By geological period",
 	"stats_by_relevance": "By relevance",

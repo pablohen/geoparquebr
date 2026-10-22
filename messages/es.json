@@ -532,6 +532,36 @@
 	],
 	"site_description": "Explora geositios, fósiles, estratos y cuevas de los geoparques y del patrimonio geológico de Brasil.",
 	"site_title": "GeoparqueBR — Geoparques Mundiales de la UNESCO en Brasil",
+	"state_all_states": "Todos los estados",
+	"state_eyebrow": "Geositios del estado",
+	"state_genera": "Fósiles registrados cerca de los geositios",
+	"state_geoparks": "Geoparques de la UNESCO",
+	"state_geosites": "Todos los geositios",
+	"state_meta_description": [
+		{
+			"declarations": [
+				"input count",
+				"input name",
+				"local countPlural = count: plural"
+			],
+			"selectors": ["count", "countPlural"],
+			"match": {
+				"count=0, countPlural=*": "{name} tiene {count} geositios en GEOSSIT. Mira sus temas, la edad de las rocas, los fósiles registrados y los mejor evaluados.",
+				"count=*, countPlural=one": "{name} tiene {count} geositio en GEOSSIT. Mira su tema, la edad de las rocas, los fósiles registrados y su evaluación.",
+				"count=*, countPlural=other": "{name} tiene {count} geositios en GEOSSIT. Mira sus temas, la edad de las rocas, los fósiles registrados y los mejor evaluados."
+			}
+		}
+	],
+	"state_meta_title": "{name}: geositios y geoparques",
+	"state_not_found": "Estado no encontrado o aún sin geositios",
+	"state_tile_geoparks": "geoparques de la UNESCO",
+	"state_tile_international": "de relevancia internacional",
+	"state_top": "Mayor valor científico",
+	"state_top_more": "Ver el ranking del estado",
+	"states_intro": "Los geositios de GEOSSIT en cada estado brasileño, con sus temas, la edad de las rocas, los fósiles registrados y los geoparques.",
+	"states_link": "Estados",
+	"states_title": "Geositios por estado",
+	"states_without": "Los estados sin geositios en GEOSSIT aún no tienen página: {names}.",
 	"stats_by_category": "Por tema",
 	"stats_by_period": "Por período geológico",
 	"stats_by_relevance": "Por relevancia",

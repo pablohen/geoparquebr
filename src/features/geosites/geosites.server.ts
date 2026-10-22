@@ -5,6 +5,8 @@
 import type { Collection, Filter, ObjectId } from "mongodb";
 import type { z } from "zod";
 import { periodRangeMa } from "~/features/geology/time-scale";
+import { UfSchema } from "~/features/states/schemas";
+import type { Uf } from "~/features/states/states";
 import { getDb } from "~/lib/db.server";
 import { bboxCenter, bboxPolygon, haversineMeters } from "~/lib/geo";
 import {
@@ -410,6 +412,15 @@ export async function findGeositeBySlug(slug: string): Promise<Geosite | null> {
 }
 
 /** Every geosite's slug and last update, for the sitemap. */
+/** States with at least one geosite, as known state codes, for the sitemap. */
+export async function listGeositeStates(): Promise<Uf[]> {
+	const states: string[] = await (await geositesCollection()).distinct("state");
+	return states.flatMap((s) => {
+		const uf = UfSchema.safeParse(s);
+		return uf.success ? [uf.data] : [];
+	});
+}
+
 export async function listGeositeSlugs(): Promise<
 	{ slug: string; updatedAt: string }[]
 > {

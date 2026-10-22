@@ -7,6 +7,7 @@ import { sitemapXml } from "~/features/geosites/seo";
 import { GLOSSARY_PATH } from "~/features/glossary/glossary";
 import { NEWS_PATH } from "~/features/news/schemas";
 import { RANKINGS_PATH } from "~/features/rankings/schemas";
+import { STATES_PATH, statePath } from "~/features/states/states";
 import {
 	COMPARE_PATH,
 	STATS_PATH,
@@ -18,15 +19,20 @@ export const Route = createFileRoute("/sitemap.xml")({
 		handlers: {
 			GET: async () => {
 				// Loaded lazily so the Mongo driver stays out of the client graph.
-				const [{ listGeositeSlugs }, { listFossilGenusPages }] =
-					await Promise.all([
-						import("~/features/geosites/geosites.server"),
-						import("~/features/fossils/fossils.server"),
-					]);
+				const [
+					{ listGeositeSlugs, listGeositeStates },
+					{ listFossilGenusPages },
+				] = await Promise.all([
+					import("~/features/geosites/geosites.server"),
+					import("~/features/fossils/fossils.server"),
+				]);
 				const geoparks = (Object.keys(GEOPARKS) as GeoparkId[]).map(
 					geoparkPath,
 				);
-				const genera = await listFossilGenusPages();
+				const [genera, states] = await Promise.all([
+					listFossilGenusPages(),
+					listGeositeStates(),
+				]);
 				const xml = sitemapXml(await listGeositeSlugs(), [
 					GEOPARKS_INDEX_PATH,
 					COMPARE_PATH,
@@ -37,6 +43,8 @@ export const Route = createFileRoute("/sitemap.xml")({
 					STATS_PATH,
 					RANKINGS_PATH,
 					GLOSSARY_PATH,
+					STATES_PATH,
+					...states.map(statePath),
 					...genera.map((g) => genusPath(g.slug)),
 				]);
 				return new Response(xml, {
