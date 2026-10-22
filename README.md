@@ -4,7 +4,7 @@ Explore Brazilian UNESCO Global Geoparks and the wider geoheritage inventory: ge
 
 Geosite data: [GEOSSIT](https://www.sgb.gov.br/geossit/), Serviço Geológico do Brasil (SGB/CPRM). 3D models: [GeoHereditas](https://sketchfab.com/geohereditas), Museu de Geociências IGc-USP.
 
-**Stack:** TanStack Start · MongoDB Atlas (2dsphere) · Zod 4 · Mantine 7 · Paraglide JS · React Hook Form · MapLibre GL · React Three Fiber · Biome · pnpm
+**Stack:** TanStack Start · MongoDB Atlas (2dsphere) · Zod 4 · Mantine 9 · Paraglide JS · React Hook Form · MapLibre GL · React Three Fiber · Biome · pnpm
 
 ## Quick start
 

@@ -42,7 +42,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 
 - **TanStack Start 1.x** (Vite 8 plugin). Server-function input validation is `.validator(schema)`. Read the bundled skill docs in `node_modules/@tanstack/react-start/skills/` and `node_modules/@tanstack/start-client-core/skills/` before guessing at APIs: they match the installed version.
 - **Zod 4**: `z.url()`, `z.iso.datetime()` and so on, not the Zod 3 method forms.
-- **Mantine 7** (pinned on purpose; npm `latest` is 9). Use Mantine components and style props before writing custom CSS.
+- **Mantine 9** (needs React 19.2+). Use Mantine components and style props before writing custom CSS.
 - **Phosphor icons** (`@phosphor-icons/react`) for every icon.
 - **React Hook Form** + `@hookform/resolvers/zod` for forms.
 - **MapLibre GL 6** for maps; **React Three Fiber 9** + **drei 10** for 3D; **glTF-Transform** + meshoptimizer + sharp to optimize models (scripts only).
@@ -113,7 +113,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 
 ## Known gotchas
 
-- **Contrast in light mode.** `theme.ts` uses primary shade 8 in both schemes and darkens every colour's light-variant text (badges, light buttons); shade 6 orange and Mantine's default light badges miss 4.5:1. `theme.test.ts` checks it. Check new pages with axe in both schemes.
+- **Contrast in light mode.** `theme.ts` uses primary shade 8 in both schemes and darkens every colour's light-variant text (badges, light buttons); shade 6 orange misses 4.5:1, and so do Mantine 9's light badges (shade 9 on shade 1) for teal, green, lime, yellow and orange. It also sets its own `dimmed` grey, since Mantine's misses 4.5:1 in both schemes. `theme.test.ts` checks it. Check new pages with axe in both schemes.
 
 - **Map credits fold after 5 s** (`autoHideAttribution` in `src/lib/map-attribution.ts`, the explorer and embeds): MapLibre's compact attribution only folds on drag otherwise. Keep it compact; the credits must stay one tap away.
 - **MapLibre worker:** MapLibre 6 finds its web worker relative to its own module URL, and that breaks under Vite bundling. `GeositeMap.tsx` imports `maplibre-gl/dist/maplibre-gl-worker.mjs?url` and calls `setWorkerUrl` before creating a map. Keep that call if you refactor.
@@ -122,7 +122,7 @@ Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && 
 - **SGB geology tiles** are an ArcGIS cache whose level 0 is web zoom 4. `GeositeMap` registers an `sgb-geology://` MapLibre protocol that subtracts the offset; a plain `{z}` URL template would request the wrong level, or 404.
 - **Search lookups stay independent.** Photon place search is slow (5–8 s), so geosite, fossil genus and place search are separate server functions, and geoparks are matched on the client (`matchGeoparks`). Don't merge them into one `Promise.all` that the UI waits on.
 - **No drei `<Html>`.** Each `<Html>` mounts its own React root, and React 19 logs "synchronously unmount a root" errors. Put overlays (legends, errors, loaders) in plain DOM outside the `<Canvas>`.
-- **Color-scheme script:** don't use Mantine's `<ColorSchemeScript>`, which triggers a React 19 "script tag" warning on hydration. `__root.tsx` injects the same script with TanStack's `<ScriptOnce>`.
+- **Color-scheme script:** don't use Mantine's `<ColorSchemeScript>`, which triggers a React 19 "script tag" warning on hydration. `__root.tsx` injects the same script with TanStack's `<ScriptOnce>`. Anything rendered from the scheme (the theme toggle) waits for `useMounted`: the server always renders light.
 - **Don't gate MapLibre handlers on `map.loaded()`.** It's false whenever tiles are still streaming, i.e. right after most moves. `GeositeMap` keeps its own `ready` flag set in `on("load")`.
 - **Viewport ↔ URL loop.** The map reports moves with history _replace_, and only re-fits when the URL `bbox` differs from the last value it emitted. Keep that guard, or fit→move→navigate will loop.
 - **Map effects that need the style loaded** must also run inside `map.on("load")`. Effects that fire earlier find no layer and return early (deep-linked `?site=` relies on this).

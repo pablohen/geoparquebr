@@ -29,14 +29,15 @@ describe("light-mode contrast", () => {
 		expect(contrast(rgb(primary), WHITE)).toBeGreaterThanOrEqual(4.5);
 	});
 
-	it("darkens every colour's light-variant text enough for its tint", () => {
+	it("darkens every colour's light-variant text enough for its background", () => {
 		const vars = cssVariablesResolver(full).light;
 		for (const [name, shades] of Object.entries(full.colors)) {
 			expect(vars[`--mantine-color-${name}-light-color`]).toContain("black");
-			// The text: shade 9 with 30% black; the background: a 10% tint.
+			// The text: shade 9 with 30% black; the background: shade 1, solid
+			// since Mantine 9 (shade 9 alone misses 4.5:1 for teal to yellow).
 			const text = rgb(shades[9]).map((v) => v * 0.7);
-			const tint = rgb(shades[8]).map((v) => v * 0.1 + 255 * 0.9);
-			expect(contrast(text, tint), name).toBeGreaterThanOrEqual(4.5);
+			const background = rgb(shades[1]);
+			expect(contrast(text, background), name).toBeGreaterThanOrEqual(4.5);
 		}
 	});
 });

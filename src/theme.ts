@@ -41,9 +41,9 @@ export const cssVariablesResolver: CSSVariablesResolver = (t) => ({
 	variables: {},
 	light: {
 		"--mantine-color-dimmed": "#5f656d",
-		// "light" badges and buttons write in the colour itself on a 10% tint
-		// of it; yellow, lime and teal miss 4.5:1 even at shade 9. Shade 9
-		// with 30% black passes for every colour (5:1 or more).
+		// "light" badges and buttons write shade 9 on shade 1; teal, green,
+		// lime, yellow and orange miss 4.5:1 that way. Shade 9 with 30% black
+		// passes for every colour (5:1 or more).
 		...Object.fromEntries(
 			Object.keys(t.colors).map((c) => [
 				`--mantine-color-${c}-light-color`,

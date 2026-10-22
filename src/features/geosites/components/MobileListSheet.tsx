@@ -103,7 +103,7 @@ export function MobileListSheet({
 							{controlsOpen ? <CaretUp size={16} /> : <CaretDown size={16} />}
 						</Group>
 					</UnstyledButton>
-					<Collapse in={controlsOpen}>
+					<Collapse expanded={controlsOpen}>
 						<Stack gap="md" px="sm" pb="sm">
 							{controls}
 						</Stack>
