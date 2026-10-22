@@ -69,6 +69,10 @@ const PAGES: Record<CardPage, () => { title: string; body: string }> = {
 	regions: () => ({ title: m.regions_title(), body: m.regions_intro() }),
 	units: () => ({ title: m.units_title(), body: m.units_intro() }),
 	compare: () => ({ title: m.compare_title(), body: m.compare_intro() }),
+	"data-quality": () => ({
+		title: m.quality_title(),
+		body: m.quality_intro(),
+	}),
 };
 
 export function pageCard(page: CardPage) {

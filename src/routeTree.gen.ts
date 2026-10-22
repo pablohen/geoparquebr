@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConservationRouteImport } from './routes/conservation'
+import { Route as DataQualityRouteImport } from './routes/data-quality'
 import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
 import { Route as NewsRouteImport } from './routes/news'
@@ -59,6 +60,11 @@ const CompareRoute = CompareRouteImport.update({
 const ConservationRoute = ConservationRouteImport.update({
   id: '/conservation',
   path: '/conservation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataQualityRoute = DataQualityRouteImport.update({
+  id: '/data-quality',
+  path: '/data-quality',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GlossaryRoute = GlossaryRouteImport.update({
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/conservation': typeof ConservationRoute
+  '/data-quality': typeof DataQualityRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/conservation': typeof ConservationRoute
+  '/data-quality': typeof DataQualityRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
@@ -308,6 +316,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/conservation': typeof ConservationRoute
+  '/data-quality': typeof DataQualityRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
   '/news': typeof NewsRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/conservation'
+    | '/data-quality'
     | '/glossary'
     | '/my-geosites'
     | '/news'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/conservation'
+    | '/data-quality'
     | '/glossary'
     | '/my-geosites'
     | '/news'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/'
     | '/compare'
     | '/conservation'
+    | '/data-quality'
     | '/glossary'
     | '/my-geosites'
     | '/news'
@@ -463,6 +475,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CompareRoute: typeof CompareRoute
   ConservationRoute: typeof ConservationRoute
+  DataQualityRoute: typeof DataQualityRoute
   GlossaryRoute: typeof GlossaryRoute
   MyGeositesRoute: typeof MyGeositesRoute
   NewsRoute: typeof NewsRoute
@@ -519,6 +532,13 @@ declare module '@tanstack/react-router' {
       path: '/conservation'
       fullPath: '/conservation'
       preLoaderRoute: typeof ConservationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-quality': {
+      id: '/data-quality'
+      path: '/data-quality'
+      fullPath: '/data-quality'
+      preLoaderRoute: typeof DataQualityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/glossary': {
@@ -759,6 +779,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CompareRoute: CompareRoute,
   ConservationRoute: ConservationRoute,
+  DataQualityRoute: DataQualityRoute,
   GlossaryRoute: GlossaryRoute,
   MyGeositesRoute: MyGeositesRoute,
   NewsRoute: NewsRoute,

@@ -23,6 +23,7 @@ export const CARD_PAGES = [
 	"regions",
 	"units",
 	"compare",
+	"data-quality",
 ] as const;
 export const CardPageSchema = z.enum(CARD_PAGES);
 export type CardPage = z.infer<typeof CardPageSchema>;

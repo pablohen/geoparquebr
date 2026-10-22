@@ -5,12 +5,14 @@ import {
 	BBoxSchema,
 	GeoparkIdSchema,
 	GeositeSchema,
+	UfSchema,
 } from "~/features/geosites/schemas";
 import { RankedGeositeSchema } from "~/features/rankings/schemas";
 import { TallySchema } from "~/features/stats/schemas";
-import { REGION_IDS, UFS } from "./states";
+import { REGION_IDS } from "./states";
 
-export const UfSchema = z.enum(UFS);
+// Defined with the geosite filters (which states/ can't be imported by).
+export { UfSchema };
 
 /** The route param: "pe" → "PE"; anything else is not a state. */
 export const UfParamSchema = z

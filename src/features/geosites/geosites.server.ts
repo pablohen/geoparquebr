@@ -95,6 +95,7 @@ const OPTIONAL_FIELDS = [
 	"geologicAge",
 	"coverImageUrl",
 	"protectedAreas",
+	"locationIssue",
 ] as const satisfies readonly (keyof GeositeDoc)[];
 
 type ImportedGeosite = z.output<typeof GeositeInputSchema> & {

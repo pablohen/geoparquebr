@@ -251,6 +251,7 @@ describe("mapGeossitFeatures", () => {
 			const [g] = mapGeossitFeatures([feature({}, [0, 0])], places).geosites;
 			expect(g?.location.coordinates).toEqual([-39.7, -7.1]);
 			expect(g?.locationIsApproximate).toBe(true);
+			expect(g?.locationIssue).toBe("placeholder");
 		});
 
 		it("skips a misplaced point it can't place", () => {

@@ -278,6 +278,8 @@ function toGeositeInput(
 				: undefined,
 		location: { type: "Point", coordinates: placement.point },
 		locationIsApproximate: placement.status === "approximate",
+		locationIssue:
+			placement.status === "approximate" ? placement.reason : undefined,
 		models: [],
 		coverImageUrl: canonicalSgbUrl(p.link_imagem_representativa),
 		// Caves and fossil beds are vulnerable to looting/vandalism; so is

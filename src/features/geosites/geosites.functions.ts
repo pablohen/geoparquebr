@@ -6,14 +6,13 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { cached } from "~/lib/cache.server";
-import { photoStatus } from "~/lib/image";
 import {
 	findGeositeBySlug,
 	findGeositesInBounds,
 	findNearbyGeosites,
 	findSimilarGeosites,
 } from "./geosites.server";
+import { probeImage } from "./photos.server";
 import { GeositesInBoundsQuerySchema } from "./schemas";
 
 export const getGeositesInBounds = createServerFn({ method: "GET" })
@@ -45,30 +44,6 @@ export const getSimilarGeosites = createServerFn({ method: "GET" })
 		if (!similar) throw notFound();
 		return similar;
 	});
-
-/**
- * Whether a GEOSSIT photo loads: "ok", "dead" (an HTTP error or not an
- * image; about 2% of links) or "unknown" (timeout, network). Only definite
- * answers are cached, so a slow moment doesn't hide a good photo for a week.
- */
-async function probeImage(url: string): Promise<"ok" | "dead" | "unknown"> {
-	try {
-		return await cached(
-			`image-ok:v2:${url}`,
-			7 * 24 * 60 * 60 * 1_000,
-			async () => {
-				// Throws on timeout or network failure, which isn't cached.
-				const res = await fetch(url, {
-					method: "HEAD",
-					signal: AbortSignal.timeout(5_000),
-				});
-				return photoStatus(res);
-			},
-		);
-	} catch {
-		return "unknown";
-	}
-}
 
 /** Geosite page data: the record plus whether its photo loads. */
 export const getGeositePage = createServerFn({ method: "GET" })

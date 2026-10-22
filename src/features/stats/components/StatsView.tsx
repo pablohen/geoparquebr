@@ -13,6 +13,7 @@ import {
 	Clock,
 	MapPin,
 	Ranking,
+	SealWarning,
 	Stack as Stack3,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
@@ -102,6 +103,15 @@ export function StatsView({ stats }: { stats: GeositeStats }) {
 						<Group gap={4}>
 							<BookOpen size={14} aria-hidden />
 							{m.glossary_link()}
+						</Group>
+					</Anchor>
+					<Anchor
+						size="sm"
+						renderRoot={(props) => <Link {...props} to="/data-quality" />}
+					>
+						<Group gap={4}>
+							<SealWarning size={14} aria-hidden />
+							{m.quality_link()}
 						</Group>
 					</Anchor>
 				</Group>

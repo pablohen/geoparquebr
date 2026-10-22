@@ -7,6 +7,7 @@ import type { GeoparkId } from "~/features/geosites/schemas";
 import { sitemapXml } from "~/features/geosites/seo";
 import { GLOSSARY_PATH } from "~/features/glossary/glossary";
 import { NEWS_PATH } from "~/features/news/schemas";
+import { QUALITY_PATH } from "~/features/quality/schemas";
 import { RANKINGS_PATH } from "~/features/rankings/schemas";
 import {
 	REGION_IDS,
@@ -63,6 +64,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 					).map(regionPath),
 					UNITS_PATH,
 					CONSERVATION_PATH,
+					QUALITY_PATH,
 					...units.map((u) => unitPath(u.slug)),
 					...genera.map((g) => genusPath(g.slug)),
 				]);

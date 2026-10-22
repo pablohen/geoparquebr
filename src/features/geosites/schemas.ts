@@ -223,6 +223,8 @@ export const GeositeInputSchema = z.object({
 	 * `location` is its municipality's centre (`placement.ts`).
 	 */
 	locationIsApproximate: z.boolean().default(false),
+	/** Why GEOSSIT's point was replaced, when it was (the data-quality page). */
+	locationIssue: z.enum(["placeholder", "outside-state"]).optional(),
 	/**
 	 * CNUC protected areas the geosite lies in (its public point for
 	 * sensitive sites; none for approximate ones), set by the sync.
