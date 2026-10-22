@@ -19,7 +19,7 @@ import { autoHideAttribution } from "~/lib/map-attribution";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES, STYLE_URL } from "../map-sources";
 import { applyOverlays, applyStateOutline } from "../overlay-layers";
-import type { Overlay } from "../overlays";
+import { MINERALS_MINZOOM, type Overlay } from "../overlays";
 import type { GeositeSummary } from "../schemas";
 import { MIXED_COLOR, periodPinColor } from "./pinColors";
 
@@ -66,7 +66,8 @@ type Props = {
 	/** SGB geology raster layer. */
 	geology: { visible: boolean; opacity: number };
 	/** Click on empty map (not a geosite) while the geology layer is on. */
-	onIdentify: (point: [number, number]) => void;
+	/** A tap off the pins while the geology layer or minerals overlay is on. */
+	onIdentify: (point: [number, number], zoom: number) => void;
 	/** Marker for the point being identified. */
 	identifyPoint?: [number, number];
 	/** "Relevo 3D": terrain elevation plus a tilted camera. */
@@ -413,19 +414,28 @@ export default function GeositeMap({
 				});
 			});
 			map.on("click", (e) => {
-				if (!latest.current.geology.visible) return;
+				const { geology, overlays } = latest.current;
+				const minerals =
+					overlays?.includes("minerals") && map.getZoom() >= MINERALS_MINZOOM;
+				if (!geology.visible && !minerals) return;
 				const hit = map.queryRenderedFeatures(e.point, {
 					layers: [POINTS, CLUSTERS, TRIP_STOPS],
 				});
 				if (hit.length === 0)
-					latest.current.onIdentify([e.lngLat.lng, e.lngLat.lat]);
+					latest.current.onIdentify(
+						[e.lngLat.lng, e.lngLat.lat],
+						map.getZoom(),
+					);
 			});
 			for (const layer of [POINTS, CLUSTERS, TRIP_STOPS]) {
 				map.on("mouseenter", layer, () => {
 					map.getCanvas().style.cursor = "pointer";
 				});
 				map.on("mouseleave", layer, () => {
-					map.getCanvas().style.cursor = latest.current.geology.visible
+					map.getCanvas().style.cursor = identifies(
+						latest.current.geology.visible,
+						latest.current.overlays,
+					)
 						? "crosshair"
 						: "";
 				});
@@ -509,8 +519,10 @@ export default function GeositeMap({
 			geology.visible ? "visible" : "none",
 		);
 		map.setPaintProperty(GEOLOGY, "raster-opacity", geology.opacity);
-		map.getCanvas().style.cursor = geology.visible ? "crosshair" : "";
-	}, [geology.visible, geology.opacity]);
+		map.getCanvas().style.cursor = identifies(geology.visible, overlays)
+			? "crosshair"
+			: "";
+	}, [geology.visible, geology.opacity, overlays]);
 
 	const tripKey = trip ? JSON.stringify(trip) : "";
 	// biome-ignore lint/correctness/useExhaustiveDependencies: `tripKey` encodes `trip`.
@@ -563,6 +575,10 @@ export default function GeositeMap({
 
 	return <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />;
 }
+
+/** Whether a tap off the pins looks something up (geology or minerals). */
+const identifies = (geologyVisible: boolean, overlays?: Overlay[]) =>
+	geologyVisible || overlays?.includes("minerals") === true;
 
 /** Turns 3D terrain on (tilting a flat view) or off (back to a flat map). */
 function applyTerrain(

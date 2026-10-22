@@ -9,7 +9,7 @@ type Props = {
 	onClose: () => void;
 };
 
-/** What the SGB 1:1M map shows under a clicked point. */
+/** What the SGB 1:1M map shows under a clicked point (the explorer places it). */
 export function GeologyAtPointCard({ point: [lng, lat], onClose }: Props) {
 	const result = useServerQuery(
 		`geology-at:${lng.toFixed(3)},${lat.toFixed(3)}`,
@@ -18,18 +18,7 @@ export function GeologyAtPointCard({ point: [lng, lat], onClose }: Props) {
 	const data = result.data;
 
 	return (
-		<Paper
-			pos="absolute"
-			left={12}
-			// Above the phone list button; near the scale bar on desktop.
-			bottom={{ base: 84, sm: 36 }}
-			p="sm"
-			radius="md"
-			shadow="md"
-			w={340}
-			maw="calc(100% - 24px)"
-			style={{ zIndex: 2 }}
-		>
+		<Paper p="sm" radius="md" shadow="md">
 			<Group justify="space-between" align="flex-start" wrap="nowrap" mb={4}>
 				<Text size="xs" c="dimmed">
 					{lat.toFixed(4)}, {lng.toFixed(4)}

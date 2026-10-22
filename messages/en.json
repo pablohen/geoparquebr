@@ -396,6 +396,14 @@
 	"map_trip_hint": "Tap a number to open the geosite.",
 	"map_zoom_in": "Zoom in",
 	"map_zoom_out": "Zoom out",
+	"minerals_at_distance": "{meters} m from the tap",
+	"minerals_at_host": "Host rock: {rocks}",
+	"minerals_at_more": "and {count} more nearby",
+	"minerals_at_none": "No mineral occurrence here. Tap one of the dots on the map.",
+	"minerals_at_province": "{province} province",
+	"minerals_at_source": "Data as published by",
+	"minerals_at_title": "Mineral occurrences (SGB)",
+	"minerals_at_unavailable": "SGB's service didn't answer. Try again.",
 	"my_count": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],

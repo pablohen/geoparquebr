@@ -104,5 +104,46 @@ export const GeologyAtPointSchema = z.discriminatedUnion("status", [
 ]);
 export type GeologyAtPoint = z.infer<typeof GeologyAtPointSchema>;
 
+// ---------------------------------------------------------------------------
+// Mineral occurrences (the "Ocorrências minerais" overlay)
+// ---------------------------------------------------------------------------
+
+/** One SGB mineral occurrence, as published (Portuguese). */
+export const MineralOccurrenceSchema = z.object({
+	id: z.number().int(),
+	/** "Toponímia": the mine or prospect's name. */
+	name: z.string().optional(),
+	municipality: z.string().optional(),
+	state: z.string().optional(),
+	/** "Ouro", "Ferro, Manganês"… */
+	substances: z.string().optional(),
+	/** "Mina", "Garimpo", "Não explotado"… */
+	status: z.string().optional(),
+	/** "Depósito", "Ocorrência"… */
+	importance: z.string().optional(),
+	/** Whether the mine or garimpo is active, when it is one. */
+	activity: z.string().optional(),
+	/** "Metais nobres", "Insumos para agricultura"… */
+	useClass: z.string().optional(),
+	hostRocks: z.string().optional(),
+	province: z.string().optional(),
+	/** From the tapped point, rounded to 10 m. */
+	distanceM: z.number().nonnegative(),
+});
+export type MineralOccurrence = z.infer<typeof MineralOccurrenceSchema>;
+
+export const MineralsAtPointSchema = z.discriminatedUnion("status", [
+	z.object({
+		status: z.literal("ok"),
+		/** Nearest first, at most `MINERALS_AT_POINT_MAX`. */
+		items: z.array(MineralOccurrenceSchema),
+		total: z.number().int().nonnegative(),
+	}),
+	z.object({ status: z.literal("unavailable") }),
+]);
+export type MineralsAtPoint = z.infer<typeof MineralsAtPointSchema>;
+
+export const MINERALS_AT_POINT_MAX = 5;
+
 /** The map layer shows SGB's 1:1,000,000 lithostratigraphy (full coverage of Brazil). */
 export const GEOLOGY_LAYER_SCALE = 1_000_000;

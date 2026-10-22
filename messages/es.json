@@ -396,6 +396,14 @@
 	"map_trip_hint": "Toca un número para abrir el geositio.",
 	"map_zoom_in": "Acercar",
 	"map_zoom_out": "Alejar",
+	"minerals_at_distance": "a {meters} m del toque",
+	"minerals_at_host": "Roca huésped: {rocks}",
+	"minerals_at_more": "y {count} más cerca",
+	"minerals_at_none": "Ninguna ocurrencia mineral aquí. Toque un punto del mapa.",
+	"minerals_at_province": "Provincia {province}",
+	"minerals_at_source": "Datos publicados por el",
+	"minerals_at_title": "Ocurrencias minerales (SGB)",
+	"minerals_at_unavailable": "El servicio del SGB no respondió. Inténtelo de nuevo.",
 	"my_count": [
 		{
 			"declarations": ["input count", "local countPlural = count: plural"],

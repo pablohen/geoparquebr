@@ -12,6 +12,7 @@ import { bboxAround } from "~/lib/geo";
 import { findGeositeLocation } from "../geosites/geosites.server";
 import { LatitudeSchema, LongitudeSchema } from "../geosites/schemas";
 import { type FossilLookup, fossilLookups } from "./fossils.server";
+import { sgbMineralsNear } from "./minerals.server";
 import {
 	FOSSIL_SEARCH_RADIUS_KM,
 	type FossilOccurrence,
@@ -19,6 +20,7 @@ import {
 	type GeologyAtPoint,
 	type GeositeFossils,
 	type GeositeStrata,
+	type MineralsAtPoint,
 	STRATA_SEARCH_RADIUS_KM,
 } from "./schemas";
 import { sgbStrataIn } from "./sgb.server";
@@ -117,6 +119,38 @@ export const getGeologyAt = createServerFn({ method: "GET" })
 			return { status: "ok", scale, units };
 		} catch (err) {
 			console.warn("geology lookup failed:", err);
+			return { status: "unavailable" };
+		}
+	});
+
+/**
+ * SGB mineral occurrences near a map tap ("Ocorrências minerais" overlay).
+ * `radiusDeg` is the tap tolerance at the current zoom; the point and radius
+ * are rounded so nearby taps share a cache entry.
+ */
+export const getMineralsAt = createServerFn({ method: "GET" })
+	.validator(
+		z.object({
+			lng: LongitudeSchema,
+			lat: LatitudeSchema,
+			radiusDeg: z.number().min(0.0001).max(0.2),
+		}),
+	)
+	.handler(async ({ data }): Promise<MineralsAtPoint> => {
+		const point: [number, number] = [
+			Math.round(data.lng * 10_000) / 10_000,
+			Math.round(data.lat * 10_000) / 10_000,
+		];
+		const radiusDeg = Number(data.radiusDeg.toPrecision(2));
+		try {
+			const { items, total } = await cached(
+				`minerals-at:v1:${point.join(",")}:${radiusDeg}`,
+				30 * DAY_MS,
+				() => sgbMineralsNear(point, radiusDeg),
+			);
+			return { status: "ok", items, total };
+		} catch (err) {
+			console.warn("minerals lookup failed:", err);
 			return { status: "unavailable" };
 		}
 	});

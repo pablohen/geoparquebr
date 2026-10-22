@@ -20,6 +20,7 @@ import { lazy, Suspense, useState } from "react";
 import { GeositeOfTheDay } from "~/features/daily/components/GeositeOfTheDay";
 import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
 import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
+import { MineralsAtPointCard } from "~/features/geology/components/MineralsAtPointCard";
 import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
 import { InstallButton } from "~/features/install/components/InstallButton";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
@@ -80,8 +81,11 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 	// Phone list sheet; from `sm` up the AppShell sidebar is always visible.
 	const [sheetOpened, { open: openSheet, close: closeSheet }] = useDisclosure();
 	const [geologyOpacity, setGeologyOpacity] = useState(0.7);
-	const [identifyPoint, setIdentifyPoint] = useState<[number, number]>();
+	// The last tap off the pins, while the geology layer or minerals are on.
+	const [tap, setTap] = useState<{ point: [number, number]; zoom: number }>();
+	const identifyPoint = tap?.point;
 	const geologyVisible = search.geo === true;
+	const mineralsOn = search.ov?.includes("minerals") === true;
 	// "Perto de mim": the traveller's position, kept in this page only.
 	const [near, setNear] = useState<[number, number]>();
 	const nearActive = near !== undefined && bboxContains(search.bbox, near);
@@ -253,8 +257,10 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 									onSearchChange({ bbox }, { replace: true })
 								}
 								geology={{ visible: geologyVisible, opacity: geologyOpacity }}
-								onIdentify={setIdentifyPoint}
-								identifyPoint={geologyVisible ? identifyPoint : undefined}
+								onIdentify={(point, zoom) => setTap({ point, zoom })}
+								identifyPoint={
+									geologyVisible || mineralsOn ? identifyPoint : undefined
+								}
 								terrain={search.terrain === true}
 								trip={tripPins}
 								userPoint={nearActive ? near : undefined}
@@ -277,7 +283,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							opacity={geologyOpacity}
 							onVisibleChange={(on) => {
 								onSearchChange({ geo: on ? true : undefined });
-								if (!on) setIdentifyPoint(undefined);
+								if (!on && !mineralsOn) setTap(undefined);
 							}}
 							onOpacityChange={setGeologyOpacity}
 						/>
@@ -338,12 +344,34 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 						}
 						list={list}
 					/>
-					{geologyVisible && identifyPoint && (
-						<GeologyAtPointCard
-							key={identifyPoint.join(",")}
-							point={identifyPoint}
-							onClose={() => setIdentifyPoint(undefined)}
-						/>
+					{tap && (geologyVisible || mineralsOn) && (
+						<Stack
+							pos="absolute"
+							left={12}
+							// Above the phone list button; near the scale bar on desktop.
+							bottom={{ base: 84, sm: 36 }}
+							w={340}
+							maw="calc(100% - 24px)"
+							mah="60%"
+							gap="xs"
+							style={{ zIndex: 2, overflowY: "auto" }}
+						>
+							{mineralsOn && (
+								<MineralsAtPointCard
+									key={`m${tap.point.join(",")}`}
+									point={tap.point}
+									zoom={tap.zoom}
+									onClose={() => setTap(undefined)}
+								/>
+							)}
+							{geologyVisible && (
+								<GeologyAtPointCard
+									key={`g${tap.point.join(",")}`}
+									point={tap.point}
+									onClose={() => setTap(undefined)}
+								/>
+							)}
+						</Stack>
 					)}
 				</Box>
 			</AppShell.Main>
