@@ -534,6 +534,10 @@
 			}
 		}
 	],
+	"similar_error": "Couldn't load similar geosites.",
+	"similar_none": "No geosites with the same themes in other states.",
+	"similar_shares": "In common",
+	"similar_title": "Similar, in other states",
 	"site_description": "Explore geosites, fossils, strata and caves in Brazil's geoparks and geological heritage.",
 	"site_title": "GeoparqueBR — UNESCO Global Geoparks in Brazil",
 	"state_all_states": "All states",

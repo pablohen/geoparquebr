@@ -18,6 +18,7 @@ import {
 	type GeositesInBoundsQuery,
 	GeositesInBoundsQuerySchema,
 } from "./schemas";
+import { type SimilarCandidate, type SimilarMatch, similarTo } from "./similar";
 
 /** Shape persisted in Mongo: the DTO minus `id`, plus `_id` and real Dates. */
 export type GeositeDoc = Omit<Geosite, "id" | "createdAt" | "updatedAt"> & {
@@ -404,6 +405,47 @@ export async function findNearbyGeosites(
 		])
 		.toArray();
 	return rankNearby(origin, candidates, limit);
+}
+
+/**
+ * Geosites in other states sharing this one's themes and periods, best
+ * match first; null for an unknown slug. Reads no coordinates.
+ */
+export async function findSimilarGeosites(
+	slug: string,
+): Promise<SimilarMatch[] | null> {
+	const col = await geositesCollection();
+	const projection = {
+		_id: 0,
+		slug: 1,
+		name: 1,
+		municipality: 1,
+		state: 1,
+		categories: 1,
+		geologicAge: 1,
+	} as const;
+	type Row = Pick<
+		Geosite,
+		"slug" | "name" | "municipality" | "state" | "categories" | "geologicAge"
+	>;
+	const toCandidate = ({ geologicAge, ...r }: Row): SimilarCandidate => ({
+		...r,
+		minMa: geologicAge?.minMa,
+		maxMa: geologicAge?.maxMa,
+	});
+	const target = await col.findOne<Row>({ slug }, { projection });
+	if (!target) return null;
+	if (target.categories.length === 0) return [];
+	const candidates = await col
+		.find<Row>(
+			{
+				categories: { $in: target.categories },
+				state: { $ne: target.state },
+			},
+			{ projection },
+		)
+		.toArray();
+	return similarTo(toCandidate(target), candidates.map(toCandidate));
 }
 
 export async function findGeositeBySlug(slug: string): Promise<Geosite | null> {

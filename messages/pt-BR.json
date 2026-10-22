@@ -534,6 +534,10 @@
 			}
 		}
 	],
+	"similar_error": "Não foi possível carregar os geossítios parecidos.",
+	"similar_none": "Nenhum geossítio com os mesmos temas em outros estados.",
+	"similar_shares": "Em comum",
+	"similar_title": "Parecidos em outros estados",
 	"site_description": "Explore geossítios, fósseis, estratos e cavernas dos geoparques e do patrimônio geológico do Brasil.",
 	"site_title": "GeoparqueBR — Geoparques Mundiais da UNESCO no Brasil",
 	"state_all_states": "Todos os estados",

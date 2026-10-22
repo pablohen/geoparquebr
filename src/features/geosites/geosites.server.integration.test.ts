@@ -16,6 +16,7 @@ import {
 	findGeositeLocation,
 	findGeositesInBounds,
 	findNearbyGeosites,
+	findSimilarGeosites,
 	geositesCollection,
 	publicPoint,
 	searchGeosites,
@@ -239,6 +240,23 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		await expect(syncSourcedGeosites(col, "geossit", [])).rejects.toThrow(
 			/refusing/,
 		);
+	});
+
+	it("finds similar geosites in other states without coordinates", async () => {
+		const col = await geositesCollection();
+		await col.insertOne({
+			...geosite(99, "parecido", [-40.5, -9.4], { state: "PE" }),
+			publicLocation: { type: "Point", coordinates: [-40.5, -9.4] },
+		} as never);
+		try {
+			const similar = await findSimilarGeosites("centro");
+			expect(similar?.map((g) => g.slug)).toEqual(["parecido"]);
+			expect(similar?.[0]?.categories).toEqual(["paleontological"]);
+			expect(JSON.stringify(similar)).not.toContain("coordinates");
+			expect(await findSimilarGeosites("no-such-slug")).toBeNull();
+		} finally {
+			await col.deleteOne({ slug: "parecido" });
+		}
 	});
 
 	it("lists nearby geosites without itself, using public coordinates", async () => {

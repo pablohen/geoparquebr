@@ -534,6 +534,10 @@
 			}
 		}
 	],
+	"similar_error": "No se pudieron cargar los geositios parecidos.",
+	"similar_none": "Ningún geositio con los mismos temas en otros estados.",
+	"similar_shares": "En común",
+	"similar_title": "Parecidos en otros estados",
 	"site_description": "Explora geositios, fósiles, estratos y cuevas de los geoparques y del patrimonio geológico de Brasil.",
 	"site_title": "GeoparqueBR — Geoparques Mundiales de la UNESCO en Brasil",
 	"state_all_states": "Todos los estados",

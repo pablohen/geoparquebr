@@ -12,6 +12,7 @@ import {
 	findGeositeBySlug,
 	findGeositesInBounds,
 	findNearbyGeosites,
+	findSimilarGeosites,
 } from "./geosites.server";
 import { GeositesInBoundsQuerySchema } from "./schemas";
 
@@ -34,6 +35,15 @@ export const getNearbyGeosites = createServerFn({ method: "GET" })
 		const nearby = await findNearbyGeosites(data.slug);
 		if (!nearby) throw notFound();
 		return nearby;
+	});
+
+/** Geosites in other states with the same themes and periods, for "Parecidos". */
+export const getSimilarGeosites = createServerFn({ method: "GET" })
+	.validator(z.object({ slug: z.string().min(1) }))
+	.handler(async ({ data }) => {
+		const similar = await findSimilarGeosites(data.slug);
+		if (!similar) throw notFound();
+		return similar;
 	});
 
 /**

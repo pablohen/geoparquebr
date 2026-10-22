@@ -59,6 +59,7 @@ import {
 import { CATEGORY_COLORS } from "./categoryStyle";
 import type { StrataLayer } from "./ModelViewer";
 import { NearbyGeosites } from "./NearbyGeosites";
+import { SimilarGeosites } from "./SimilarGeosites";
 import { SketchfabEmbed } from "./SketchfabEmbed";
 
 // three.js + R3F (~600 kB) only load when a self-hosted model or the strata fallback is shown.
@@ -274,6 +275,7 @@ function Overview({
 
 			{geosite.scores && <Scores scores={geosite.scores} />}
 			<NearbyGeosites slug={geosite.slug} onSelect={onSelectGeosite} />
+			<SimilarGeosites slug={geosite.slug} onSelect={onSelectGeosite} />
 			{geosite.source && <SourceCredit source={geosite.source} />}
 		</Stack>
 	);
