@@ -32,6 +32,8 @@ Use **pnpm**, never npm or yarn.
 
 Before you call a change done, run `pnpm lint && pnpm typecheck && pnpm test && pnpm build`. For UI changes, also load the page and check the browser console.
 
+CI (`.github/workflows/ci.yml`) runs the same four on every push to `main` and every pull request, with integration tests against a throwaway `mongo:8` service (never Atlas). Actions are pinned to commit SHAs; bump them deliberately.
+
 ## Tests
 
 - **Vitest**, configured in `vitest.config.ts`, which is separate from the app's Vite config, so tests don't load the TanStack Start plugin. Tests live next to the code as `*.test.ts`.
