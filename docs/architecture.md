@@ -86,6 +86,8 @@ sequenceDiagram
 | `/regions`, `/regions/$region` | Brazil's five regions; one page per region with its states side by side (geosites, international relevance, geoparks), themes, periods, geoparks and fossil genera |
 | `/units`, `/units/$slug` | rock units the SGB map names at geosites (`?q=` filters the list); one page per unit with its mapped age (from geosites where it is the only unit), the geosites on it and fossil genera nearby |
 | `/conservation` | geosites at high GEOSSIT degradation risk, most vulnerable first, with guidance on visiting without damage |
+| `/compare` | two geosites side by side (`?a=&b=`, `noindex`): GEOSSIT marks with the higher one in bold, themes, age and units, risk, nearby fossil genera |
+| `/og/states/$uf`, `/og/regions/$region`, `/og/units/$slug`, `/og/pages/$page` | share cards for the state, region, unit and listing pages, text only, in the URL's language |
 | `/my-geosites` | this device's trip, favourites, visits, progress per geopark and offline geoparks (localStorage, `noindex`) |
 | `/geoparks/$geoparkId/guide`, `/trip/guide` | printable field guides (`src/features/guide/`): each geosite's full description, age, public coordinates, GEOSSIT source and a QR code for its page (SVG made on the server with `qrcode`); print CSS hides the app chrome and forces light colours (`noindex`) |
 | `/embed/geoparks/$geoparkId`, `/embed/geosites/$slug` | embeddable maps for other sites' `<iframe>`s (`src/features/embed/`): public points, a credit bar linking back, cooperative gestures, no app chrome, no service worker, `noindex`; the "Incorporar" button gives the code |
