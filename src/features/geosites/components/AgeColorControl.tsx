@@ -35,23 +35,25 @@ export function AgeColorControl({ on, onChange, geosites }: Props) {
 					onChange={(e) => onChange(e.currentTarget.checked)}
 				/>
 				{on && (
-					<Stack
-						gap={2}
-						component="ul"
-						m={0}
-						p={0}
-						aria-label={m.map_pins_legend()}
-					>
-						{periods.map((p) => (
-							<Legend key={p.id} color={p.color} label={periodLabel(p.id)} />
-						))}
-						{undated && (
-							<Legend color={UNDATED_COLOR} label={m.map_pins_undated()} />
-						)}
-						<Text size="xs" c="dimmed" mt={2}>
+					<>
+						<Stack
+							gap={2}
+							component="ul"
+							m={0}
+							p={0}
+							aria-label={m.map_pins_legend()}
+						>
+							{periods.map((p) => (
+								<Legend key={p.id} color={p.color} label={periodLabel(p.id)} />
+							))}
+							{undated && (
+								<Legend color={UNDATED_COLOR} label={m.map_pins_undated()} />
+							)}
+						</Stack>
+						<Text size="xs" c="dimmed">
 							{m.map_pins_clusters()}
 						</Text>
-					</Stack>
+					</>
 				)}
 			</Stack>
 		</Paper>
