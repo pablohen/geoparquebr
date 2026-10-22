@@ -23,7 +23,9 @@ import {
 	MINERALS_TILES,
 	type Overlay,
 	PROTECTED_AREAS_URL,
-	PROTECTED_COLORS,
+	PROTECTED_INTEGRAL,
+	PROTECTED_INTEGRAL_COLOR,
+	PROTECTED_SUSTAINABLE_COLOR,
 } from "./overlays";
 
 /** Contours are computed in a worker from the same Terrarium tiles as the relief. */
@@ -62,9 +64,9 @@ const LAYERS: Record<Overlay, string[]> = {
 const protectedColor: ExpressionSpecification = [
 	"match",
 	["get", "group"],
-	"Proteção Integral",
-	PROTECTED_COLORS["Proteção Integral"],
-	PROTECTED_COLORS["Uso Sustentável"],
+	PROTECTED_INTEGRAL,
+	PROTECTED_INTEGRAL_COLOR,
+	PROTECTED_SUSTAINABLE_COLOR,
 ];
 
 const density: ExpressionSpecification = [

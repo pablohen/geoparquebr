@@ -403,7 +403,7 @@
 	"minerals_at_more": "e mais {count} por perto",
 	"minerals_at_none": "Nenhuma ocorrência mineral aqui. Toque num ponto do mapa.",
 	"minerals_at_province": "Província {province}",
-	"minerals_at_source": "Dados publicados pelo",
+	"minerals_at_source": "Dados do SGB, como publicados",
 	"minerals_at_title": "Ocorrências minerais (SGB)",
 	"minerals_at_unavailable": "O serviço do SGB não respondeu. Tente de novo.",
 	"my_count": [
@@ -770,6 +770,8 @@
 	"trip_open_maps": "Abrir no Google Maps",
 	"trip_open_maps_part": "Google Maps, trecho {part} de {total}",
 	"trip_profile_aria": "Perfil de altitude do roteiro. Use as setas para percorrer.",
+	"trip_profile_axis_km": "{km} km",
+	"trip_profile_axis_metres": "{metres} m",
 	"trip_profile_error": "Não deu para carregar o relevo agora. Tente de novo mais tarde.",
 	"trip_profile_note": "Em linha reta entre as paradas, não pelas estradas. Altitudes do relevo do mapa (AWS Terrain Tiles), calculadas no seu aparelho.",
 	"trip_profile_readout": "{km} km · {metres} m",

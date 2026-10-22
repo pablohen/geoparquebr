@@ -61,17 +61,14 @@ export function MineralsAtPointCard({
 							{m.minerals_at_more({ count: data.total - data.items.length })}
 						</Text>
 					)}
-					<Text size="xs" c="dimmed">
-						{m.minerals_at_source()}{" "}
-						<Anchor
-							href={`${MINERALS_SERVICE}/0`}
-							target="_blank"
-							rel="noreferrer"
-							size="xs"
-						>
-							SGB
-						</Anchor>
-					</Text>
+					<Anchor
+						href={`${MINERALS_SERVICE}/0`}
+						target="_blank"
+						rel="noreferrer"
+						size="xs"
+					>
+						{m.minerals_at_source()}
+					</Anchor>
 				</Stack>
 			) : (
 				<Text size="sm" c="dimmed">

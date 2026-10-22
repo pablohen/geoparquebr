@@ -17,7 +17,8 @@ import {
 	MINERALS_SERVICE,
 	OVERLAY_IDS,
 	type Overlay,
-	PROTECTED_COLORS,
+	PROTECTED_INTEGRAL_COLOR,
+	PROTECTED_SUSTAINABLE_COLOR,
 } from "../overlays";
 
 type Props = {
@@ -105,8 +106,8 @@ export function OverlaysControl({ on, onChange }: Props) {
 
 function ProtectedLegend() {
 	const items = [
-		[PROTECTED_COLORS["Proteção Integral"], m.overlay_protected_integral()],
-		[PROTECTED_COLORS["Uso Sustentável"], m.overlay_protected_sustainable()],
+		[PROTECTED_INTEGRAL_COLOR, m.overlay_protected_integral()],
+		[PROTECTED_SUSTAINABLE_COLOR, m.overlay_protected_sustainable()],
 	] as const;
 	return (
 		<Stack gap={2} mt={4} component="ul" m={0} p={0}>

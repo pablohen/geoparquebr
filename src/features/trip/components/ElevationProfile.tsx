@@ -207,7 +207,7 @@ function Chart({
 									fontSize={11}
 									fill="var(--mantine-color-dimmed)"
 								>
-									{number.format(t)} m
+									{m.trip_profile_axis_metres({ metres: number.format(t) })}
 								</text>
 							</g>
 						))}
@@ -220,7 +220,7 @@ function Chart({
 								fontSize={11}
 								fill="var(--mantine-color-dimmed)"
 							>
-								{number.format(km)} km
+								{m.trip_profile_axis_km({ km: number.format(km) })}
 							</text>
 						))}
 						<path d={area} fill="var(--profile-line)" fillOpacity={0.1} />

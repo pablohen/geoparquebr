@@ -41,11 +41,11 @@ export const MINERALS_MINZOOM = 6;
 
 /** CNUC protected areas, built by `pnpm geo:protected` (~500 m detail). */
 export const PROTECTED_AREAS_URL = "/data/protected-areas.geojson";
-/** Fill and line colours per CNUC group: stricter protection, darker green. */
-export const PROTECTED_COLORS = {
-	"Proteção Integral": "#2b8a3e",
-	"Uso Sustentável": "#82c91e",
-} as const;
+/** CNUC groups as the data writes them (Portuguese), for the layer's colours. */
+export const PROTECTED_INTEGRAL = "Proteção Integral";
+/** Stricter protection draws darker green. */
+export const PROTECTED_INTEGRAL_COLOR = "#2b8a3e";
+export const PROTECTED_SUSTAINABLE_COLOR = "#82c91e";
 
 /** Contours appear from this zoom; spacing in metres per zoom: [minor, major]. */
 export const CONTOURS_MINZOOM = 10;
