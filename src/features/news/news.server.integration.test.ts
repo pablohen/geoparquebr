@@ -1,6 +1,7 @@
 /** Runs against a real MongoDB (needs MONGODB_URI); throwaway database. */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { closeDb, getDb } from "~/lib/db.server";
+import { testDbName } from "~/lib/test-db";
 import { changesCollection, listChanges, recordChanges } from "./news.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
@@ -8,7 +9,7 @@ const none = { added: [], changed: [], removed: [] };
 
 describe.skipIf(!enabled)("news.server (MongoDB)", () => {
 	beforeAll(() => {
-		process.env.MONGODB_DB = `geoparquebr_test_${Date.now()}`;
+		process.env.MONGODB_DB = testDbName();
 	});
 
 	afterAll(async () => {

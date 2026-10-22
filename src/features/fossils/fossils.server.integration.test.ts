@@ -5,6 +5,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { geositesCollection } from "~/features/geosites/geosites.server";
 import { closeDb, getDb } from "~/lib/db.server";
+import { testDbName } from "~/lib/test-db";
 import {
 	buildFossilIndex,
 	findFossilGenus,
@@ -63,7 +64,7 @@ async function seedCache(entries: Record<string, unknown>) {
 
 describe.skipIf(!enabled)("fossils.server (MongoDB)", () => {
 	beforeAll(async () => {
-		process.env.MONGODB_DB = `geoparquebr_test_${Date.now()}`;
+		process.env.MONGODB_DB = testDbName();
 		await (await geositesCollection()).insertMany([
 			geosite("pedra", { geoparkId: "araripe" }),
 			geosite("lajedo"),

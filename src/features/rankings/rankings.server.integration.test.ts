@@ -2,6 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { geositesCollection } from "~/features/geosites/geosites.server";
 import { closeDb, getDb } from "~/lib/db.server";
+import { testDbName } from "~/lib/test-db";
 import { findRankings } from "./rankings.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
@@ -22,7 +23,7 @@ const geosite = (slug: string, scientific: number, extra = {}) => ({
 
 describe.skipIf(!enabled)("rankings.server (MongoDB)", () => {
 	beforeAll(async () => {
-		process.env.MONGODB_DB = `geoparquebr_test_${Date.now()}`;
+		process.env.MONGODB_DB = testDbName();
 		await (await geositesCollection()).insertMany([
 			geosite("pedra", 300, { geoparkId: "araripe" }),
 			geosite("lajedo", 350, { state: "RN" }),

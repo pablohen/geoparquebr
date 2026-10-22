@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { testDbName } from "~/lib/test-db";
 import { cached } from "./cache.server";
 import { closeDb, getDb } from "./db.server";
 
 describe.skipIf(!process.env.MONGODB_URI)("cached (MongoDB)", () => {
 	beforeAll(() => {
-		process.env.MONGODB_DB = `geoparquebr_test_cache_${Date.now()}`;
+		process.env.MONGODB_DB = testDbName("geoparquebr_test_cache");
 	});
 
 	afterAll(async () => {

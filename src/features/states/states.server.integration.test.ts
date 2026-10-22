@@ -2,6 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { geositesCollection } from "~/features/geosites/geosites.server";
 import { closeDb, getDb } from "~/lib/db.server";
+import { testDbName } from "~/lib/test-db";
 import { findStatePage } from "./states.server";
 
 const enabled = Boolean(process.env.MONGODB_URI);
@@ -24,7 +25,7 @@ const geosite = (slug: string, extra: Record<string, unknown> = {}) => ({
 
 describe.skipIf(!enabled)("states.server (MongoDB)", () => {
 	beforeAll(async () => {
-		process.env.MONGODB_DB = `geoparquebr_test_${Date.now()}`;
+		process.env.MONGODB_DB = testDbName();
 		await (await geositesCollection()).insertMany([
 			geosite("passagem", {
 				scores: { scientific: 350, tourism: 1, didactic: 1, vulnerability: 1 },

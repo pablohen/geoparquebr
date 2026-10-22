@@ -10,6 +10,7 @@ import {
 } from "~/features/geoparks/geoparks.server";
 import { closeDb, getDb } from "~/lib/db.server";
 import { bboxCenter, haversineMeters } from "~/lib/geo";
+import { testDbName } from "~/lib/test-db";
 import {
 	ensureGeositeIndexes,
 	findGeositeBySlug,
@@ -82,7 +83,7 @@ const box: [number, number, number, number] = [-40, -8, -38, -6.5];
 
 describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 	beforeAll(async () => {
-		process.env.MONGODB_DB = `geoparquebr_test_${Date.now()}`;
+		process.env.MONGODB_DB = testDbName();
 		const col = await geositesCollection();
 		await ensureGeositeIndexes(col);
 		await syncSourcedGeosites(col, "geossit", sites);
