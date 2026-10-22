@@ -18,6 +18,7 @@ import { autoHideAttribution } from "~/lib/map-attribution";
 import { m } from "~/paraglide/messages.js";
 import { DEM_TILES, STYLE_URL } from "../map-sources";
 import type { GeositeSummary } from "../schemas";
+import { MIXED_COLOR, periodPinColor } from "./pinColors";
 
 // MapLibre resolves its worker relative to its own module URL, which breaks
 // once Vite pre-bundles/rebundles it. Point it at the emitted asset instead.
@@ -71,6 +72,8 @@ type Props = {
 	trip?: TripPin[];
 	/** "Perto de mim": where the traveller is, shown as a dot. */
 	userPoint?: [number, number];
+	/** Pins coloured by geological period instead of one colour. */
+	pinsByAge?: boolean;
 };
 
 const SOURCE_ID = "geosites";
@@ -104,7 +107,11 @@ function toFeatureCollection(
 		features: geosites.map((g) => ({
 			type: "Feature",
 			geometry: g.location,
-			properties: { slug: g.slug, name: g.name },
+			properties: {
+				slug: g.slug,
+				name: g.name,
+				color: periodPinColor(g.period),
+			},
 		})),
 	};
 }
@@ -118,12 +125,17 @@ function toBBox(bounds: LngLatBounds): BBox {
 	]);
 }
 
-const pointColor = (selectedSlug?: string): ExpressionSpecification => [
+const pointColor = (
+	selectedSlug: string | undefined,
+	byAge: boolean,
+): ExpressionSpecification => [
 	"case",
 	["==", ["get", "slug"], selectedSlug ?? ""],
 	SELECTED_COLOR,
-	COLOR,
+	byAge ? ["get", "color"] : COLOR,
 ];
+
+const clusterColor = (byAge: boolean) => (byAge ? MIXED_COLOR : COLOR);
 
 /**
  * Clustered geosite map. Owns the viewport: every move is reported via
@@ -144,6 +156,7 @@ export default function GeositeMap({
 	terrain,
 	trip,
 	userPoint,
+	pinsByAge,
 }: Props) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<MapLibreMap | null>(null);
@@ -158,6 +171,7 @@ export default function GeositeMap({
 		onIdentify,
 		terrain,
 		trip,
+		pinsByAge,
 	});
 	latest.current = {
 		geosites,
@@ -168,6 +182,7 @@ export default function GeositeMap({
 		onIdentify,
 		terrain,
 		trip,
+		pinsByAge,
 	};
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the map is created once; later bbox changes are handled below.
@@ -279,7 +294,7 @@ export default function GeositeMap({
 				source: SOURCE_ID,
 				filter: ["has", "point_count"],
 				paint: {
-					"circle-color": COLOR,
+					"circle-color": clusterColor(latest.current.pinsByAge === true),
 					"circle-opacity": 0.85,
 					"circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24],
 					"circle-stroke-width": 2,
@@ -305,7 +320,10 @@ export default function GeositeMap({
 				filter: ["!", ["has", "point_count"]],
 				paint: {
 					"circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 5, 12, 9],
-					"circle-color": pointColor(latest.current.selectedSlug),
+					"circle-color": pointColor(
+						latest.current.selectedSlug,
+						latest.current.pinsByAge === true,
+					),
 					"circle-stroke-width": 2,
 					"circle-stroke-color": "#ffffff",
 				},
@@ -440,8 +458,18 @@ export default function GeositeMap({
 	useEffect(() => {
 		const map = mapRef.current;
 		if (map?.getLayer(POINTS))
-			map.setPaintProperty(POINTS, "circle-color", pointColor(selectedSlug));
-	}, [selectedSlug]);
+			map.setPaintProperty(
+				POINTS,
+				"circle-color",
+				pointColor(selectedSlug, pinsByAge === true),
+			);
+		if (map?.getLayer(CLUSTERS))
+			map.setPaintProperty(
+				CLUSTERS,
+				"circle-color",
+				clusterColor(pinsByAge === true),
+			);
+	}, [selectedSlug, pinsByAge]);
 
 	useEffect(() => {
 		const map = mapRef.current;

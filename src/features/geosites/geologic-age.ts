@@ -4,7 +4,12 @@
  * mapping can be tested without the network.
  */
 import type { StrataUnit } from "~/features/geology/schemas";
-import { formatAgeRange } from "~/features/geology/time-scale";
+import {
+	formatAgeRange,
+	type GeologicPeriodId,
+	midAge,
+	periodForAge,
+} from "~/features/geology/time-scale";
 import type { GeositeInput } from "./schemas";
 
 type GeologicAge = NonNullable<GeositeInput["geologicAge"]>;
@@ -91,4 +96,16 @@ export function formatGeologicAge(age: GeologicAge): string {
 	]
 		.filter(Boolean)
 		.join(" · ");
+}
+
+/**
+ * The one period a pin is coloured by: where the middle of its dated range
+ * falls. Undefined without both ends (the age filter needs both too).
+ */
+export function pinPeriod(
+	age: { minMa?: number; maxMa?: number } | undefined,
+): GeologicPeriodId | undefined {
+	if (age?.minMa === undefined || age.maxMa === undefined) return undefined;
+	const mid = midAge(age.minMa, age.maxMa);
+	return mid === undefined ? undefined : periodForAge(mid);
 }

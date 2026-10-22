@@ -3,6 +3,7 @@ import type { StrataUnit } from "~/features/geology/schemas";
 import {
 	distinctiveName,
 	geologicAgeFromUnits,
+	pinPeriod,
 	unitsNamedIn,
 } from "./geologic-age";
 import { GeositeInputSchema } from "./schemas";
@@ -128,5 +129,18 @@ describe("unitsNamedIn", () => {
 
 	it("ignores names without a rank word (towns, rivers)", () => {
 		expect(names("Lavras em Santana do Cariri, perto do rio Exu")).toEqual([]);
+	});
+});
+
+describe("pinPeriod", () => {
+	it("colours by the middle of the dated range", () => {
+		expect(pinPeriod({ minMa: 100, maxMa: 125 })).toBe("cretaceous");
+		// 60–250 Ma: the middle, 155 Ma, is Jurassic.
+		expect(pinPeriod({ minMa: 60, maxMa: 250 })).toBe("jurassic");
+	});
+
+	it("has no period without both ends", () => {
+		expect(pinPeriod({ minMa: 100 })).toBeUndefined();
+		expect(pinPeriod(undefined)).toBeUndefined();
 	});
 });

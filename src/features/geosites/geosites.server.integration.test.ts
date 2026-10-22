@@ -280,6 +280,14 @@ describe.skipIf(!enabled)("geosites.server (MongoDB)", () => {
 		expect(await slugs(["jurassic", "archean"])).toEqual([]);
 	});
 
+	it("gives summaries the period their pin is coloured by, not the age", async () => {
+		const list = await findGeositesInBounds({ bbox: box });
+		const centro = list.find((g) => g.slug === "centro");
+		expect(centro?.period).toBe("cretaceous");
+		expect(centro).not.toHaveProperty("geologicAge");
+		expect(list.find((g) => g.slug === "leste")?.period).toBeUndefined();
+	});
+
 	it("filters by a minimum score, dropping geosites without scores", async () => {
 		const slugs = async (key: "tourism" | "didactic", min: number) =>
 			(await findGeositesInBounds({ bbox: box, minScore: { key, min } })).map(

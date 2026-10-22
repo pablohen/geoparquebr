@@ -302,6 +302,8 @@ export const GeositeSummarySchema = GeositeSchema.pick({
 }).extend({
 	/** Distance from the centre of the queried bounding box. */
 	distanceMeters: z.number().nonnegative(),
+	/** The period its pin is coloured by (`pinPeriod`), if dated. */
+	period: GeologicPeriodSchema.optional(),
 });
 export type GeositeSummary = z.infer<typeof GeositeSummarySchema>;
 
@@ -334,6 +336,8 @@ export const ExplorerSearchSchema = z.object({
 	sm: z.coerce.number().int().min(1).max(400).optional().catch(undefined),
 	/** Geology map layer on. */
 	geo: z.literal(true).optional().catch(undefined),
+	/** Pins coloured by geological period instead of one colour. */
+	pins: z.literal("age").optional().catch(undefined),
 	/** "Relevo 3D" on: 3D terrain and a tilted map. */
 	terrain: z.literal(true).optional().catch(undefined),
 	/** The device's trip drawn on the map. */

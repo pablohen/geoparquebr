@@ -40,6 +40,7 @@ import {
 	type LocationFormValues,
 	minScoreOf,
 } from "../schemas";
+import { AgeColorControl } from "./AgeColorControl";
 import { GeositeDrawer } from "./GeositeDrawer";
 import { GeositeFilters } from "./GeositeFilters";
 import { GeositeList } from "./GeositeList";
@@ -250,6 +251,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								terrain={search.terrain === true}
 								trip={tripPins}
 								userPoint={nearActive ? near : undefined}
+								pinsByAge={search.pins === "age"}
 							/>
 						</Suspense>
 					</ClientOnly>
@@ -269,6 +271,13 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 								if (!on) setIdentifyPoint(undefined);
 							}}
 							onOpacityChange={setGeologyOpacity}
+						/>
+						<AgeColorControl
+							on={search.pins === "age"}
+							onChange={(on) =>
+								onSearchChange({ pins: on ? "age" : undefined })
+							}
+							geosites={geosites}
 						/>
 						<TerrainControl
 							on={search.terrain === true}

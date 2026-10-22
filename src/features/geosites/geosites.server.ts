@@ -9,6 +9,7 @@ import { UfSchema } from "~/features/states/schemas";
 import type { Uf } from "~/features/states/states";
 import { getDb } from "~/lib/db.server";
 import { bboxCenter, bboxPolygon, haversineMeters } from "~/lib/geo";
+import { pinPeriod } from "./geologic-age";
 import {
 	type AgeRange,
 	type Geosite,
@@ -192,13 +193,19 @@ const SUMMARY_FIELDS = {
 	location: 1,
 	locationIsSensitive: 1,
 	distanceMeters: 1,
+	"geologicAge.minMa": 1,
+	"geologicAge.maxMa": 1,
 } as const;
 
 export type SummaryDoc = Pick<
 	GeositeDoc,
-	Exclude<keyof typeof SUMMARY_FIELDS, "distanceMeters">
+	Exclude<
+		keyof typeof SUMMARY_FIELDS,
+		"distanceMeters" | "geologicAge.minMa" | "geologicAge.maxMa"
+	>
 > & {
 	distanceMeters: number;
+	geologicAge?: { minMa?: number; maxMa?: number };
 };
 
 /**
@@ -256,10 +263,11 @@ export async function findGeositesInBounds(
 		])
 		.toArray();
 
-	return docs.map(({ _id, ...rest }) => ({
+	return docs.map(({ _id, geologicAge, ...rest }) => ({
 		...rest,
 		id: _id.toHexString(),
 		location: { ...rest.location, coordinates: publicPoint(rest) },
+		period: pinPeriod(geologicAge),
 	}));
 }
 
@@ -359,10 +367,11 @@ export function rankNearby(
 	limit: number,
 ): GeositeSummary[] {
 	return candidates
-		.map(({ _id, distanceMeters: _, ...rest }) => {
+		.map(({ _id, distanceMeters: _, geologicAge, ...rest }) => {
 			const point = publicPoint(rest);
 			return {
 				...rest,
+				period: pinPeriod(geologicAge),
 				id: _id.toHexString(),
 				location: { ...rest.location, coordinates: point },
 				distanceMeters: Math.round(haversineMeters(origin, point) / 100) * 100,
