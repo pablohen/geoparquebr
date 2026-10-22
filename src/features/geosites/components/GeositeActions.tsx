@@ -3,6 +3,7 @@ import {
 	ArrowSquareOut,
 	MapTrifold,
 	NavigationArrow,
+	Scales,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { EmbedButton } from "~/features/embed/components/EmbedButton";
@@ -92,6 +93,16 @@ export function GeositeActions({ geosite, context }: Props) {
 					{m.actions_geosite_page()} <ArrowSquareOut size={12} />
 				</Anchor>
 			)}
+			<Button
+				renderRoot={(props) => (
+					<Link {...props} to="/compare" search={{ a: geosite.slug }} />
+				)}
+				size="xs"
+				variant="default"
+				leftSection={<Scales size={14} />}
+			>
+				{m.actions_compare()}
+			</Button>
 			<TripLink />
 		</Group>
 	);

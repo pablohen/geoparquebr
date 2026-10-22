@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ConservationRouteImport } from './routes/conservation'
 import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as MyGeositesRouteImport } from './routes/my-geosites'
@@ -48,6 +49,11 @@ import { Route as OgUnitsSlugRouteImport } from './routes/og.units.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConservationRoute = ConservationRouteImport.update({
@@ -223,6 +229,7 @@ const OgUnitsSlugRoute = OgUnitsSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/conservation': typeof ConservationRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/conservation': typeof ConservationRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
@@ -298,6 +306,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
   '/conservation': typeof ConservationRoute
   '/glossary': typeof GlossaryRoute
   '/my-geosites': typeof MyGeositesRoute
@@ -337,6 +346,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/compare'
     | '/conservation'
     | '/glossary'
     | '/my-geosites'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/compare'
     | '/conservation'
     | '/glossary'
     | '/my-geosites'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/compare'
     | '/conservation'
     | '/glossary'
     | '/my-geosites'
@@ -449,6 +461,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRoute
   ConservationRoute: typeof ConservationRoute
   GlossaryRoute: typeof GlossaryRoute
   MyGeositesRoute: typeof MyGeositesRoute
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conservation': {
@@ -737,6 +757,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRoute,
   ConservationRoute: ConservationRoute,
   GlossaryRoute: GlossaryRoute,
   MyGeositesRoute: MyGeositesRoute,
