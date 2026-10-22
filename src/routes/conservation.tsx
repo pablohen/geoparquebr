@@ -5,6 +5,7 @@ import { getConservation } from "~/features/conservation/conservation.functions"
 import { CONSERVATION_PATH } from "~/features/conservation/schemas";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { pageCardPath } from "~/features/share/card-response";
 import { alternateLinks } from "~/lib/i18n";
 import { absoluteUrl, SITE_URL } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/conservation")({
 			m.conservation_title(),
 			m.conservation_intro(),
 			CONSERVATION_PATH,
+			absoluteUrl(pageCardPath("conservation")),
 		),
 		links: [
 			{ rel: "canonical", href: absoluteUrl(CONSERVATION_PATH) },

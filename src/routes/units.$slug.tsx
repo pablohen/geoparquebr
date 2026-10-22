@@ -2,6 +2,7 @@ import { Anchor, Container, Stack, Title } from "@mantine/core";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { unitCardPath } from "~/features/share/card-response";
 import { UnitView } from "~/features/units/components/UnitView";
 import { UnitSlugSchema } from "~/features/units/schemas";
 import { unitPath } from "~/features/units/units";
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/units/$slug")({
 							count: loaderData.geositeCount,
 						}),
 						unitPath(loaderData.slug),
+						absoluteUrl(unitCardPath(loaderData.slug)),
 					),
 					links: [
 						{ rel: "canonical", href: absoluteUrl(unitPath(loaderData.slug)) },

@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { pageCardPath } from "~/features/share/card-response";
 import { UnitsIndex } from "~/features/units/components/UnitsIndex";
 import { UNITS_PATH } from "~/features/units/units";
 import { getUnits } from "~/features/units/units.functions";
@@ -17,7 +18,12 @@ export const Route = createFileRoute("/units/")({
 	}),
 	loader: () => getUnits(),
 	head: () => ({
-		meta: pageMetaTags(m.units_title(), m.units_intro(), UNITS_PATH),
+		meta: pageMetaTags(
+			m.units_title(),
+			m.units_intro(),
+			UNITS_PATH,
+			absoluteUrl(pageCardPath("units")),
+		),
 		links: [
 			{ rel: "canonical", href: absoluteUrl(UNITS_PATH) },
 			...alternateLinks(UNITS_PATH, SITE_URL),

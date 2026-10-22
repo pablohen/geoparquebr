@@ -40,6 +40,10 @@ import { Route as EmbedGeositesSlugRouteImport } from './routes/embed.geosites.$
 import { Route as GeoparksGeoparkIdGuideRouteImport } from './routes/geoparks.$geoparkId_.guide'
 import { Route as OgGeoparksGeoparkIdRouteImport } from './routes/og.geoparks.$geoparkId'
 import { Route as OgGeositesSlugRouteImport } from './routes/og.geosites.$slug'
+import { Route as OgPagesPageRouteImport } from './routes/og.pages.$page'
+import { Route as OgRegionsRegionRouteImport } from './routes/og.regions.$region'
+import { Route as OgStatesUfRouteImport } from './routes/og.states.$uf'
+import { Route as OgUnitsSlugRouteImport } from './routes/og.units.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -196,6 +200,26 @@ const OgGeositesSlugRoute = OgGeositesSlugRouteImport.update({
   path: '/og/geosites/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OgPagesPageRoute = OgPagesPageRouteImport.update({
+  id: '/og/pages/$page',
+  path: '/og/pages/$page',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgRegionsRegionRoute = OgRegionsRegionRouteImport.update({
+  id: '/og/regions/$region',
+  path: '/og/regions/$region',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgStatesUfRoute = OgStatesUfRouteImport.update({
+  id: '/og/states/$uf',
+  path: '/og/states/$uf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgUnitsSlugRoute = OgUnitsSlugRouteImport.update({
+  id: '/og/units/$slug',
+  path: '/og/units/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -229,6 +253,10 @@ export interface FileRoutesByFullPath {
   '/geoparks/$geoparkId/guide': typeof GeoparksGeoparkIdGuideRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
+  '/og/pages/$page': typeof OgPagesPageRoute
+  '/og/regions/$region': typeof OgRegionsRegionRoute
+  '/og/states/$uf': typeof OgStatesUfRoute
+  '/og/units/$slug': typeof OgUnitsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -262,6 +290,10 @@ export interface FileRoutesByTo {
   '/geoparks/$geoparkId/guide': typeof GeoparksGeoparkIdGuideRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
+  '/og/pages/$page': typeof OgPagesPageRoute
+  '/og/regions/$region': typeof OgRegionsRegionRoute
+  '/og/states/$uf': typeof OgStatesUfRoute
+  '/og/units/$slug': typeof OgUnitsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -296,6 +328,10 @@ export interface FileRoutesById {
   '/geoparks/$geoparkId_/guide': typeof GeoparksGeoparkIdGuideRoute
   '/og/geoparks/$geoparkId': typeof OgGeoparksGeoparkIdRoute
   '/og/geosites/$slug': typeof OgGeositesSlugRoute
+  '/og/pages/$page': typeof OgPagesPageRoute
+  '/og/regions/$region': typeof OgRegionsRegionRoute
+  '/og/states/$uf': typeof OgStatesUfRoute
+  '/og/units/$slug': typeof OgUnitsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -331,6 +367,10 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId/guide'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
+    | '/og/pages/$page'
+    | '/og/regions/$region'
+    | '/og/states/$uf'
+    | '/og/units/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -364,6 +404,10 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId/guide'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
+    | '/og/pages/$page'
+    | '/og/regions/$region'
+    | '/og/states/$uf'
+    | '/og/units/$slug'
   id:
     | '__root__'
     | '/'
@@ -397,6 +441,10 @@ export interface FileRouteTypes {
     | '/geoparks/$geoparkId_/guide'
     | '/og/geoparks/$geoparkId'
     | '/og/geosites/$slug'
+    | '/og/pages/$page'
+    | '/og/regions/$region'
+    | '/og/states/$uf'
+    | '/og/units/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -431,6 +479,10 @@ export interface RootRouteChildren {
   GeoparksGeoparkIdGuideRoute: typeof GeoparksGeoparkIdGuideRoute
   OgGeoparksGeoparkIdRoute: typeof OgGeoparksGeoparkIdRoute
   OgGeositesSlugRoute: typeof OgGeositesSlugRoute
+  OgPagesPageRoute: typeof OgPagesPageRoute
+  OgRegionsRegionRoute: typeof OgRegionsRegionRoute
+  OgStatesUfRoute: typeof OgStatesUfRoute
+  OgUnitsSlugRoute: typeof OgUnitsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -652,6 +704,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OgGeositesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/og/pages/$page': {
+      id: '/og/pages/$page'
+      path: '/og/pages/$page'
+      fullPath: '/og/pages/$page'
+      preLoaderRoute: typeof OgPagesPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og/regions/$region': {
+      id: '/og/regions/$region'
+      path: '/og/regions/$region'
+      fullPath: '/og/regions/$region'
+      preLoaderRoute: typeof OgRegionsRegionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og/states/$uf': {
+      id: '/og/states/$uf'
+      path: '/og/states/$uf'
+      fullPath: '/og/states/$uf'
+      preLoaderRoute: typeof OgStatesUfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og/units/$slug': {
+      id: '/og/units/$slug'
+      path: '/og/units/$slug'
+      fullPath: '/og/units/$slug'
+      preLoaderRoute: typeof OgUnitsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -687,6 +767,10 @@ const rootRouteChildren: RootRouteChildren = {
   GeoparksGeoparkIdGuideRoute: GeoparksGeoparkIdGuideRoute,
   OgGeoparksGeoparkIdRoute: OgGeoparksGeoparkIdRoute,
   OgGeositesSlugRoute: OgGeositesSlugRoute,
+  OgPagesPageRoute: OgPagesPageRoute,
+  OgRegionsRegionRoute: OgRegionsRegionRoute,
+  OgStatesUfRoute: OgStatesUfRoute,
+  OgUnitsSlugRoute: OgUnitsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

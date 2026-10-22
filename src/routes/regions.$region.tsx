@@ -2,6 +2,7 @@ import { Anchor, Container, Stack, Title } from "@mantine/core";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { regionCardPath } from "~/features/share/card-response";
 import { RegionView } from "~/features/states/components/RegionView";
 import { regionLabel } from "~/features/states/labels";
 import { RegionSchema } from "~/features/states/schemas";
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/regions/$region")({
 				m.region_meta_title({ name }),
 				m.region_meta_description({ name }),
 				path,
+				absoluteUrl(regionCardPath(loaderData.region)),
 			),
 			links: [
 				{ rel: "canonical", href: absoluteUrl(path) },

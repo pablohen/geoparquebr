@@ -265,3 +265,83 @@ export function renderGeoparkCard(
 		</Frame>,
 	);
 }
+
+export type PageCardText = {
+	/** Small line above the title, e.g. "Rock unit". */
+	eyebrow: string;
+	title: string;
+	/** Under the title, in orange. */
+	subtitle?: string;
+	/** Body text. */
+	body?: string;
+	/** Bottom line, above the host. */
+	footer?: string;
+};
+
+/** A plain card for any other page: state, region, unit, rankings… */
+export function renderPageCard(
+	t: PageCardText,
+): Promise<Uint8Array<ArrayBuffer>> {
+	return toPng(
+		<Frame
+			accent={ORANGE}
+			footer={
+				<>
+					{t.footer && <div style={{ display: "flex" }}>{t.footer}</div>}
+					<div style={{ display: "flex", color: ORANGE, marginTop: 8 }}>
+						{host}
+					</div>
+				</>
+			}
+		>
+			<div
+				style={{
+					display: "flex",
+					fontSize: 26,
+					fontWeight: 700,
+					color: DIM,
+					marginTop: 40,
+					letterSpacing: 1,
+				}}
+			>
+				{t.eyebrow.toUpperCase()}
+			</div>
+			<div
+				style={{
+					display: "flex",
+					fontSize: 64,
+					fontWeight: 700,
+					lineHeight: 1.1,
+					marginTop: 12,
+				}}
+			>
+				{truncate(t.title, 70)}
+			</div>
+			{t.subtitle && (
+				<div
+					style={{
+						display: "flex",
+						fontSize: 30,
+						color: ORANGE,
+						marginTop: 16,
+					}}
+				>
+					{truncate(t.subtitle, 80)}
+				</div>
+			)}
+			{t.body && (
+				<div
+					style={{
+						display: "flex",
+						fontSize: 30,
+						color: "#d5d6da",
+						lineHeight: 1.35,
+						marginTop: 24,
+					}}
+				>
+					{truncate(t.body, 170)}
+				</div>
+			)}
+		</Frame>,
+	);
+}

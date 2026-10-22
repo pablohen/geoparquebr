@@ -8,6 +8,7 @@ import {
 	RANKINGS_PATH,
 	RankingsSearchSchema,
 } from "~/features/rankings/schemas";
+import { pageCardPath } from "~/features/share/card-response";
 import { alternateLinks } from "~/lib/i18n";
 import { absoluteUrl, SITE_URL } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
@@ -21,7 +22,12 @@ export const Route = createFileRoute("/rankings")({
 			data: { by: deps.by ?? "scientific", gp: deps.gp, uf: deps.uf },
 		}),
 	head: () => ({
-		meta: pageMetaTags(m.rankings_title(), m.rankings_intro(), RANKINGS_PATH),
+		meta: pageMetaTags(
+			m.rankings_title(),
+			m.rankings_intro(),
+			RANKINGS_PATH,
+			absoluteUrl(pageCardPath("rankings")),
+		),
 		links: [
 			{ rel: "canonical", href: absoluteUrl(RANKINGS_PATH) },
 			...alternateLinks(RANKINGS_PATH, SITE_URL),

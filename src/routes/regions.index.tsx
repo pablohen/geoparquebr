@@ -2,6 +2,7 @@ import { Container } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { pageCardPath } from "~/features/share/card-response";
 import { RegionsIndex } from "~/features/states/components/RegionsIndex";
 import { REGIONS_PATH } from "~/features/states/states";
 import { getGeositeStats } from "~/features/stats/stats.functions";
@@ -13,7 +14,12 @@ import { m } from "~/paraglide/messages.js";
 export const Route = createFileRoute("/regions/")({
 	loader: () => getGeositeStats(),
 	head: () => ({
-		meta: pageMetaTags(m.regions_title(), m.regions_intro(), REGIONS_PATH),
+		meta: pageMetaTags(
+			m.regions_title(),
+			m.regions_intro(),
+			REGIONS_PATH,
+			absoluteUrl(pageCardPath("regions")),
+		),
 		links: [
 			{ rel: "canonical", href: absoluteUrl(REGIONS_PATH) },
 			...alternateLinks(REGIONS_PATH, SITE_URL),

@@ -2,6 +2,7 @@ import { Container } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { pageCardPath } from "~/features/share/card-response";
 import { GeoparkCompare } from "~/features/stats/components/GeoparkCompare";
 import { COMPARE_PATH } from "~/features/stats/schemas";
 import { getGeositeStats } from "~/features/stats/stats.functions";
@@ -13,7 +14,12 @@ import { m } from "~/paraglide/messages.js";
 export const Route = createFileRoute("/geoparks/compare")({
 	loader: () => getGeositeStats(),
 	head: () => ({
-		meta: pageMetaTags(m.compare_title(), m.compare_intro(), COMPARE_PATH),
+		meta: pageMetaTags(
+			m.compare_title(),
+			m.compare_intro(),
+			COMPARE_PATH,
+			absoluteUrl(pageCardPath("compare")),
+		),
 		links: [
 			{ rel: "canonical", href: absoluteUrl(COMPARE_PATH) },
 			...alternateLinks(COMPARE_PATH, SITE_URL),

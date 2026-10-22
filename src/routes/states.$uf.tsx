@@ -2,6 +2,7 @@ import { Anchor, Container, Stack, Title } from "@mantine/core";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { stateCardPath } from "~/features/share/card-response";
 import { StateView } from "~/features/states/components/StateView";
 import { UfParamSchema } from "~/features/states/schemas";
 import { stateName, statePath } from "~/features/states/states";
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/states/$uf")({
 							count: loaderData.tally.total,
 						}),
 						statePath(loaderData.uf),
+						absoluteUrl(stateCardPath(loaderData.uf)),
 					),
 					links: [
 						{ rel: "canonical", href: absoluteUrl(statePath(loaderData.uf)) },

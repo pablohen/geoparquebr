@@ -2,6 +2,7 @@ import { Container } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { pageMetaTags } from "~/features/geoparks/seo";
 import { PageHeader } from "~/features/i18n/components/PageHeader";
+import { pageCardPath } from "~/features/share/card-response";
 import { TimelineView } from "~/features/stats/components/TimelineView";
 import { TIMELINE_PATH } from "~/features/stats/schemas";
 import { getTimeline } from "~/features/stats/stats.functions";
@@ -13,7 +14,12 @@ import { m } from "~/paraglide/messages.js";
 export const Route = createFileRoute("/timeline")({
 	loader: () => getTimeline(),
 	head: () => ({
-		meta: pageMetaTags(m.timeline_title(), m.timeline_intro(), TIMELINE_PATH),
+		meta: pageMetaTags(
+			m.timeline_title(),
+			m.timeline_intro(),
+			TIMELINE_PATH,
+			absoluteUrl(pageCardPath("timeline")),
+		),
 		links: [
 			{ rel: "canonical", href: absoluteUrl(TIMELINE_PATH) },
 			...alternateLinks(TIMELINE_PATH, SITE_URL),

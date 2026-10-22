@@ -5,6 +5,7 @@ import {
 	CARD_WIDTH,
 	renderGeoparkCard,
 	renderGeositeCard,
+	renderPageCard,
 } from "./share-card.server";
 
 /** Width and height from a PNG's IHDR chunk. */
@@ -43,6 +44,18 @@ describe("share cards", () => {
 
 	it("renders a geopark card", async () => {
 		const png = await renderGeoparkCard("serido", 3);
+		expect(pngSize(png)).toEqual({ width: CARD_WIDTH, height: CARD_HEIGHT });
+		expect(png.byteLength).toBeLessThan(300_000);
+	});
+
+	it("renders a page card with every optional line", async () => {
+		const png = await renderPageCard({
+			eyebrow: "Unidade de rocha",
+			title: "Formação Sousa",
+			subtitle: "Cretáceo · 101–145 Ma",
+			body: "Um texto ".repeat(40),
+			footer: "10 geossítios",
+		});
 		expect(pngSize(png)).toEqual({ width: CARD_WIDTH, height: CARD_HEIGHT });
 		expect(png.byteLength).toBeLessThan(300_000);
 	});
