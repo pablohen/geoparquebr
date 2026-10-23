@@ -1,5 +1,4 @@
 import {
-	ActionIcon,
 	Alert,
 	Anchor,
 	AppShell,
@@ -12,11 +11,9 @@ import {
 	Stack,
 	Text,
 	Title,
-	useComputedColorScheme,
-	useMantineColorScheme,
 } from "@mantine/core";
-import { useDisclosure, useMounted } from "@mantine/hooks";
-import { FunnelSimpleX, Moon, Mountains, Sun } from "@phosphor-icons/react";
+import { useDisclosure } from "@mantine/hooks";
+import { FunnelSimpleX, Mountains } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { GeositeOfTheDay } from "~/features/daily/components/GeositeOfTheDay";
@@ -28,6 +25,7 @@ import { InstallButton } from "~/features/install/components/InstallButton";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
 import { refreshSavedGeoparks } from "~/features/offline/refresh";
 import { SearchBox } from "~/features/search/components/SearchBox";
+import { ColorSchemeToggle } from "~/features/theme/components/ColorSchemeToggle";
 import { TripMapControl } from "~/features/trip/components/TripMapControl";
 import { tripBBox } from "~/features/trip/map";
 import { useTrip } from "~/features/trip/store";
@@ -442,29 +440,5 @@ function MapFallback() {
 		<Group h="100%" justify="center">
 			<Loader type="dots" />
 		</Group>
-	);
-}
-
-function ColorSchemeToggle() {
-	const { setColorScheme } = useMantineColorScheme();
-	const computed = useComputedColorScheme("light", {
-		getInitialValueInEffect: true,
-	});
-	// The scheme comes from localStorage, which the server can't see: render
-	// the light-mode button until mounted, as the server did.
-	const mounted = useMounted();
-	const dark = mounted && computed === "dark";
-	const next = dark ? "light" : "dark";
-	return (
-		<ActionIcon
-			variant="default"
-			size="lg"
-			onClick={() => setColorScheme(next)}
-			aria-label={
-				next === "dark" ? m.explorer_theme_dark() : m.explorer_theme_light()
-			}
-		>
-			{dark ? <Sun size={18} /> : <Moon size={18} />}
-		</ActionIcon>
 	);
 }

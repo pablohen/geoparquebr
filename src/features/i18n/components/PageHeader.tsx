@@ -3,10 +3,11 @@ import { Mountains } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { InstallButton } from "~/features/install/components/InstallButton";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
+import { ColorSchemeToggle } from "~/features/theme/components/ColorSchemeToggle";
 import { SITE_NAME } from "~/lib/site";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
-/** Logo (back to the map) and language menu, for the standalone pages. */
+/** Logo (back to the map), theme and language menu, for the standalone pages. */
 export function PageHeader() {
 	return (
 		<Group justify="space-between" mb="lg">
@@ -24,6 +25,7 @@ export function PageHeader() {
 			<Group gap="xs">
 				<InstallButton />
 				<MyGeositesLink />
+				<ColorSchemeToggle />
 				<LanguageSwitcher />
 			</Group>
 		</Group>
