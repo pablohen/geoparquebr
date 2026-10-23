@@ -5,6 +5,7 @@ import {
 	profileStats,
 	profileZoom,
 	samplePath,
+	smooth,
 	tilePixel,
 } from "./elevation";
 
@@ -61,14 +62,30 @@ describe("tilePixel and decodeTerrarium", () => {
 	});
 });
 
+// Regression: pixel jitter in the relief tiles counted as climbing, so a
+// 190 km trip claimed 6.8 km of climb.
 describe("profileStats", () => {
-	it("totals climbs and descents, ignoring wiggles under 10 m", () => {
-		expect(profileStats([500, 505, 498, 520, 700, 650, 652])).toEqual({
-			min: 498,
-			max: 700,
-			ascent: 200,
-			descent: 50,
-		});
+	it("doesn't count jitter on flat ground as climbing", () => {
+		const flat = Array.from({ length: 60 }, (_, i) => 400 + (i % 2 ? 15 : -15));
+		const stats = profileStats(flat);
+		expect(stats.ascent).toBe(0);
+		expect(stats.descent).toBe(0);
+		expect([stats.min, stats.max]).toEqual([385, 415]);
+	});
+
+	it("totals a real climb and descent", () => {
+		const up = Array.from({ length: 50 }, (_, i) => 100 + i * 20);
+		const hill = [...up, ...[...up].reverse()];
+		const stats = profileStats(hill);
+		expect(stats.ascent).toBeGreaterThan(900);
+		expect(stats.ascent).toBeLessThanOrEqual(980);
+		expect(stats.descent).toBe(stats.ascent);
+	});
+});
+
+describe("smooth", () => {
+	it("averages each value with its neighbours", () => {
+		expect(smooth([0, 10, 20, 30, 40], 1)).toEqual([5, 10, 20, 30, 35]);
 	});
 });
 

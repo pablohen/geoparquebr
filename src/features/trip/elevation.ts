@@ -19,7 +19,9 @@ export function profileZoom(pathMeters: number): number {
 /** Samples along the whole path. */
 export const PROFILE_SAMPLES = 150;
 /** Rises and falls smaller than this are tile noise, not climbing. */
-const CLIMB_NOISE_M = 10;
+const CLIMB_NOISE_M = 20;
+/** Samples averaged on each side before totalling the climb. */
+const SMOOTH_RADIUS = 2;
 
 export type ProfileSample = {
 	point: [number, number];
@@ -85,17 +87,32 @@ export const decodeTerrarium = (r: number, g: number, b: number) =>
 export type ProfileStats = {
 	min: number;
 	max: number;
-	/** Total climb and descent, ignoring wiggles under 10 m. */
+	/**
+	 * Total climb and descent, from altitudes averaged over five samples and
+	 * ignoring changes under 20 m, so the tiles' pixel jitter doesn't count.
+	 */
 	ascent: number;
 	descent: number;
 };
 
-/** Lowest, highest, and total climb and descent of a profile. */
+/** A centred moving average over `radius` samples each side. */
+export function smooth(values: readonly number[], radius = SMOOTH_RADIUS) {
+	return values.map((_, i) => {
+		const window = values.slice(
+			Math.max(0, i - radius),
+			Math.min(values.length, i + radius + 1),
+		);
+		return window.reduce((a, b) => a + b, 0) / window.length;
+	});
+}
+
+/** Lowest and highest point (as read), and total climb and descent. */
 export function profileStats(elevations: readonly number[]): ProfileStats {
+	const smoothed = smooth(elevations);
 	let ascent = 0;
 	let descent = 0;
-	let anchor = elevations[0] ?? 0;
-	for (const e of elevations) {
+	let anchor = smoothed[0] ?? 0;
+	for (const e of smoothed) {
 		const d = e - anchor;
 		if (d >= CLIMB_NOISE_M) {
 			ascent += d;
