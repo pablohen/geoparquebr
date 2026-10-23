@@ -40,6 +40,17 @@ export type FilterValues = {
 	sm?: number;
 };
 
+/** Every filter off; also what "Limpar filtros" sends. */
+export const NO_FILTERS: Record<keyof FilterValues, undefined> = {
+	uf: undefined,
+	cat: undefined,
+	rel: undefined,
+	gp: undefined,
+	age: undefined,
+	sk: undefined,
+	sm: undefined,
+};
+
 type Props = {
 	value: FilterValues;
 	onChange: (next: FilterValues) => void;
@@ -202,17 +213,7 @@ export function GeositeFilters({ value, onChange }: Props) {
 					size="compact-xs"
 					variant="subtle"
 					leftSection={<FunnelSimpleX size={14} />}
-					onClick={() =>
-						onChange({
-							uf: undefined,
-							cat: undefined,
-							rel: undefined,
-							gp: undefined,
-							age: undefined,
-							sk: undefined,
-							sm: undefined,
-						})
-					}
+					onClick={() => onChange(NO_FILTERS)}
 					style={{ alignSelf: "flex-start" }}
 				>
 					{m.filters_clear()}

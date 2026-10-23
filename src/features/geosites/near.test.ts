@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bboxContains, rankFromPoint } from "./near";
+import { bboxContains, hiddenByFilters, rankFromPoint } from "./near";
 import type { GeositeSummary } from "./schemas";
 
 const site = (slug: string, coordinates: [number, number]): GeositeSummary =>
@@ -33,5 +33,28 @@ describe("bboxContains", () => {
 	it("is inclusive at the edges", () => {
 		expect(bboxContains([-40, -8, -38, -6], [-40, -6])).toBe(true);
 		expect(bboxContains([-40, -8, -38, -6], [-37.9, -7])).toBe(false);
+	});
+});
+
+// Regression: opening a geosite the filters exclude (search, geosite of the
+// day) zoomed to it with an empty list and no explanation.
+describe("hiddenByFilters", () => {
+	const box: [number, number, number, number] = [-40, -8, -39, -7];
+	const open = {
+		slug: "pedra-cariri",
+		location: { coordinates: [-39.7, -7.1] as [number, number] },
+	};
+
+	it("is true when the open geosite is in view but not listed", () => {
+		expect(hiddenByFilters(open, [{ slug: "outro" }], box, true)).toBe(true);
+	});
+
+	it("is false when it's listed, out of view, unfiltered or none is open", () => {
+		expect(hiddenByFilters(open, [{ slug: "pedra-cariri" }], box, true)).toBe(
+			false,
+		);
+		expect(hiddenByFilters(open, [], [-50, -20, -49, -19], true)).toBe(false);
+		expect(hiddenByFilters(open, [], box, false)).toBe(false);
+		expect(hiddenByFilters(null, [], box, true)).toBe(false);
 	});
 });

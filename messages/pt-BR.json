@@ -164,6 +164,7 @@
 	"filters_all_masculine": "Todos",
 	"filters_clear": "Limpar filtros",
 	"filters_geopark": "Geoparque UNESCO",
+	"filters_hide_open": "{name} não aparece na lista: os filtros ativos o deixam de fora.",
 	"filters_min_score": "Nota mínima no GEOSSIT",
 	"filters_min_score_any": "Qualquer nota",
 	"filters_min_score_slider": "Nota mínima",

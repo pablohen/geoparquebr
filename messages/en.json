@@ -164,6 +164,7 @@
 	"filters_all_masculine": "All",
 	"filters_clear": "Clear filters",
 	"filters_geopark": "UNESCO Geopark",
+	"filters_hide_open": "{name} isn't in the list: the active filters leave it out.",
 	"filters_min_score": "Minimum GEOSSIT mark",
 	"filters_min_score_any": "Any mark",
 	"filters_min_score_slider": "Minimum mark",

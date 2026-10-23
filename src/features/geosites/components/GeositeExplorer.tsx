@@ -1,8 +1,10 @@
 import {
 	ActionIcon,
+	Alert,
 	Anchor,
 	AppShell,
 	Box,
+	Button,
 	Group,
 	getDefaultZIndex,
 	Loader,
@@ -14,7 +16,7 @@ import {
 	useMantineColorScheme,
 } from "@mantine/core";
 import { useDisclosure, useMounted } from "@mantine/hooks";
-import { Moon, Mountains, Sun } from "@phosphor-icons/react";
+import { FunnelSimpleX, Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useState } from "react";
 import { GeositeOfTheDay } from "~/features/daily/components/GeositeOfTheDay";
@@ -34,7 +36,7 @@ import { useIsMobile } from "~/lib/use-is-mobile";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import { getGeositeBySlug } from "../geosites.functions";
-import { bboxContains, rankFromPoint } from "../near";
+import { bboxContains, hiddenByFilters, rankFromPoint } from "../near";
 import {
 	type ExplorerSearch,
 	type GeositeSummary,
@@ -43,7 +45,7 @@ import {
 } from "../schemas";
 import { AgeColorControl } from "./AgeColorControl";
 import { GeositeDrawer } from "./GeositeDrawer";
-import { GeositeFilters } from "./GeositeFilters";
+import { GeositeFilters, NO_FILTERS } from "./GeositeFilters";
 import { GeositeList } from "./GeositeList";
 import { LocationForm } from "./LocationForm";
 import { MobileListSheet } from "./MobileListSheet";
@@ -143,12 +145,36 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 			onChange={(next) => onSearchChange(next)}
 		/>
 	);
+	const hidden = hiddenByFilters(
+		slug ? (detail.data ?? null) : null,
+		geosites,
+		search.bbox,
+		filtered,
+	);
 	const list = (
-		<GeositeList
-			geosites={listed}
-			selectedSlug={search.site}
-			onSelect={select}
-		/>
+		<Stack gap="xs">
+			{hidden && detail.data && (
+				<Alert color="gray" p="xs" mx="sm">
+					<Text size="sm">
+						{m.filters_hide_open({ name: detail.data.name })}
+					</Text>
+					<Button
+						size="compact-xs"
+						variant="subtle"
+						mt={4}
+						leftSection={<FunnelSimpleX size={14} />}
+						onClick={() => onSearchChange(NO_FILTERS)}
+					>
+						{m.filters_clear()}
+					</Button>
+				</Alert>
+			)}
+			<GeositeList
+				geosites={listed}
+				selectedSlug={search.site}
+				onSelect={select}
+			/>
+		</Stack>
 	);
 
 	return (

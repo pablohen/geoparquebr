@@ -24,3 +24,21 @@ export const bboxContains = (
 	[w, s, e, n]: BBox,
 	[lng, lat]: [number, number],
 ) => lng >= w && lng <= e && lat >= s && lat <= n;
+
+/**
+ * Whether the open geosite is in view but missing from the list, i.e. the
+ * active filters hide it (opened from search or the geosite of the day).
+ */
+export function hiddenByFilters(
+	open: { slug: string; location: { coordinates: [number, number] } } | null,
+	listed: readonly { slug: string }[],
+	bbox: BBox,
+	filtered: boolean,
+): boolean {
+	return (
+		filtered &&
+		open !== null &&
+		bboxContains(bbox, open.location.coordinates) &&
+		!listed.some((g) => g.slug === open.slug)
+	);
+}
