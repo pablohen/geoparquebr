@@ -88,15 +88,6 @@ function CompareTable({
 }) {
 	const ga = a.geosite;
 	const gb = b.geosite;
-	const row = (label: string, render: (s: NonNullable<Side>) => ReactNode) => (
-		<Table.Tr key={label}>
-			<Table.Th scope="row" fw={500} w="24%">
-				{label}
-			</Table.Th>
-			<Table.Td>{render(a)}</Table.Td>
-			<Table.Td>{render(b)}</Table.Td>
-		</Table.Tr>
-	);
 	const age = (g: Geosite) =>
 		g.geologicAge ? (
 			<Stack gap={2}>
@@ -123,98 +114,179 @@ function CompareTable({
 			"—"
 		);
 
+	const rows: { label: string; render: (s: NonNullable<Side>) => ReactNode }[] =
+		[
+			{
+				label: m.cmp_row_place(),
+				render: (s) => (
+					<Stack gap={0}>
+						<Text size="sm">
+							{s.geosite.municipality} – {s.geosite.state}
+						</Text>
+						<Text size="xs" c="dimmed">
+							{geoparkLabel(s.geosite)}
+						</Text>
+					</Stack>
+				),
+			},
+			{
+				label: m.detail_relevance(),
+				render: (s) => relevanceLabel(s.geosite.relevance),
+			},
+			{
+				label: m.cmp_row_themes(),
+				render: (s) => (
+					<Group gap={4}>
+						{s.geosite.categories.map((c) => (
+							<Badge
+								key={c}
+								size="xs"
+								variant="light"
+								color={CATEGORY_COLORS[c]}
+							>
+								{categoryLabel(c)}
+							</Badge>
+						))}
+					</Group>
+				),
+			},
+			...SCORE_KEYS.map((key) => {
+				const leader = scoreLeader(key, ga.scores?.[key], gb.scores?.[key]);
+				return {
+					label: scoreLabel(key),
+					render: (s: NonNullable<Side>) => {
+						const value = s.geosite.scores?.[key];
+						const isLeader =
+							leader !== null && (leader === "a" ? s === a : s === b);
+						return (
+							<Text size="sm" fw={isLeader ? 700 : undefined}>
+								{value === undefined
+									? "—"
+									: m.rankings_score_of({ score: value })}
+							</Text>
+						);
+					},
+				};
+			}),
+			{
+				label: m.detail_degradation_risk(),
+				render: (s) =>
+					s.geosite.degradationRisk
+						? degradationRiskLabel(s.geosite.degradationRisk)
+						: "—",
+			},
+			{
+				label:
+					ga.geologicAge?.mapScale || gb.geologicAge?.mapScale
+						? m.detail_mapped_rock()
+						: m.detail_geological_age(),
+				render: (s) => age(s.geosite),
+			},
+			{
+				label: m.cmp_row_genera(),
+				render: (s) =>
+					s.genera.length > 0 ? <GenusLinkList genera={s.genera} /> : "—",
+			},
+		];
+
+	const nameLink = (g: Geosite) => (
+		<Anchor
+			fw={600}
+			size="sm"
+			renderRoot={(props) => (
+				<Link {...props} to="/geosites/$slug" params={{ slug: g.slug }} />
+			)}
+		>
+			{g.name}
+		</Anchor>
+	);
+
 	return (
 		<Stack gap="xs">
-			<Table.ScrollContainer minWidth={480}>
-				<Table withTableBorder layout="fixed" verticalSpacing="xs">
-					<Table.Thead>
-						<Table.Tr>
-							<Table.Th scope="col">
-								<VisuallyHidden>{m.compare_metric()}</VisuallyHidden>
+			{/* Tablets and up: a table, one column per geosite. */}
+			<Table
+				withTableBorder
+				layout="fixed"
+				verticalSpacing="xs"
+				visibleFrom="sm"
+			>
+				<Table.Thead>
+					<Table.Tr>
+						<Table.Th scope="col" w="24%">
+							<VisuallyHidden>{m.compare_metric()}</VisuallyHidden>
+						</Table.Th>
+						{[ga, gb].map((g) => (
+							<Table.Th key={g.slug} scope="col">
+								{nameLink(g)}
 							</Table.Th>
-							{[ga, gb].map((g) => (
-								<Table.Th key={g.slug} scope="col">
-									<Anchor
-										fw={600}
-										size="sm"
-										renderRoot={(props) => (
-											<Link
-												{...props}
-												to="/geosites/$slug"
-												params={{ slug: g.slug }}
-											/>
-										)}
-									>
-										{g.name}
-									</Anchor>
-								</Table.Th>
-							))}
-						</Table.Tr>
-					</Table.Thead>
-					<Table.Tbody>
-						{row(m.cmp_row_place(), (s) => (
-							<Stack gap={0}>
-								<Text size="sm">
-									{s.geosite.municipality} – {s.geosite.state}
-								</Text>
-								<Text size="xs" c="dimmed">
-									{geoparkLabel(s.geosite)}
-								</Text>
-							</Stack>
 						))}
-						{row(m.detail_relevance(), (s) =>
-							relevanceLabel(s.geosite.relevance),
-						)}
-						{row(m.cmp_row_themes(), (s) => (
-							<Group gap={4}>
-								{s.geosite.categories.map((c) => (
+					</Table.Tr>
+				</Table.Thead>
+				<Table.Tbody>
+					{rows.map(({ label, render }) => (
+						<Table.Tr key={label}>
+							<Table.Th scope="row" fw={500}>
+								{label}
+							</Table.Th>
+							<Table.Td>{render(a)}</Table.Td>
+							<Table.Td>{render(b)}</Table.Td>
+						</Table.Tr>
+					))}
+				</Table.Tbody>
+			</Table>
+
+			{/* Phones: each metric with both values under it, so nothing scrolls sideways. */}
+			<Stack gap="sm" hiddenFrom="sm">
+				<SimpleGrid cols={2} spacing="xs">
+					{[ga, gb].map((g, i) => (
+						<Group key={g.slug} gap={6} wrap="nowrap" align="flex-start">
+							<Badge size="sm" variant="filled" circle>
+								{i === 0 ? "A" : "B"}
+							</Badge>
+							{nameLink(g)}
+						</Group>
+					))}
+				</SimpleGrid>
+				{rows.map(({ label, render }) => (
+					<Stack
+						key={label}
+						gap={4}
+						pt="xs"
+						style={{
+							borderTop: "1px solid var(--mantine-color-default-border)",
+						}}
+					>
+						<Text size="xs" fw={600} c="dimmed" tt="uppercase">
+							{label}
+						</Text>
+						<SimpleGrid cols={2} spacing="xs">
+							{[a, b].map((side, i) => (
+								<Group
+									key={side.geosite.slug}
+									gap={6}
+									wrap="nowrap"
+									align="flex-start"
+								>
 									<Badge
-										key={c}
 										size="xs"
 										variant="light"
-										color={CATEGORY_COLORS[c]}
+										circle
+										aria-hidden
+										style={{ flex: "none" }}
 									>
-										{categoryLabel(c)}
+										{i === 0 ? "A" : "B"}
 									</Badge>
-								))}
-							</Group>
-						))}
-						{SCORE_KEYS.map((key) => {
-							const leader = scoreLeader(
-								key,
-								ga.scores?.[key],
-								gb.scores?.[key],
-							);
-							return row(scoreLabel(key), (s) => {
-								const value = s.geosite.scores?.[key];
-								const isLeader =
-									leader !== null && (leader === "a" ? s === a : s === b);
-								return (
-									<Text size="sm" fw={isLeader ? 700 : undefined}>
-										{value === undefined
-											? "—"
-											: m.rankings_score_of({ score: value })}
+									{/* The table's cells are size sm; match them. */}
+									<Text component="div" size="sm" miw={0}>
+										<VisuallyHidden>{side.geosite.name}: </VisuallyHidden>
+										{render(side)}
 									</Text>
-								);
-							});
-						})}
-						{row(m.detail_degradation_risk(), (s) =>
-							s.geosite.degradationRisk
-								? degradationRiskLabel(s.geosite.degradationRisk)
-								: "—",
-						)}
-						{row(
-							ga.geologicAge?.mapScale || gb.geologicAge?.mapScale
-								? m.detail_mapped_rock()
-								: m.detail_geological_age(),
-							(s) => age(s.geosite),
-						)}
-						{row(m.cmp_row_genera(), (s) =>
-							s.genera.length > 0 ? <GenusLinkList genera={s.genera} /> : "—",
-						)}
-					</Table.Tbody>
-				</Table>
-			</Table.ScrollContainer>
+								</Group>
+							))}
+						</SimpleGrid>
+					</Stack>
+				))}
+			</Stack>
 			<Text size="xs" c="dimmed">
 				{m.cmp_bold_note()}
 			</Text>
