@@ -18,7 +18,7 @@ import {
 import { useDisclosure, useMounted } from "@mantine/hooks";
 import { FunnelSimpleX, Moon, Mountains, Sun } from "@phosphor-icons/react";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { GeositeOfTheDay } from "~/features/daily/components/GeositeOfTheDay";
 import { GeologyAtPointCard } from "~/features/geology/components/GeologyAtPointCard";
 import { GeologyLayerControl } from "~/features/geology/components/GeologyLayerControl";
@@ -26,6 +26,7 @@ import { MineralsAtPointCard } from "~/features/geology/components/MineralsAtPoi
 import { LanguageSwitcher } from "~/features/i18n/components/LanguageSwitcher";
 import { InstallButton } from "~/features/install/components/InstallButton";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
+import { refreshSavedGeoparks } from "~/features/offline/refresh";
 import { SearchBox } from "~/features/search/components/SearchBox";
 import { TripMapControl } from "~/features/trip/components/TripMapControl";
 import { tripBBox } from "~/features/trip/map";
@@ -78,7 +79,15 @@ function formValuesFor(bbox: BBox): LocationFormValues {
 	};
 }
 
+/** Once per page load: old offline saves get ages and scores (refresh.ts). */
+let savesRefreshed = false;
+
 export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
+	useEffect(() => {
+		if (savesRefreshed || !navigator.onLine) return;
+		savesRefreshed = true;
+		void refreshSavedGeoparks();
+	}, []);
 	const isMobile = useIsMobile();
 	// Phone list sheet; from `sm` up the AppShell sidebar is always visible.
 	const [sheetOpened, { open: openSheet, close: closeSheet }] = useDisclosure();
