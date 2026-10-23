@@ -49,19 +49,35 @@ async function latestEdition(): Promise<{ name: string; url: string }> {
 
 const round = (v: number) => Math.round(v * 1e4) / 1e4;
 
-/** Simplified and rounded; a polygon whose outer ring is too small goes. */
+/** Rounded, without the repeats rounding creates. */
+const rounded = (r: Point[]): Point[] =>
+	r
+		.map(([x, y]): Point => [round(x), round(y)])
+		.filter(
+			([x, y], i, all) =>
+				i === 0 || x !== all[i - 1]?.[0] || y !== all[i - 1]?.[1],
+		);
+
+/**
+ * Simplified and rounded. A park smaller than `tolerance` (simplifyRing
+ * hands those back unchanged) keeps a finer outline instead of vanishing;
+ * holes that small go.
+ */
 const simplify = (shape: MultiPolygon, tolerance: number): MultiPolygon =>
 	shape.flatMap(([outer, ...holes]) => {
-		const ring = (r: Point[]) => {
-			const simple = simplifyRing(r, tolerance);
-			// simplifyRing hands back the ring itself when it can't shrink it.
-			return simple === r && r.length > 5
-				? []
-				: simple.map(([x, y]): Point => [round(x), round(y)]);
-		};
-		const kept = outer ? ring(outer) : [];
-		if (kept.length < 4) return [];
-		return [[kept, ...holes.map(ring).filter((h) => h.length >= 4)]];
+		if (!outer) return [];
+		let kept = simplifyRing(outer, tolerance);
+		if (kept === outer && outer.length > 5)
+			kept = simplifyRing(outer, tolerance / 20);
+		const ring = rounded(kept);
+		if (ring.length < 4) return [];
+		const inner = holes
+			.map((h) => {
+				const simple = simplifyRing(h, tolerance);
+				return simple === h && h.length > 5 ? [] : rounded(simple);
+			})
+			.filter((h) => h.length >= 4);
+		return [[ring, ...inner]];
 	});
 
 function bboxOf(shape: MultiPolygon): [number, number, number, number] {
