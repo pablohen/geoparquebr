@@ -50,8 +50,8 @@ const HINT: Record<Overlay, () => string> = {
 
 /**
  * "Camadas": everything drawn on the map, in one menu so the map stays
- * clear: the base map, optional overlays (each with what it shows and its
- * legend) and how pins look. The button counts what's on.
+ * clear: the base map, how pins look, and optional overlays (each with what
+ * it shows and its legend). The button counts what's on.
  */
 export function OverlaysControl({
 	on,
@@ -100,6 +100,7 @@ export function OverlaysControl({
 			>
 				<Stack gap="md">
 					<MenuSection title={m.overlays_section_map()}>{map}</MenuSection>
+					<MenuSection title={m.overlays_section_pins()}>{pins}</MenuSection>
 					<MenuSection title={m.overlays_section_overlays()}>
 						{OVERLAY_IDS.map((id) => (
 							<Stack key={id} gap={4}>
@@ -122,7 +123,6 @@ export function OverlaysControl({
 							</Stack>
 						))}
 					</MenuSection>
-					<MenuSection title={m.overlays_section_pins()}>{pins}</MenuSection>
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
