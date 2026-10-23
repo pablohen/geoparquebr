@@ -10,6 +10,7 @@ import {
 	UnstyledButton,
 } from "@mantine/core";
 import { StackSimple } from "@phosphor-icons/react";
+import type { ReactNode } from "react";
 import { useServerQuery } from "~/lib/use-server-query";
 import { m } from "~/paraglide/messages.js";
 import {
@@ -24,6 +25,12 @@ import {
 type Props = {
 	on: Overlay[];
 	onChange: (next: Overlay[] | undefined) => void;
+	/** Base map rows ("Mapa"): geology, 3D relief. */
+	map: ReactNode;
+	/** Pin rows ("Pinos"): colours by age, the trip. */
+	pins: ReactNode;
+	/** How many of the `map` and `pins` settings are on, for the button's count. */
+	activeSettings: number;
 };
 
 const LABEL: Record<Overlay, () => string> = {
@@ -41,8 +48,19 @@ const HINT: Record<Overlay, () => string> = {
 	protected: m.overlay_protected_hint,
 };
 
-/** "Camadas": optional overlays, each with what it shows and its legend. */
-export function OverlaysControl({ on, onChange }: Props) {
+/**
+ * "Camadas": everything drawn on the map, in one menu so the map stays
+ * clear: the base map, optional overlays (each with what it shows and its
+ * legend) and how pins look. The button counts what's on.
+ */
+export function OverlaysControl({
+	on,
+	onChange,
+	map,
+	pins,
+	activeSettings,
+}: Props) {
+	const active = on.length + activeSettings;
 	const toggle = (overlay: Overlay, checked: boolean) => {
 		const next = OVERLAY_IDS.filter((id) =>
 			id === overlay ? checked : on.includes(id),
@@ -62,45 +80,69 @@ export function OverlaysControl({ on, onChange }: Props) {
 					p={{ base: 6, sm: "xs" }}
 					radius="md"
 					shadow="sm"
-					w={{ base: "auto", sm: 230 }}
 					renderRoot={(props) => <UnstyledButton {...props} />}
 				>
 					<Group gap={8} wrap="nowrap">
 						<StackSimple size={18} weight="duotone" aria-hidden />
 						<Text size="sm">{m.overlays_title()}</Text>
-						{on.length > 0 && (
+						{active > 0 && (
 							<Text size="xs" c="dimmed">
-								({on.length})
+								({active})
 							</Text>
 						)}
 					</Group>
 				</Paper>
 			</Popover.Target>
-			<Popover.Dropdown>
-				<Stack gap="sm">
-					{OVERLAY_IDS.map((id) => (
-						<Stack key={id} gap={4}>
-							<Checkbox
-								size="sm"
-								label={LABEL[id]()}
-								checked={on.includes(id)}
-								onChange={(e) => toggle(id, e.currentTarget.checked)}
-							/>
-							{on.includes(id) && (
-								<Box pl={30}>
-									<Text size="xs" c="dimmed">
-										{HINT[id]()}
-									</Text>
-									{id === "fossils" && <DensityLegend />}
-									{id === "minerals" && <MineralsLegend />}
-									{id === "protected" && <ProtectedLegend />}
-								</Box>
-							)}
-						</Stack>
-					))}
+			<Popover.Dropdown
+				// Scrolls inside a short phone screen instead of running off it.
+				mah="calc(100dvh - 140px)"
+				style={{ overflowY: "auto" }}
+			>
+				<Stack gap="md">
+					<MenuSection title={m.overlays_section_map()}>{map}</MenuSection>
+					<MenuSection title={m.overlays_section_overlays()}>
+						{OVERLAY_IDS.map((id) => (
+							<Stack key={id} gap={4}>
+								<Checkbox
+									size="sm"
+									label={LABEL[id]()}
+									checked={on.includes(id)}
+									onChange={(e) => toggle(id, e.currentTarget.checked)}
+								/>
+								{on.includes(id) && (
+									<Box pl={30}>
+										<Text size="xs" c="dimmed">
+											{HINT[id]()}
+										</Text>
+										{id === "fossils" && <DensityLegend />}
+										{id === "minerals" && <MineralsLegend />}
+										{id === "protected" && <ProtectedLegend />}
+									</Box>
+								)}
+							</Stack>
+						))}
+					</MenuSection>
+					<MenuSection title={m.overlays_section_pins()}>{pins}</MenuSection>
 				</Stack>
 			</Popover.Dropdown>
 		</Popover>
+	);
+}
+
+function MenuSection({
+	title,
+	children,
+}: {
+	title: string;
+	children: ReactNode;
+}) {
+	return (
+		<Stack gap="sm" component="section" aria-label={title}>
+			<Text size="xs" fw={700} c="dimmed" tt="uppercase">
+				{title}
+			</Text>
+			{children}
+		</Stack>
 	);
 }
 

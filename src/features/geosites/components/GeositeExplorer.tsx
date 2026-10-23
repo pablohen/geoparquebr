@@ -305,53 +305,64 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							/>
 						</Suspense>
 					</ClientOnly>
-					<Stack
-						pos="absolute"
-						top={10}
-						left={10}
-						gap={8}
-						align="flex-start"
-						style={{ zIndex: 2 }}
-					>
-						<GeologyLayerControl
-							visible={geologyVisible}
-							opacity={geologyOpacity}
-							onVisibleChange={(on) => {
-								onSearchChange({ geo: on ? true : undefined });
-								if (!on && !mineralsOn) setTap(undefined);
-							}}
-							onOpacityChange={setGeologyOpacity}
-						/>
+					{/* Everything drawn on the map, in one menu so the map stays clear. */}
+					<Box pos="absolute" top={10} left={10} style={{ zIndex: 2 }}>
 						<OverlaysControl
 							on={search.ov ?? []}
 							onChange={(ov) => onSearchChange({ ov })}
-						/>
-						<AgeColorControl
-							on={search.pins === "age"}
-							onChange={(on) =>
-								onSearchChange({ pins: on ? "age" : undefined })
+							activeSettings={
+								Number(geologyVisible) +
+								Number(search.terrain === true) +
+								Number(search.pins === "age") +
+								Number(trip.length > 0 && search.trip === true)
 							}
-							geosites={geosites}
-						/>
-						<TerrainControl
-							on={search.terrain === true}
-							onChange={(on) =>
-								onSearchChange({ terrain: on ? true : undefined })
+							map={
+								<>
+									<GeologyLayerControl
+										visible={geologyVisible}
+										opacity={geologyOpacity}
+										onVisibleChange={(on) => {
+											onSearchChange({ geo: on ? true : undefined });
+											if (!on && !mineralsOn) setTap(undefined);
+										}}
+										onOpacityChange={setGeologyOpacity}
+									/>
+									<TerrainControl
+										on={search.terrain === true}
+										onChange={(on) =>
+											onSearchChange({ terrain: on ? true : undefined })
+										}
+									/>
+								</>
+							}
+							pins={
+								<>
+									<AgeColorControl
+										on={search.pins === "age"}
+										onChange={(on) =>
+											onSearchChange({ pins: on ? "age" : undefined })
+										}
+										geosites={geosites}
+									/>
+									{trip.length > 0 && (
+										<TripMapControl
+											on={search.trip === true}
+											onChange={(on) => {
+												const box = tripBBox(trip);
+												onSearchChange(
+													on && box
+														? { trip: true, bbox: roundBBox(box) }
+														: { trip: undefined },
+												);
+											}}
+										/>
+									)}
+								</>
 							}
 						/>
-						{trip.length > 0 && (
-							<TripMapControl
-								on={search.trip === true}
-								onChange={(on) => {
-									const box = tripBBox(trip);
-									onSearchChange(
-										on && box
-											? { trip: true, bbox: roundBBox(box) }
-											: { trip: undefined },
-									);
-								}}
-							/>
-						)}
+					</Box>
+					{/* Under MapLibre's zoom and compass buttons (3 × 29 px + margins). */}
+					<Box pos="absolute" top={110} right={10} style={{ zIndex: 2 }}>
 						<NearMeControl
 							active={nearActive}
 							onLocate={(point) => {
@@ -360,7 +371,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 							}}
 							onClear={() => setNear(undefined)}
 						/>
-					</Stack>
+					</Box>
 					<MobileListSheet
 						opened={sheetOpened}
 						onOpen={openSheet}

@@ -135,7 +135,7 @@ The trip button (beside the star and tick) adds a geosite to a trip kept in loca
 
 ### Perto de mim
 
-The map's "Perto de mim" button reads the browser's location once, centres the map there and ranks the listed geosites by straight-line distance from it (`rankFromPoint` in `src/features/geosites/near.ts`, to public points, rounded to 100 m). The position stays in the page's state, shown as a dot; it never reaches the server, and moving the map away from it leaves the mode.
+The map's "Perto de mim" button (a crosshair icon under the zoom buttons; tap again to leave) reads the browser's location once, centres the map there and ranks the listed geosites by straight-line distance from it (`rankFromPoint` in `src/features/geosites/near.ts`, to public points, rounded to 100 m). The position stays in the page's state, shown as a dot; it never reaches the server, and moving the map away from it leaves the mode.
 
 ## UI composition
 

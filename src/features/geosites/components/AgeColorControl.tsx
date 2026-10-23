@@ -1,4 +1,4 @@
-import { Box, Group, Paper, Stack, Switch, Text } from "@mantine/core";
+import { Box, Group, Stack, Switch, Text } from "@mantine/core";
 import { Palette } from "@phosphor-icons/react";
 import { periodLabel } from "~/features/geology/labels";
 import { GEOLOGIC_PERIODS } from "~/features/geology/time-scale";
@@ -19,44 +19,36 @@ export function AgeColorControl({ on, onChange, geosites }: Props) {
 	const periods = GEOLOGIC_PERIODS.filter((p) => shown.has(p.id));
 	const undated = shown.has(undefined);
 	return (
-		<Paper
-			p={{ base: 6, sm: "xs" }}
-			radius="md"
-			shadow="sm"
-			// A compact chip on phones; a full panel from `sm` up.
-			w={on ? { base: 180, sm: 230 } : { base: "auto", sm: 230 }}
-		>
-			<Stack gap={6}>
-				<Switch
-					size="sm"
-					label={m.map_pins_by_age()}
-					thumbIcon={<Palette size={10} />}
-					checked={on}
-					onChange={(e) => onChange(e.currentTarget.checked)}
-				/>
-				{on && (
-					<>
-						<Stack
-							gap={2}
-							component="ul"
-							m={0}
-							p={0}
-							aria-label={m.map_pins_legend()}
-						>
-							{periods.map((p) => (
-								<Legend key={p.id} color={p.color} label={periodLabel(p.id)} />
-							))}
-							{undated && (
-								<Legend color={UNDATED_COLOR} label={m.map_pins_undated()} />
-							)}
-						</Stack>
-						<Text size="xs" c="dimmed">
-							{m.map_pins_clusters()}
-						</Text>
-					</>
-				)}
-			</Stack>
-		</Paper>
+		<Stack gap={6}>
+			<Switch
+				size="sm"
+				label={m.map_pins_by_age()}
+				thumbIcon={<Palette size={10} />}
+				checked={on}
+				onChange={(e) => onChange(e.currentTarget.checked)}
+			/>
+			{on && (
+				<>
+					<Stack
+						gap={2}
+						component="ul"
+						m={0}
+						p={0}
+						aria-label={m.map_pins_legend()}
+					>
+						{periods.map((p) => (
+							<Legend key={p.id} color={p.color} label={periodLabel(p.id)} />
+						))}
+						{undated && (
+							<Legend color={UNDATED_COLOR} label={m.map_pins_undated()} />
+						)}
+					</Stack>
+					<Text size="xs" c="dimmed">
+						{m.map_pins_clusters()}
+					</Text>
+				</>
+			)}
+		</Stack>
 	);
 }
 
