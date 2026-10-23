@@ -7,6 +7,7 @@ import {
 	Title,
 } from "@mantine/core";
 import mantineCss from "@mantine/core/styles.css?url";
+import nprogressCss from "@mantine/nprogress/styles.css?url";
 import {
 	createRootRoute,
 	HeadContent,
@@ -21,6 +22,7 @@ import { ogLocaleTags } from "~/features/geosites/seo";
 // once, early, and a listener in a lazily loaded chunk would miss it.
 import "~/features/install/prompt";
 import { getLocale } from "~/lib/i18n";
+import { RouteProgress } from "~/lib/route-progress";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "~/lib/site";
 import { m } from "~/paraglide/messages.js";
 import appCss from "~/styles/app.css?url";
@@ -61,6 +63,7 @@ export const Route = createRootRoute({
 		],
 		links: [
 			{ rel: "stylesheet", href: mantineCss },
+			{ rel: "stylesheet", href: nprogressCss },
 			{ rel: "stylesheet", href: appCss },
 			{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
 			{ rel: "manifest", href: "/manifest.webmanifest" },
@@ -123,6 +126,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 					cssVariablesResolver={cssVariablesResolver}
 					defaultColorScheme="auto"
 				>
+					<RouteProgress />
 					{children}
 				</MantineProvider>
 				<Scripts />

@@ -30,6 +30,7 @@
 		"@inlang/paraglide-js": "2.29.1",
 		"@mantine/core": "^9.7.3",
 		"@mantine/hooks": "^9.7.3",
+		"@mantine/nprogress": "^9.7.3",
 		"@phosphor-icons/react": "^2.1.10",
 		"@react-three/drei": "^10.7.9",
 		"@react-three/fiber": "^9.8.2",
