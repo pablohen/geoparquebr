@@ -3,6 +3,7 @@ import maplibreCss from "maplibre-gl/dist/maplibre-gl.css?url";
 import { GeositeExplorer } from "~/features/geosites/components/GeositeExplorer";
 import { getGeositesInBounds } from "~/features/geosites/geosites.functions";
 import { ExplorerSearchSchema, minScoreOf } from "~/features/geosites/schemas";
+import { withTwitterTags } from "~/features/geosites/seo";
 import { savedGeoparks, savedGeositesInBounds } from "~/features/offline/store";
 import { alternateLinks } from "~/lib/i18n";
 import { absoluteUrl, SITE_URL } from "~/lib/site";
@@ -34,11 +35,11 @@ export const Route = createFileRoute("/")({
 	validateSearch: ExplorerSearchSchema,
 	// The map URL carries viewport state; canonicalise to the bare home page.
 	head: () => ({
-		meta: [
+		meta: withTwitterTags([
 			{ property: "og:url", content: absoluteUrl("/") },
 			{ property: "og:image:width", content: "1200" },
 			{ property: "og:image:height", content: "630" },
-		],
+		]),
 		links: [
 			// Only the map page needs MapLibre's styles; other pages skip the request.
 			{ rel: "stylesheet", href: maplibreCss },

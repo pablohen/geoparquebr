@@ -1,7 +1,11 @@
 /** Metadata for the geopark pages: titles, share previews, structured data. */
 import { geoparkIdLabel } from "~/features/geosites/labels";
 import type { GeoparkId } from "~/features/geosites/schemas";
-import { geositePath, ogLocaleTags } from "~/features/geosites/seo";
+import {
+	geositePath,
+	ogLocaleTags,
+	withTwitterTags,
+} from "~/features/geosites/seo";
 import { geoparkCardPath } from "~/features/share/card-response";
 import { getLocale } from "~/lib/i18n";
 import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME } from "~/lib/site";
@@ -19,7 +23,7 @@ export function pageMetaTags(
 	path: string,
 	image = DEFAULT_OG_IMAGE,
 ) {
-	return [
+	return withTwitterTags([
 		{ title: `${title} — ${SITE_NAME}` },
 		{ name: "description", content: description },
 		{ property: "og:type", content: "website" },
@@ -32,10 +36,7 @@ export function pageMetaTags(
 		{ property: "og:image:width", content: "1200" },
 		{ property: "og:image:height", content: "630" },
 		{ name: "twitter:card", content: "summary_large_image" },
-		{ name: "twitter:title", content: title },
-		{ name: "twitter:description", content: description },
-		{ name: "twitter:image", content: image },
-	];
+	]);
 }
 
 export const geoparkMetaTags = (id: GeoparkId) =>

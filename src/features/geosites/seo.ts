@@ -48,6 +48,28 @@ export function geositeMeta(g: Geosite): GeositeMeta {
 	};
 }
 
+/** The X/Twitter card tag for each Open Graph tag it has its own name for. */
+const TWITTER_EQUIVALENTS: Record<string, string> = {
+	"og:title": "twitter:title",
+	"og:description": "twitter:description",
+	"og:image": "twitter:image",
+	"og:url": "twitter:url",
+};
+
+/**
+ * Adds a `twitter:*` copy after each Open Graph tag above. X falls back to
+ * Open Graph, but not every card checker does; copying keeps the two from
+ * drifting apart.
+ */
+export function withTwitterTags<
+	T extends { property?: string; content?: string },
+>(tags: T[]): (T | { name: string; content: string })[] {
+	return tags.flatMap((tag) => {
+		const name = tag.property && TWITTER_EQUIVALENTS[tag.property];
+		return name && tag.content ? [tag, { name, content: tag.content }] : [tag];
+	});
+}
+
 /**
  * `og:locale` for the current locale. No `og:locale:alternate`: TanStack's
  * head keeps one meta per property, so repeats would collapse into one, and
@@ -60,7 +82,7 @@ export function ogLocaleTags() {
 /** `<meta>` tags for TanStack Router's `head()`. */
 export function geositeMetaTags(g: Geosite) {
 	const m = geositeMeta(g);
-	return [
+	return withTwitterTags([
 		{ title: m.title },
 		{ name: "description", content: m.description },
 		{ property: "og:type", content: "place" },
@@ -81,10 +103,7 @@ export function geositeMetaTags(g: Geosite) {
 			content: String(g.location.coordinates[0]),
 		},
 		{ name: "twitter:card", content: "summary_large_image" },
-		{ name: "twitter:title", content: g.name },
-		{ name: "twitter:description", content: m.description },
-		{ name: "twitter:image", content: m.image },
-	];
+	]);
 }
 
 /**

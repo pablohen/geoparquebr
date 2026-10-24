@@ -9,6 +9,7 @@ import {
 	geositePath,
 	sitemapXml,
 	truncate,
+	withTwitterTags,
 } from "./seo";
 
 const base: Geosite = {
@@ -101,6 +102,44 @@ describe("geositeMeta", () => {
 			name: "twitter:card",
 			content: "summary_large_image",
 		});
+	});
+
+	it("gives X the same title, description, image and URL as Open Graph", () => {
+		const tags = geositeMetaTags(base);
+		const value = (key: "property" | "name", v: string) =>
+			tags.find((t) => key in t && t[key as keyof typeof t] === v)?.content;
+		for (const field of ["title", "description", "image", "url"]) {
+			expect(value("name", `twitter:${field}`)).toBe(
+				value("property", `og:${field}`),
+			);
+			expect(value("name", `twitter:${field}`)).toBeTruthy();
+		}
+	});
+});
+
+describe("withTwitterTags", () => {
+	it("mirrors og title, description, image and URL, and nothing else", () => {
+		expect(
+			withTwitterTags([
+				{ name: "description", content: "d" },
+				{ property: "og:title", content: "T" },
+				{ property: "og:description", content: "D" },
+				{ property: "og:image", content: "https://x/i.png" },
+				{ property: "og:url", content: "https://x/" },
+				{ property: "og:image:width", content: "1200" },
+			]),
+		).toEqual([
+			{ name: "description", content: "d" },
+			{ property: "og:title", content: "T" },
+			{ name: "twitter:title", content: "T" },
+			{ property: "og:description", content: "D" },
+			{ name: "twitter:description", content: "D" },
+			{ property: "og:image", content: "https://x/i.png" },
+			{ name: "twitter:image", content: "https://x/i.png" },
+			{ property: "og:url", content: "https://x/" },
+			{ name: "twitter:url", content: "https://x/" },
+			{ property: "og:image:width", content: "1200" },
+		]);
 	});
 });
 

@@ -18,7 +18,7 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { lazy, type ReactNode, Suspense, useEffect } from "react";
-import { ogLocaleTags } from "~/features/geosites/seo";
+import { ogLocaleTags, withTwitterTags } from "~/features/geosites/seo";
 // Loaded with the root, not a page chunk: Chrome fires beforeinstallprompt
 // once, early, and a listener in a lazily loaded chunk would miss it.
 import "~/features/install/prompt";
@@ -48,7 +48,7 @@ export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient;
 }>()({
 	head: () => ({
-		meta: [
+		meta: withTwitterTags([
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{ title: m.site_title() },
@@ -68,7 +68,7 @@ export const Route = createRootRouteWithContext<{
 			{ property: "og:description", content: m.site_description() },
 			{ property: "og:image", content: DEFAULT_OG_IMAGE },
 			{ name: "twitter:card", content: "summary_large_image" },
-		],
+		]),
 		links: [
 			{ rel: "stylesheet", href: mantineCss },
 			{ rel: "stylesheet", href: nprogressCss },
