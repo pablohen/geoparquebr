@@ -8,15 +8,16 @@ import {
 } from "@mantine/core";
 import mantineCss from "@mantine/core/styles.css?url";
 import nprogressCss from "@mantine/nprogress/styles.css?url";
+import type { QueryClient } from "@tanstack/react-query";
 import {
-	createRootRoute,
+	createRootRouteWithContext,
 	HeadContent,
 	Link,
 	Outlet,
 	ScriptOnce,
 	Scripts,
 } from "@tanstack/react-router";
-import { type ReactNode, useEffect } from "react";
+import { lazy, type ReactNode, Suspense, useEffect } from "react";
 import { ogLocaleTags } from "~/features/geosites/seo";
 // Loaded with the root, not a page chunk: Chrome fires beforeinstallprompt
 // once, early, and a listener in a lazily loaded chunk would miss it.
@@ -38,7 +39,14 @@ const COLOR_SCHEME_SCRIPT = `try {
 	document.documentElement.setAttribute("data-mantine-color-scheme", scheme);
 } catch (e) {}`;
 
-export const Route = createRootRoute({
+/** Router and Query devtools, dev only (see `~/lib/devtools`). */
+const Devtools = import.meta.env.DEV
+	? lazy(() => import("~/lib/devtools"))
+	: null;
+
+export const Route = createRootRouteWithContext<{
+	queryClient: QueryClient;
+}>()({
 	head: () => ({
 		meta: [
 			{ charSet: "utf-8" },
@@ -129,6 +137,11 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 					<RouteProgress />
 					{children}
 				</MantineProvider>
+				{Devtools && (
+					<Suspense>
+						<Devtools />
+					</Suspense>
+				)}
 				<Scripts />
 			</body>
 		</html>

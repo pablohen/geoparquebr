@@ -39,6 +39,9 @@ const ALLOWED = new Set<string>([
 	"Noto Sans Bold",
 	"service worker registration failed:",
 	"SGB tile",
+	// Devtools panel names (dev only, never shipped).
+	"TanStack Router",
+	"TanStack Query",
 ]);
 
 const hasWords = (s: string) => /\p{L}{2,}/u.test(s);

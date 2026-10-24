@@ -44,6 +44,7 @@ CI (`.github/workflows/ci.yml`) runs the same four on every push to `main` and e
 ## Stack and versions
 
 - **TanStack Start 1.x** (Vite 8 plugin). Server-function input validation is `.validator(schema)`. Read the bundled skill docs in `node_modules/@tanstack/react-start/skills/` and `node_modules/@tanstack/start-client-core/skills/` before guessing at APIs: they match the installed version.
+- **TanStack Query 5**, wired to the router by `@tanstack/react-router-ssr-query` (`router.tsx`: one `QueryClient` per router, in the route context). The Router and Query devtools (`src/lib/devtools.tsx`) load in dev only.
 - **Zod 4**: `z.url()`, `z.iso.datetime()` and so on, not the Zod 3 method forms.
 - **Mantine 9** (needs React 19.2+). Use Mantine components and style props before writing custom CSS.
 - **Phosphor icons** (`@phosphor-icons/react`) for every icon.
