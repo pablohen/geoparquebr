@@ -1,4 +1,11 @@
-import { ActionIcon, Center, Drawer, Loader, Tooltip } from "@mantine/core";
+import {
+	ActionIcon,
+	Center,
+	Drawer,
+	getDefaultZIndex,
+	Loader,
+	Tooltip,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Sparkle } from "@phosphor-icons/react";
 import { lazy, Suspense, useState } from "react";
@@ -37,6 +44,8 @@ export function TripAgentButton() {
 				size="md"
 				title={m.agent_title()}
 				keepMounted
+				// Above the map explorer's header, which phones lift over modals.
+				zIndex={getDefaultZIndex("modal") + 2}
 				styles={{
 					content: { display: "flex", flexDirection: "column" },
 					body: { flex: 1, display: "flex", minHeight: 0 },
