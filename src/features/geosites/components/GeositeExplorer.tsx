@@ -29,6 +29,7 @@ import { ColorSchemeToggle } from "~/features/theme/components/ColorSchemeToggle
 import { TripMapControl } from "~/features/trip/components/TripMapControl";
 import { tripBBox } from "~/features/trip/map";
 import { useTrip } from "~/features/trip/store";
+import { TripAgentButton } from "~/features/trip-agent/components/TripAgentButton";
 import { type BBox, bboxAround, bboxCenter, roundBBox } from "~/lib/geo";
 import { SITE_NAME } from "~/lib/site";
 import { useIsMobile } from "~/lib/use-is-mobile";
@@ -232,6 +233,7 @@ export function GeositeExplorer({ geosites, search, onSearchChange }: Props) {
 						/>
 						<InstallButton />
 						<MyGeositesLink />
+						<TripAgentButton />
 						<ColorSchemeToggle />
 						<LanguageSwitcher />
 					</Group>

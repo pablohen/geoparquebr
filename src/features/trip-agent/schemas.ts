@@ -110,7 +110,3 @@ export const TripProposalSchema = z.object({
 	skipped: z.array(z.string()),
 });
 export type TripProposal = z.infer<typeof TripProposalSchema>;
-
-/** `/trip?stops=a,b,c`, the existing shared-trip page. */
-export const tripHref = (proposal: Pick<TripProposal, "stops">) =>
-	`/trip?stops=${proposal.stops.map((s) => s.slug).join(",")}`;
