@@ -2,3 +2,5 @@
 # allowed nor denied. esbuild's postinstall only verifies its native binary.
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - eve@1.0.2

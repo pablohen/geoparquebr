@@ -9,3 +9,6 @@ dist
 .vercel
 src/paraglide/
 project.inlang/cache/
+
+# eve compile cache and local traces
+.eve

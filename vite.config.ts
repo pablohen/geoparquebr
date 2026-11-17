@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { eveTanStack } from "eve/tanstack";
 import { nitro } from "nitro/vite";
 import { defineConfig, type Plugin } from "vite";
 import { base64Imports } from "./scripts/vite/base64-imports.ts";
@@ -29,6 +30,9 @@ export default defineConfig({
 		catalogGuard(),
 		// Share-card fonts and resvg's wasm, inlined into the server chunk.
 		base64Imports(),
+		// The trip-planning agent in agent/, mounted at /eve/v1/*: a dev
+		// server proxied by Nitro locally, its own Vercel service on deploy.
+		eveTanStack(),
 		tanstackStart(),
 		// Turns the server build into a deployable app. The preset comes from
 		// the environment: Vercel when VERCEL=1 (or NITRO_PRESET=vercel),
