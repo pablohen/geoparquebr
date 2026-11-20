@@ -71,6 +71,7 @@ cat .vercel/output/functions/__server.func/.vc-config.json   # regions: ["gru1"]
 ### Weekly data refresh
 
 Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in Brasília). It runs the same sync as `pnpm db:seed` (`src/features/geosites/sync.server.ts`) and logs one summary line under **Logs**. What it added, changed or removed is recorded for the "Novidades" page (`/news`, RSS at `/news.xml`).
+
 - **Auth.** Vercel sends `Authorization: Bearer $CRON_SECRET`. Without `CRON_SECRET` the endpoint answers 401 to everyone, so it can't run open.
 - **Safety.** It writes nothing when GEOSSIT returns fewer than 80% of the stored geosites (a truncated response would otherwise prune the rest) or when more than 10% of the age lookups fail. GEOSSIT pages are retried on server errors.
 - **Run it now:** **Settings → Cron Jobs → Run**, or `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-geosites`.
@@ -79,6 +80,7 @@ Vercel Cron calls `/api/cron/sync-geosites` every Monday at 06:00 UTC (03:00 in 
 ### Daily fossil refresh
 
 Vercel Cron calls `/api/cron/sync-fossils` every day at 06:30 UTC, with the same `CRON_SECRET` auth. It refreshes the fossil records (`fossil_sites`) of the geosites refreshed longest ago, for about 35 s (roughly 80 geosites on a cold cache), then rebuilds the genus pages (`fossil_genera`). So every geosite is refreshed every few days without `pnpm db:fossils`.
+
 - **Safety.** A geosite whose SGB or GBIF lookup or GBIF name match fails keeps its previous records. The genus pages are rebuilt only when at least 90% of the geosites have records, so a fresh database waits for `pnpm db:fossils` (or a few daily runs) instead of publishing a partial index. The JSON response says why a rebuild was skipped.
 - **Run it now:** `curl -H "Authorization: Bearer $CRON_SECRET" https://geoparquebr.vercel.app/api/cron/sync-fossils`.
 

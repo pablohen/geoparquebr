@@ -56,6 +56,7 @@ pnpm db:seed          # re-attach models; they now point at /models/<uid>.glb
 ```
 
 [`scripts/fetch-models.ts`](../scripts/fetch-models.ts):
+
 1. Re-checks each model's license (`slug === "by"`) and `isDownloadable` before downloading, since authors can change them.
 2. Requests a signed GLB URL from `GET /v3/models/{uid}/download`, which needs the token.
 3. Optimizes with [`scripts/lib/optimize-glb.ts`](../scripts/lib/optimize-glb.ts): dedup, weld, simplify to ≤ 300k triangles (meshoptimizer), WebP textures ≤ 2048 px (sharp), then meshopt compression. On a Khronos sample this took 3.8 MB → 0.53 MB.

@@ -14,6 +14,7 @@ cp .env.example .env
 ```
 
 Set `MONGODB_URI` in `.env`, using one of these:
+
 - **Local:** `docker compose up -d`, then `MONGODB_URI="mongodb://localhost:27017"`
 - **Atlas:** the `mongodb+srv://…` string from _Connect → Drivers_. The database user needs `readWrite` on `MONGODB_DB`, and your IP must be in the Atlas network access list.
 
@@ -60,12 +61,14 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
 `pnpm test` runs ~80 tests in under a second:
+
 - **Unit:** geo helpers, taxon parsing, ICS colours, GEOSSIT mapping, model catalog, Photon parsing, and URL/schema fallbacks.
 - **Integration:** viewport query, filters, text search, sensitive rounding, sync/prune, and the TTL cache. These run against `MONGODB_URI` in a throwaway database.
 
 **Service worker.** It only registers in production builds. To test it: `pnpm build`, then run `node .output/server/index.mjs` with `MONGODB_URI` set, open it in real Chrome (the in-app browser pane doesn't support service workers), browse, then stop the server to see the offline behaviour. DevTools' "Offline" checkbox doesn't apply to service-worker fetches.
 
 There are no browser end-to-end tests yet. For UI work, open the page and check:
+
 - **Map:** pins render and the console shows no MapLibre worker errors.
 - **List:** clicking an item opens the drawer, highlights the item and zooms the map.
 - **Deep link:** loading a `?site=<slug>` URL directly opens the drawer and zooms the map.

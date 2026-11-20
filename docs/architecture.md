@@ -117,6 +117,7 @@ The map drawer and the geosite page render the same `GeositeDetail` and `Geosite
 ### Saving a geopark for offline use
 
 The button on each geopark page (`src/features/offline/`) stores, in about 10–20 s:
+
 - **Pages** (geopark, its geosites, `/geoparks`, `/my-geosites`, the map of its area), through a `cache-pages` message to the service worker, which also stores the hashed scripts and styles each page loads.
 - **Data**: each geosite's record, fossils, strata and nearby list, by calling the same server functions the drawer calls, so the cached requests match.
 - **Map code**: the lazily loaded map chunk and MapLibre's worker.
@@ -194,6 +195,7 @@ flowchart LR
 ## Adding a feature
 
 To add a new domain area (for example `caves` or `geoparks`):
+
 1. `src/features/<name>/schemas.ts`: Zod schemas for input, DTO and queries.
 2. `src/features/<name>/<name>.server.ts`: collection accessor, index definitions, queries, `toDto`.
 3. `src/features/<name>/<name>.functions.ts`: `createServerFn` wrappers with `.validator(schema)`.

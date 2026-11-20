@@ -11,6 +11,7 @@ https://geoportal.sgb.gov.br/server/rest/services/gestaoterritorial/geossit/Feat
 ```
 
 `pnpm db:seed` fetches every feature (about 320), validates each one with Zod, maps it to `GeositeInput`, adds a geological age from SGB's map (below), attaches 3D models from the [model catalog](3d-models.md), and upserts the result. The mapping lives in [`geossit.server.ts`](../src/features/geosites/geossit.server.ts).
+
 - **Read-only.** The layer advertises edit capabilities; never call anything except `query`.
 - **Idempotent.** Records are keyed by `source.{system,id}`. A re-run updates changed records and deletes the ones GEOSSIT dropped.
 - **Validated per record.** An invalid feature is skipped with a reason printed, and the rest still import.
@@ -19,6 +20,7 @@ https://geoportal.sgb.gov.br/server/rest/services/gestaoterritorial/geossit/Feat
 ### Geological age (from SGB's map)
 
 GEOSSIT has no age field, so the seed derives `geologicAge` from SGB's lithostratigraphy map ([`geologic-age.server.ts`](../src/features/geosites/geologic-age.server.ts), mapping in [`geologic-age.ts`](../src/features/geosites/geologic-age.ts)):
+
 1. If the geosite's own text names a unit ("…da Formacao Santana…") that the map shows within 5 km, use that unit.
 2. Otherwise use the unit(s) under the point (~50 m box), on the most detailed map SGB has there (1:25k → 1:1M).
 
@@ -196,6 +198,7 @@ Cache keys are versioned (`fossils:sgb:v3:<slug>`). Bump the version when the ma
 ## Collection: `fossil_genera`
 
 The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. It's rebuilt from `fossil_sites` (below), which holds each geosite's records from the same cached lookups as its "Fósseis" tab:
+
 1. For every geosite, the SGB and GBIF fossil records within 5 km.
 2. Each recorded name is cut to genus + epithet (`matchQuery`: "dastilbe elongatus santos, 1947" → "Dastilbe elongatus") and matched with GBIF's [`species/match`](https://techdocs.gbif.org/en/openapi/v1/species) (cached 30 days as `gbif-match:v1:<name>`).
 3. Only **exact** matches at genus rank or below are kept, plus a HIGHERRANK match to the recorded genus when the backbone lacks the species (`acceptMatch`). Fuzzy matches are dropped: recorded names include Portuguese descriptions ("Restos vegetais") that fuzzy matching turns into unrelated genera. Higher taxa ("Araneae", "Squamata") are skipped.
@@ -213,6 +216,7 @@ The fossil pages (`/fossils`, `/fossils/$genus`) read this collection. It's rebu
 | `updatedAt`       | Date                                                         |                                                                                  |
 
 Index: `geosites.slug` (genera near a geosite or geopark). **No coordinates are stored**: a genus page names geosites, never where a specimen was found, so sensitive sites stay as private as on their own page.
+
 ## Collection: `geosite_changes`
 
 What each GEOSSIT sync changed, for "Novidades" (`/news`) and its RSS feed. `syncGeosites` reads the stored geosites before writing and compares them with the import (`diffGeosites` in [`src/features/news/changes.ts`](../src/features/news/changes.ts)), matched by GEOSSIT id:
@@ -229,6 +233,7 @@ Only syncs with changes are stored, and the latest 52 are kept. A first import i
 ### Collection: `fossil_sites`
 
 One document per geosite: `_id` (the geosite slug), `records` (`{ source, match, unit?, age? }[]`, the matched GBIF genus per occurrence), `unmatchedNames` (recorded names with no GBIF genus, for review) and `refreshedAt`. Index: `refreshedAt`.
+
 - `pnpm db:fossils` (`buildFossilIndex` in [`fossils.server.ts`](../src/features/fossils/fossils.server.ts)) refreshes every geosite, then rebuilds `fossil_genera`. It writes no genus pages when more than 10% of the geosites fail.
 - The daily cron (`refreshFossilIndexSlice`) refreshes the geosites refreshed longest ago (never-refreshed first) for ~35 s, then rebuilds. A full refresh is about 640 upstream calls on a cold cache, past the function's 60 s, hence the slices.
 - A geosite whose lookups or name matches fail keeps its previous records. `fossil_genera` is rebuilt only when at least 90% of the geosites have records (`MIN_FOSSIL_COVERAGE`), and records of geosites GEOSSIT dropped are deleted first.
