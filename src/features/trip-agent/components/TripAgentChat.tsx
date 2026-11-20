@@ -23,6 +23,7 @@ import { useEveAgent } from "eve/react";
 import { useEffect, useRef, useState } from "react";
 import { getLocale } from "~/lib/i18n";
 import { m } from "~/paraglide/messages.js";
+import { limitReason } from "../limit-error";
 import { TripProposalSchema } from "../schemas";
 import { TripProposalCard } from "./TripProposalCard";
 
@@ -132,7 +133,9 @@ export default function TripAgentChat({
 	const [draft, setDraft] = useState("");
 	const viewport = useRef<HTMLDivElement>(null);
 	const busy = agent.status === "busy";
-	const disabled = agent.status === "resuming";
+	// A daily limit is explained, and sending stays off until tomorrow.
+	const limit = limitReason(agent.error);
+	const disabled = agent.status === "resuming" || limit !== null;
 
 	// Follow the conversation as it streams: a new array on every update.
 	const { messages } = agent;
@@ -197,10 +200,16 @@ export default function TripAgentChat({
 				)}
 			</ScrollArea>
 
-			{agent.error && (
-				<Alert color="red" icon={<Warning size={16} />} py="xs">
-					{m.agent_error()}
+			{limit ? (
+				<Alert color="yellow" icon={<Warning size={16} />} py="xs">
+					{limit === "daily" ? m.agent_limit_daily() : m.agent_limit_visitor()}
 				</Alert>
+			) : (
+				agent.error && (
+					<Alert color="red" icon={<Warning size={16} />} py="xs">
+						{m.agent_error()}
+					</Alert>
+				)
 			)}
 
 			<form

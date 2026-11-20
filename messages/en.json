@@ -14,6 +14,8 @@
 	"agent_example_2": "Which fossil geosites can I visit in Seridó?",
 	"agent_example_3": "A day of canyons near Cambará do Sul",
 	"agent_intro": "Ask what to see in a geopark and in what order. Answers use GEOSSIT's data; check access and opening hours with the geopark.",
+	"agent_limit_daily": "The planner has reached today's usage limit. Please try again tomorrow.",
+	"agent_limit_visitor": "You've reached today's message limit. Come back tomorrow to keep planning.",
 	"agent_new": "New chat",
 	"agent_open": "Plan with AI",
 	"agent_placeholder": "E.g. a weekend in Uberaba",

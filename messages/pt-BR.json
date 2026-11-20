@@ -14,6 +14,8 @@
 	"agent_example_2": "Quais geossítios com fósseis posso visitar no Seridó?",
 	"agent_example_3": "Um dia de cânions perto de Cambará do Sul",
 	"agent_intro": "Pergunte o que ver num geoparque e em que ordem. As respostas usam os dados do GEOSSIT; confira acesso e horários com o geoparque.",
+	"agent_limit_daily": "O planejador atingiu o limite de uso de hoje. Tente de novo amanhã.",
+	"agent_limit_visitor": "Você chegou ao limite de mensagens de hoje. Volte amanhã para continuar planejando.",
 	"agent_new": "Nova conversa",
 	"agent_open": "Planejar com IA",
 	"agent_placeholder": "Ex.: um fim de semana em Uberaba",
