@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { InstallButton } from "~/features/install/components/InstallButton";
 import { MyGeositesLink } from "~/features/my-geosites/components/MyGeositesLink";
 import { ColorSchemeToggle } from "~/features/theme/components/ColorSchemeToggle";
+import { TripAgentButton } from "~/features/trip-agent/components/TripAgentButton";
 import { SITE_NAME } from "~/lib/site";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
@@ -25,6 +26,7 @@ export function PageHeader() {
 			<Group gap="xs">
 				<InstallButton />
 				<MyGeositesLink />
+				<TripAgentButton />
 				<ColorSchemeToggle />
 				<LanguageSwitcher />
 			</Group>
