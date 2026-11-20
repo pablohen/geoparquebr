@@ -212,11 +212,11 @@ importers:
         specifier: ^1.169.3
         version: 1.169.3(esbuild@0.28.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(rolldown@1.2.14)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.31))(tsx@4.23.15))
       ai:
-        specifier: ^7.0.173
-        version: 7.0.173(zod@4.6.7)
+        specifier: ^7.0.177
+        version: 7.0.177(zod@4.6.7)
       eve:
-        specifier: ^1.0.2
-        version: 1.0.2(ai@7.0.173(zod@4.6.7))(react@19.3.1)(svelte@5.57.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.31))(tsx@4.23.15))
+        specifier: ^1.1.0
+        version: 1.1.0(ai@7.0.177(zod@4.6.7))(react@19.3.1)(svelte@5.57.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.31))(tsx@4.23.15))
       maplibre-contour:
         specifier: 0.1.1
         version: 0.1.1
@@ -341,8 +341,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/gateway@4.0.146':
-    resolution: {integrity: sha512-rJ5NQSyjnpo6HSBEYc9Ff6k1EROUuB7KeAfHYVbVDsk68ynY0Eb8JeWflZKXlT6NhYgqyCiBDxE5blXWACXMKQ==}
+  '@ai-sdk/gateway@4.0.150':
+    resolution: {integrity: sha512-39jDj4UIN2M5kI/wW0IVMsD1PpjmZHSMFUU/yZSQerE4mg0Oo9AKPOSwn6Vu0MJ31aK+Mi9rUiUgl88Q2lkorg==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -353,21 +353,11 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@5.0.81':
-    resolution: {integrity: sha512-pfvvdQ3d1WxdBuug/mnGEP6E48cPokwD8dMBnsFeeAUp0/rb/H2aj0f3mwOiY62gu/Cu5GO44e+SE5nDHyBWMA==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   '@ai-sdk/provider-utils@5.0.82':
     resolution: {integrity: sha512-9s3Le9LsTR0exy14H8SERw4uMgFhiP0yJVoLefzfQCnnptj71noYh1AoVEsjfJjmMH1y16+1OqBVTDpTpU6M3Q==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider@4.0.38':
-    resolution: {integrity: sha512-GElz70UUCuDFFyD6m6aQJFgRY0HEABQzB5otzgkrisYaF5mnss7o0upAmbBTSD6KWiM9h7lZm1ls2c7xzHR8CA==}
-    engines: {node: '>=22'}
 
   '@ai-sdk/provider@4.0.39':
     resolution: {integrity: sha512-jRvAhvW23+TeMGVCME2WGejP/TjzyDg7TplUep3t8HcEYnC2/8zqhCy9RRrjjVs1ljcygABZ8pQ21MbCRdF01w==}
@@ -2145,8 +2135,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  ai@7.0.173:
-    resolution: {integrity: sha512-dLea37zT1h7cjkUsBprU4Rq35HJqhtHHaq1jTAXjHQoyfpeswpgCrhjZJWdWc10gjEAxmz114py7iLGQ3xIMxw==}
+  ai@7.0.177:
+    resolution: {integrity: sha512-DQNKH2lL4h+5Rxe34AxTdxXtNu3EnsDHpxIE6p4ETsi+r7sM187nP6JKrbASoSNEbR355H3FCGlSP7mj+m6Pzw==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -2439,8 +2429,8 @@ packages:
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
 
-  eve@1.0.2:
-    resolution: {integrity: sha512-isoZ/zG5En2xyJ3/6X2hjw6NlaBv82rvY/NmawK9iAZ+7Fdt1xA+RWGvnT7qzTHbOzuQop5rPKJSHavtRvJK/Q==}
+  eve@1.1.0:
+    resolution: {integrity: sha512-Dblzqj5FENNljN1cPkEPWGjG6OZG8DTUhfxowwVeyAMtbbRgZcVWgTmD4giYIiq8gl3M5AFWpPjhcHrPuET8lQ==}
     engines: {node: '>=24'}
     hasBin: true
     peerDependencies:
@@ -3640,10 +3630,10 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/gateway@4.0.146(zod@4.6.7)':
+  '@ai-sdk/gateway@4.0.150(zod@4.6.7)':
     dependencies:
-      '@ai-sdk/provider': 4.0.38
-      '@ai-sdk/provider-utils': 5.0.81(zod@4.6.7)
+      '@ai-sdk/provider': 4.0.39
+      '@ai-sdk/provider-utils': 5.0.82(zod@4.6.7)
       '@vercel/oidc': 3.2.0
       zod: 4.6.7
 
@@ -3653,14 +3643,6 @@ snapshots:
       '@ai-sdk/provider-utils': 5.0.82(zod@4.6.7)
       zod: 4.6.7
 
-  '@ai-sdk/provider-utils@5.0.81(zod@4.6.7)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.38
-      '@standard-schema/spec': 1.1.0
-      '@workflow/serde': 4.1.0
-      eventsource-parser: 3.1.1
-      zod: 4.6.7
-
   '@ai-sdk/provider-utils@5.0.82(zod@4.6.7)':
     dependencies:
       '@ai-sdk/provider': 4.0.39
@@ -3668,10 +3650,6 @@ snapshots:
       '@workflow/serde': 4.1.0
       eventsource-parser: 3.1.1
       zod: 4.6.7
-
-  '@ai-sdk/provider@4.0.38':
-    dependencies:
-      json-schema: 0.4.0
 
   '@ai-sdk/provider@4.0.39':
     dependencies:
@@ -5182,11 +5160,11 @@ snapshots:
 
   acorn@8.19.0: {}
 
-  ai@7.0.173(zod@4.6.7):
+  ai@7.0.177(zod@4.6.7):
     dependencies:
-      '@ai-sdk/gateway': 4.0.146(zod@4.6.7)
-      '@ai-sdk/provider': 4.0.38
-      '@ai-sdk/provider-utils': 5.0.81(zod@4.6.7)
+      '@ai-sdk/gateway': 4.0.150(zod@4.6.7)
+      '@ai-sdk/provider': 4.0.39
+      '@ai-sdk/provider-utils': 5.0.82(zod@4.6.7)
       zod: 4.6.7
 
   ansi-regex@5.0.1: {}
@@ -5429,9 +5407,9 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.9
 
-  eve@1.0.2(ai@7.0.173(zod@4.6.7))(react@19.3.1)(svelte@5.57.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.31))(tsx@4.23.15)):
+  eve@1.1.0(ai@7.0.177(zod@4.6.7))(react@19.3.1)(svelte@5.57.2)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.31))(tsx@4.23.15)):
     dependencies:
-      ai: 7.0.173(zod@4.6.7)
+      ai: 7.0.177(zod@4.6.7)
       nitro: 3.0.261103-rc
       rolldown: 1.3.2
       undici: 8.12.4
@@ -5495,7 +5473,7 @@ snapshots:
   h3@2.0.8(crossws@0.4.17(srvx@1.0.8))(ocache@0.3.2):
     dependencies:
       rou3: 1.0.0
-      srvx: 1.0.6
+      srvx: 1.0.8
     optionalDependencies:
       crossws: 0.4.17(srvx@1.0.8)
       ocache: 0.3.2
